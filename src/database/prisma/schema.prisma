@@ -43,9 +43,10 @@ model posts {
 }
 
 model skills {
+  userId    Int
   skill     String    @db.VarChar(50)
   createdAt DateTime? @db.Timestamp(0)
-  userId    Int
+  
   users     users     @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: NoAction, map: "skills_ibfk_1")
 
   @@id([userId, skill])
@@ -63,6 +64,7 @@ model studylists {
 }
 
 model users {
+  userId        Int               @id @default(autoincrement())
   email         String?           @db.VarChar(255)
   userName      String?           @db.VarChar(20)
   userNickname  String?           @db.VarChar(20)
@@ -75,7 +77,6 @@ model users {
   createdAt     DateTime?         @db.Timestamp(0)
   updatedAt     DateTime?         @db.DateTime(0)
   deleteAt      DateTime?         @db.DateTime(0)
-  userId        Int               @id @default(autoincrement())
   applications  applications[]
   bookmarks     bookmarks[]
   chats         chats[]

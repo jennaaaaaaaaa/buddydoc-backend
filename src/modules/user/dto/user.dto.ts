@@ -1,5 +1,5 @@
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
-import { IsString, IsInt, isString } from 'class-validator'
+import { IsString, IsInt, IsNumber } from 'class-validator'
 export class UserDto {
   
   @ApiProperty()
@@ -41,4 +41,10 @@ export class UserDto {
   @ApiProperty()
   @IsString()
   skills: string; // 기술
+
+  @IsString()
+  name : string
+
+  @IsNumber()
+  userId : number;
 }

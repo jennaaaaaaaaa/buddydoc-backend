@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { userModule  } from './modules/user/user.module';
 import { ConfigModule } from '@nestjs/config';
+import { infoModule } from './modules/myinfo/info.module';
 
 
 
@@ -12,7 +13,8 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal:true,
     }),
-    userModule],
+    userModule,
+    infoModule],
   controllers: [AppController],
   providers: [AppService],
 })

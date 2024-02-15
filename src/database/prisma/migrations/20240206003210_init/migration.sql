@@ -22,7 +22,7 @@ CREATE TABLE `posts` (
     `views` INTEGER NULL DEFAULT 0,
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
-    `deleteAt` DATETIME(0) NULL,
+    `deletedAt` DATETIME(0) NULL,
     
 
     INDEX `userId`(`post_userId`),
@@ -64,7 +64,7 @@ CREATE TABLE `users` (
     `career` INTEGER NULL,
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
-    `deleteAt` DATETIME(0) NULL,
+    `deletedAt` DATETIME(0) NULL,
     
 
     PRIMARY KEY (`userId`)
@@ -92,7 +92,7 @@ CREATE TABLE `notifications` (
     `notiStatus` ENUM('pending', 'accept') NULL,
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
-    `deleteAt` DATETIME(0) NULL,
+    `deletedAt` DATETIME(0) NULL,
 
     INDEX `postId`(`postId`),
     PRIMARY KEY (`noti_userId`, `postId`)
@@ -108,7 +108,7 @@ CREATE TABLE `notes` (
     `noteStatus` ENUM('unread', 'read') NULL,
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
-    `deleteAt` DATETIME(0) NULL,
+    `deletedAt` DATETIME(0) NULL,
 
     INDEX `userId`(`userId`),
     PRIMARY KEY (`noteId`)
@@ -125,7 +125,7 @@ CREATE TABLE `applications` (
     `alarmStatus` ENUM('unread', 'read') NULL,
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
-    `deleteAt` DATETIME(0) NULL,
+    `deletedAt` DATETIME(0) NULL,
 
     INDEX `userId`(`userId`),
     PRIMARY KEY (`alarmId`)

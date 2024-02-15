@@ -5,7 +5,7 @@ import {InfoService } from './info.service'
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { InfoDto } from '../myinfo/dto/info.dto';
 
-@ApiTags('/user/my-info')
+@ApiTags('user/my-info')
 @Controller('user')
 export class InfoController {
   constructor(private readonly InfoService: InfoService) {}

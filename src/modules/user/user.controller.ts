@@ -3,9 +3,8 @@ import { Response } from 'express';
 import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { InfoDto } from '../myinfo/dto/info.dto';
 
-@ApiTags('/signup')
+@ApiTags('signup')
 @Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}

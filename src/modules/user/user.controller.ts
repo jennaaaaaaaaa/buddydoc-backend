@@ -1,4 +1,17 @@
-import { Controller, Post, Param, Get, Put, Body, Res, Req, HttpStatus, BadRequestException, HttpException,Next } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Param,
+  Get,
+  Put,
+  Body,
+  Res,
+  Req,
+  HttpStatus,
+  BadRequestException,
+  HttpException,
+  Next,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
@@ -29,11 +42,10 @@ export class UserController {
 
       //skills에 skill 추가
       await this.userService.insertSkills(user.userId, userDto.skills);
-
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
 
     return res.status(201).json({ message: '회원가입 완료' });
-  }  
+  }
 }

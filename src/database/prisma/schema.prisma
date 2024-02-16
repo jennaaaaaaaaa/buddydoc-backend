@@ -30,8 +30,8 @@ model posts {
   views                     Int?            @default(0)
   createdAt                 DateTime?       @db.Timestamp(0)
   updatedAt                 DateTime?       @db.DateTime(0)
-  deletedAt                 DateTime?       @db.DateTime(0)
   post_userId               Int?
+  deletedAt                 DateTime?       @db.DateTime(0)
   bookmarks                 bookmarks[]
   chats_chats_postIdToposts chats[]         @relation("chats_postIdToposts")
   notes_notes_postIdToposts notes[]         @relation("notes_postIdToposts")
@@ -74,8 +74,8 @@ model users {
   career        Int?
   createdAt     DateTime?         @db.Timestamp(0)
   updatedAt     DateTime?         @db.DateTime(0)
-  deletedAt     DateTime?         @db.DateTime(0)
   userId        Int               @id @default(autoincrement())
+  deletedAt     DateTime?         @db.DateTime(0)
   applications  applications[]
   bookmarks     bookmarks[]
   chats         chats[]
@@ -142,7 +142,7 @@ model applications {
   postId                           Int?
   noti_userId                      Int?
   alarmStatus                      applications_alarmStatus?
-  createdAt                        DateTime?         @default(now()) @db.Timestamp(0)
+  createdAt                        DateTime?                 @default(now()) @db.Timestamp(0)
   updatedAt                        DateTime?                 @db.DateTime(0)
   deletedAt                        DateTime?                 @db.DateTime(0)
   users                            users?                    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_1")

@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UploadedFile } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { posts, Prisma } from '@prisma/client';
 import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
+import { S3Service } from 'src/providers/aws/s3/s3.service';
 
 // import { PostsEntity } from './entities/post.entity';
 // import { SearchService } from '../search/search.service';
@@ -10,7 +11,8 @@ import { UpdatePostsDto } from './dto/update-post.dto';
 @Injectable()
 export class PostService {
   constructor(
-    private prisma: PrismaService
+    private prisma: PrismaService,
+    private s3Service: S3Service
     // esService: SearchService
   ) {}
 
@@ -122,10 +124,26 @@ export class PostService {
    * @param createPostsDto
    * @returns
    */
-  async createPost(createPostsDto: CreatePostsDto) {
+  async createPost(
+    postTitle: string,
+    content: string,
+    postType: string,
+    position: string,
+    fileName: string,
+    file: Express.Multer.File
+  ) {
+    // const uploadedFile = await this.s3Service.imageUploadToS3(file);
+    const imageName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
+    const ext = file.originalname.split('.').pop();
+    const imageUrl = await this.s3Service.imageUploadToS3(`${imageName}.${ext}`, file, ext);
     const post = await this.prisma.posts.create({
       data: {
-        ...createPostsDto,
+        postTitle,
+        content,
+        postType,
+        position,
+        fileName,
+        imageName: imageUrl,
         post_userId: 1, //userId를 받아서 넣어야함
         views: 0,
         preference: 0,

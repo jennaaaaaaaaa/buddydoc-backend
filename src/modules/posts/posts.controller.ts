@@ -11,7 +11,9 @@ import {
   Post,
   Put,
   Query,
+  UploadedFile,
   UseFilters,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PostService } from './posts.service';
 import { posts, users } from '@prisma/client';
@@ -19,10 +21,17 @@ import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { PagingPostsDto } from './dto/paging-post.dto';
 import { response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiConsumes } from '@nestjs/swagger';
+import { HttpExceptionFilter } from 'src/common/http-exception.filter';
+import { S3Service } from 'src/providers/aws/s3/s3.service';
 
 @Controller('post')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly s3Service: S3Service
+  ) {}
 
   /**
    * 목록
@@ -31,6 +40,7 @@ export class PostController {
    * @returns
    */
   @Get()
+  @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getAllPosts(@Query() pagingPostsDto: PagingPostsDto) {
     try {
@@ -52,6 +62,7 @@ export class PostController {
    * @returns
    */
   @Get(':postId')
+  @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number) {
     // const post = await this.postService.getOnePost(postId);
@@ -70,6 +81,7 @@ export class PostController {
    * @returns
    */
   @Get(':userId')
+  @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getProfileInPost(@Param('userId') userId: number) {
     // const user = await this.postService.getProfileInPost(userId);
@@ -95,17 +107,25 @@ export class PostController {
    * @returns
    */
   @Post()
+  @UseFilters(HttpExceptionFilter)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('imageName'))
   @HttpCode(200)
-  async createPost(@Body() createPostsDto: CreatePostsDto) {
+  async createPost(
+    @Body('postTitle') postTitle: string,
+    @Body('content') content: string,
+    @Body('postType') postType: string,
+    @Body('position') position: string,
+    @Body('fileName') fileName: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
     try {
-      await this.postService.createPost(createPostsDto);
+      await this.postService.createPost(postTitle, content, postType, position, fileName, file);
       return { message: '게시글이 작성되었습니다' };
     } catch (error) {
+      // console.error('error', error);
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
-
-    // const post = await this.postService.createPost(createPostsDto);
-    // return post;
   }
 
   /**
@@ -115,6 +135,7 @@ export class PostController {
    * @returns
    */
   @Put(':postId')
+  @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async updatePost(@Param('postId') postId: number, @Body() updatePostsDto: UpdatePostsDto) {
     try {
@@ -134,7 +155,7 @@ export class PostController {
    * @returns
    */
   @Delete(':postId')
-  // @UseFilters(HttpExceptionFilter)
+  @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async deletePost(@Param('postId') postId: number) {
     try {

@@ -1,9 +1,9 @@
 -- CreateTable
 CREATE TABLE `bookmarks` (
+    `userId` INTEGER NOT NULL,
     `postId` INTEGER NOT NULL,
     `createdAt` TIMESTAMP(0) NULL,
-    `userId` INTEGER NOT NULL,
-
+    
     INDEX `postId`(`postId`),
     PRIMARY KEY (`userId`, `postId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -11,6 +11,7 @@ CREATE TABLE `bookmarks` (
 -- CreateTable
 CREATE TABLE `posts` (
     `postId` INTEGER NOT NULL AUTO_INCREMENT,
+    `post_userId` INTEGER NULL,
     `postTitle` VARCHAR(200) NULL,
     `content` TEXT NULL,
     `position` VARCHAR(20) NULL,
@@ -22,7 +23,7 @@ CREATE TABLE `posts` (
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
     `deleteAt` DATETIME(0) NULL,
-    `post_userId` INTEGER NULL,
+    
 
     INDEX `userId`(`post_userId`),
     PRIMARY KEY (`postId`)
@@ -30,18 +31,20 @@ CREATE TABLE `posts` (
 
 -- CreateTable
 CREATE TABLE `skills` (
+    `userId` INTEGER NOT NULL,
     `skill` VARCHAR(50) NOT NULL,
     `createdAt` TIMESTAMP(0) NULL,
-    `userId` INTEGER NOT NULL,
+    
 
     PRIMARY KEY (`userId`, `skill`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `studylists` (
+    `userId` INTEGER NOT NULL,
     `postId` INTEGER NOT NULL,
     `createdAt` TIMESTAMP(0) NULL,
-    `userId` INTEGER NOT NULL,
+    
 
     INDEX `postId`(`postId`),
     PRIMARY KEY (`userId`, `postId`)
@@ -49,6 +52,7 @@ CREATE TABLE `studylists` (
 
 -- CreateTable
 CREATE TABLE `users` (
+    `userId` INTEGER NOT NULL AUTO_INCREMENT,
     `email` VARCHAR(255) NULL,
     `userName` VARCHAR(20) NULL,
     `userNickname` VARCHAR(20) NULL,
@@ -61,7 +65,7 @@ CREATE TABLE `users` (
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
     `deleteAt` DATETIME(0) NULL,
-    `userId` INTEGER NOT NULL AUTO_INCREMENT,
+    
 
     PRIMARY KEY (`userId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

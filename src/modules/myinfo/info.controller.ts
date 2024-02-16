@@ -1,7 +1,6 @@
 import { Controller, Post, Param, Get, Put, Body, Res, Req, HttpStatus, BadRequestException, HttpException,Next } from '@nestjs/common';
 import { Response } from 'express';
 import {InfoService } from './info.service'
-
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { InfoDto } from '../myinfo/dto/info.dto';
 
@@ -23,8 +22,8 @@ export class InfoController {
   async getUserInfo(@Body() infoDto: InfoDto) {
     try {
       
-      if (!infoDto.userId) throw new HttpException('로그인이 필요한 서비스 입니다',HttpStatus.BAD_REQUEST)
-      console.log(infoDto);
+      //if (!infoDto.userId) throw new HttpException('로그인이 필요한 서비스 입니다',HttpStatus.BAD_REQUEST)
+      
 
       const methodMap = {
         bookmarks : 'getBookmarks',

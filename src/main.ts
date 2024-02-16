@@ -9,7 +9,7 @@ async function bootstrap() {
 
   app.enableCors(); // cors 활성화
 
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  //app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useGlobalFilters(new HttpExceptionFilter());
   setupSwagger(app);
  

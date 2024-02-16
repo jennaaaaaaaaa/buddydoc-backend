@@ -40,7 +40,7 @@
         updatedAt: Date | null;
 
         @ApiProperty()
-        deleteAt: Date | null;
+        deletedAt: Date | null;
 
         constructor({...data}:Partial<UserEntity>){
             Object.assign(this,data)

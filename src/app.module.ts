@@ -1,11 +1,11 @@
 import { Module, NestModule,MiddlewareConsumer } from '@nestjs/common';
 import { LoggerMiddleware } from './middlewares/logger.middleware'
 import { AppController } from './app.controller';
+import { postModule } from './modules/posts/posts.module';
 import { AppService } from './app.service';
 import { userModule  } from './modules/user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { infoModule } from './modules/myinfo/info.module';
-
 
 
 @Module({
@@ -14,7 +14,8 @@ import { infoModule } from './modules/myinfo/info.module';
       isGlobal:true,
     }),
     userModule,
-    infoModule],
+    infoModule,
+    postModule],
   controllers: [AppController],
   providers: [AppService],
 })

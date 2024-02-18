@@ -37,7 +37,7 @@ export class AuthController {
     try {
       const checkUser = await this.authService.findUser(user);
       
-      delete user.password
+      //delete user.password
 
       res.cookie(process.env.COOKIE_NAME,user, {
         maxAge: 900000,

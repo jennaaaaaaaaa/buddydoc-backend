@@ -22,7 +22,7 @@ CREATE TABLE `posts` (
     `views` INTEGER NULL DEFAULT 0,
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
-    `deleteAt` DATETIME(0) NULL,
+    `deletedAt` DATETIME(0) NULL,
     
 
     INDEX `userId`(`post_userId`),
@@ -56,15 +56,16 @@ CREATE TABLE `users` (
     `email` VARCHAR(255) NULL,
     `userName` VARCHAR(20) NULL,
     `userNickname` VARCHAR(20) NULL,
-    `userTokken` VARCHAR(255) NULL,
+    `password` VARCHAR(255) NULL,
     `position` VARCHAR(20) NULL,
     `gitURL` VARCHAR(255) NULL,
     `userStatus` ENUM('public', 'private') NULL,
     `introduction` VARCHAR(50) NULL,
     `career` INTEGER NULL,
+    `platform` VARCHAR(20) NULL,
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
-    `deleteAt` DATETIME(0) NULL,
+    `deletedAt` DATETIME(0) NULL,
     
 
     PRIMARY KEY (`userId`)
@@ -92,7 +93,7 @@ CREATE TABLE `notifications` (
     `notiStatus` ENUM('pending', 'accept') NULL,
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
-    `deleteAt` DATETIME(0) NULL,
+    `deletedAt` DATETIME(0) NULL,
 
     INDEX `postId`(`postId`),
     PRIMARY KEY (`noti_userId`, `postId`)
@@ -108,7 +109,7 @@ CREATE TABLE `notes` (
     `noteStatus` ENUM('unread', 'read') NULL,
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
-    `deleteAt` DATETIME(0) NULL,
+    `deletedAt` DATETIME(0) NULL,
 
     INDEX `userId`(`userId`),
     PRIMARY KEY (`noteId`)
@@ -125,7 +126,7 @@ CREATE TABLE `applications` (
     `alarmStatus` ENUM('unread', 'read') NULL,
     `createdAt` TIMESTAMP(0) NULL,
     `updatedAt` DATETIME(0) NULL,
-    `deleteAt` DATETIME(0) NULL,
+    `deletedAt` DATETIME(0) NULL,
 
     INDEX `userId`(`userId`),
     PRIMARY KEY (`alarmId`)

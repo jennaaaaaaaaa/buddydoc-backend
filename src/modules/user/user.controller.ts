@@ -42,11 +42,10 @@ export class UserController {
 
       //skills에 skill 추가
       await this.userService.insertSkills(user.userId, userDto.skills);
+      
       return res.status(201).json({ message: '회원가입 완료' });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
-
-    
   }
 }

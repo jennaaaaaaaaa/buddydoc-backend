@@ -19,25 +19,27 @@ model bookmarks {
 }
 
 model posts {
-  postId                    Int             @id @default(autoincrement())
-  postTitle                 String?         @db.VarChar(200)
-  content                   String?         @db.Text
-  position                  String?         @db.VarChar(20)
-  postType                  String?         @db.VarChar(100)
-  imageName                 String?         @db.VarChar(255)
-  fileName                  String?         @db.VarChar(255)
-  preference                Int?            @default(0)
-  views                     Int?            @default(0)
-  createdAt                 DateTime?       @db.Timestamp(0)
-  updatedAt                 DateTime?       @db.DateTime(0)
-  post_userId               Int?
-  deletedAt                 DateTime?       @db.DateTime(0)
-  bookmarks                 bookmarks[]
-  chats_chats_postIdToposts chats[]         @relation("chats_postIdToposts")
-  notes_notes_postIdToposts notes[]         @relation("notes_postIdToposts")
-  notifications             notifications[]
-  users                     users?          @relation(fields: [post_userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "posts_ibfk_1")
-  studylists                studylists[]
+
+  postId                         Int             @id @default(autoincrement())
+  postTitle                      String?         @db.VarChar(200)
+  content                        String?         @db.Text
+  position                       String?         @db.VarChar(20)
+  postType                       String?         @db.VarChar(100)
+  imageName                      String?         @db.VarChar(255)
+  fileName                       String?         @db.VarChar(255)
+  preference                     Int?            @default(0)
+  views                          Int?            @default(0)
+  createdAt                      DateTime?       @db.Timestamp(0)
+  updatedAt                      DateTime?       @db.DateTime(0)
+  deletedAt                       DateTime?       @db.DateTime(0)
+  post_userId                    Int?
+  bookmarks                      bookmarks[]
+  chats_chats_postIdToposts      chats[]         @relation("chats_postIdToposts")
+  notes_notes_postIdToposts      notes[]         @relation("notes_postIdToposts")
+  notifications                  notifications[]
+  users                          users?          @relation(fields: [post_userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "posts_ibfk_1")
+  studylists                     studylists[]
+
 
   @@index([post_userId], map: "userId")
 }
@@ -63,6 +65,7 @@ model studylists {
 }
 
 model users {
+  userId        Int               @id @default(autoincrement())
   email         String?           @db.VarChar(255)
   userName      String?           @db.VarChar(20)
   userNickname  String?           @db.VarChar(20)
@@ -75,8 +78,7 @@ model users {
   platform      String?
   createdAt     DateTime?         @db.Timestamp(0)
   updatedAt     DateTime?         @db.DateTime(0)
-  userId        Int               @id @default(autoincrement())
-  deletedAt     DateTime?         @db.DateTime(0)
+  deletedAt      DateTime?         @db.DateTime(0)
   applications  applications[]
   bookmarks     bookmarks[]
   chats         chats[]
@@ -109,6 +111,7 @@ model notifications {
   createdAt    DateTime?                 @db.Timestamp(0)
   updatedAt    DateTime?                 @db.DateTime(0)
   deletedAt    DateTime?                 @db.DateTime(0)
+
   applications applications[]
   posts        posts                     @relation(fields: [postId], references: [postId], onDelete: NoAction, onUpdate: NoAction, map: "notifications_ibfk_1")
   users        users                     @relation(fields: [noti_userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "notifications_ibfk_2")
@@ -118,37 +121,39 @@ model notifications {
 }
 
 model notes {
-  noteId                                  Int               @id @default(autoincrement())
-  userId                                  Int?
-  postId                                  Int?
-  post_userId                             Int?
-  note_message                            String?           @db.Text
-  noteStatus                              notes_noteStatus?
-  createdAt                               DateTime?         @db.Timestamp(0)
-  updatedAt                               DateTime?         @db.DateTime(0)
-  deletedAt                               DateTime?         @db.DateTime(0)
-  applications_applications_noteIdTonotes applications[]    @relation("applications_noteIdTonotes")
-  users                                   users?            @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "notes_ibfk_1")
-  posts_notes_postIdToposts               posts?            @relation("notes_postIdToposts", fields: [postId], references: [postId], onDelete: NoAction, onUpdate: NoAction, map: "notes_ibfk_2")
+  noteId                                       Int               @id @default(autoincrement())
+  userId                                       Int?
+  postId                                       Int?
+  post_userId                                  Int?
+  note_message                                 String?           @db.Text
+  noteStatus                                   notes_noteStatus?
+  createdAt                                    DateTime?         @db.Timestamp(0)
+  updatedAt                                    DateTime?         @db.DateTime(0)
+  deletedAt                                     DateTime?         @db.DateTime(0)
+  applications_applications_noteIdTonotes      applications[]    @relation("applications_noteIdTonotes")
+  users                                        users?            @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "notes_ibfk_1")
+  posts_notes_postIdToposts                    posts?            @relation("notes_postIdToposts", fields: [postId], references: [postId], onDelete: NoAction, onUpdate: NoAction, map: "notes_ibfk_2")
+
+
 
   @@index([userId], map: "userId")
   @@index([postId], map: "notes_ibfk_2")
 }
 
 model applications {
-  alarmId                          Int                       @id @default(autoincrement())
-  userId                           Int?
-  noteId                           Int?
-  note_userId                      Int?
-  postId                           Int?
-  noti_userId                      Int?
-  alarmStatus                      applications_alarmStatus?
-  createdAt                        DateTime?                 @db.Timestamp(0)
-  updatedAt                        DateTime?                 @db.DateTime(0)
-  deletedAt                        DateTime?                 @db.DateTime(0)
-  users                            users?                    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_1")
-  notes_applications_noteIdTonotes notes?                    @relation("applications_noteIdTonotes", fields: [noteId], references: [noteId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_2")
-  notifications                    notifications?            @relation(fields: [postId, noti_userId], references: [postId, noti_userId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_4")
+  alarmId                               Int                       @id @default(autoincrement())
+  userId                                Int?
+  noteId                                Int?
+  note_userId                           Int?
+  postId                                Int?
+  noti_userId                           Int?
+  alarmStatus                           applications_alarmStatus?
+  createdAt                             DateTime?                 @db.Timestamp(0)
+  updatedAt                             DateTime?                 @db.DateTime(0)
+  deletedAt                              DateTime?                 @db.DateTime(0)
+  users                                 users?                    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_1")
+  notes_applications_noteIdTonotes      notes?                    @relation("applications_noteIdTonotes", fields: [noteId], references: [noteId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_2")
+  notifications                         notifications?            @relation(fields: [postId, noti_userId], references: [postId, noti_userId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_4")
 
   @@index([userId], map: "userId")
   @@index([noteId], map: "applications_ibfk_2")

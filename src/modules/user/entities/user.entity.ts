@@ -48,3 +48,4 @@ export class UserEntity implements users {
     Object.assign(this, data);
   }
 }
+

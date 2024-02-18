@@ -39,7 +39,7 @@ export class AuthController {
       
       //delete user.password
 
-      res.cookie(process.env.COOKIE_NAME,user, {
+      res.cookie('authCookie',user, {
         maxAge: 900000,
         httpOnly:true
       })
@@ -101,7 +101,7 @@ export class AuthController {
 
   @Get('/signup')
   signUp(@Res() res: Response, @Req() req: Request) {
-    let test = req.cookies[process.env.COOKIE_NAME]
+    let test = req.cookies['authCookie']
     console.log('쿠키확인 ',test)
     res.status(200).json({ message: '회원가입 form' });
   }
@@ -109,7 +109,7 @@ export class AuthController {
   
   @Get('/login')
   async login(@Res() res: Response, @Req() req: Request) {
-    let test = req.cookies[process.env.COOKIE_NAME]
+    let test = req.cookies['authCookie']
     console.log('쿠키확인' , test)
     res.status(200).json({ message: '로그인' });
   }

@@ -15,7 +15,7 @@ export class UserEntity implements users {
   userNickname: string;
 
   @ApiProperty()
-  userTokken: string;
+  password: string;
 
   @ApiProperty()
   position: string;
@@ -33,6 +33,9 @@ export class UserEntity implements users {
   career: number;
 
   @ApiProperty()
+  platform: string;
+
+  @ApiProperty()
   createdAt: Date;
 
   @ApiProperty()
@@ -40,7 +43,7 @@ export class UserEntity implements users {
 
   @ApiProperty()
   deletedAt: Date | null;
-
+  
   constructor({ ...data }: Partial<UserEntity>) {
     Object.assign(this, data);
   }

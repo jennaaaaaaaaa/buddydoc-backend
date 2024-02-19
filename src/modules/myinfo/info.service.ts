@@ -13,15 +13,32 @@ export class InfoService {
    */
   async getUserInfo(infoDto: InfoDto) {
     console.log('getUserInfo >>> ', infoDto.userId);
-    const user = await this.prisma.$queryRaw`
-    select a.userId,a.userName,a.userNickName,
-    a.position,GROUP_CONCAT(DISTINCT b.skill) as skills from
-    users a join
-    skills b on
-    a.userId = b.userId
-    where a.userId = ${Number(infoDto.userId)}
-    `;
-    return user;
+    const user = await this.prisma.users.findUnique({
+      where: {
+        userId: Number(infoDto.userId),
+      },
+      select: {
+        userId: true,
+        userName: true,
+        userNickname: true,
+        position: true,
+        skills: {
+          select: {
+            skill: true,
+          },
+        },
+      },
+    });
+    
+    const result = {
+      userId: user.userId,
+      userName: user.userName,
+      userNickname: user.userNickname,
+      position: user.position,
+      skills: user.skills.map((skill) => skill.skill),
+    };
+    
+    return result
   }
 
   /**

@@ -41,4 +41,10 @@ export class PostEntity implements posts {
 
   @ApiProperty()
   post_userId: number;
+
+  @ApiProperty()
+  deaeLine : Date | null;
+
+  @ApiProperty()
+  skillList : string;
 }

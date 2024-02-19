@@ -49,6 +49,11 @@ export class PostService {
         createdAt: true,
         updatedAt: true,
         post_userId: true,
+        users: {
+          select: {
+            userNickname: true,
+          },
+        },
       },
     });
 

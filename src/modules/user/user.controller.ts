@@ -36,10 +36,10 @@ export class UserController {
   async create(@Body() userDto: UserDto, @Res() res: Response) {
     try {
       //회원생성
-      let user = await this.userService.createUser(userDto);
+      const user = await this.userService.createUser(userDto);
 
       //회원생성 실패시 에러처리 필요
-
+      
       //skills에 skill 추가
       await this.userService.insertSkills(user.userId, userDto.skills);
       

@@ -33,7 +33,7 @@ model posts {
   createdAt                      DateTime?       @db.Timestamp(0)
   updatedAt                      DateTime?       @db.DateTime(0)
   deletedAt                       DateTime?       @db.DateTime(0)
-  deadline                       DateTime?       @db.DateTime(0)
+  deadLine                       DateTime?       @db.DateTime(0)
   post_userId                    Int?
   bookmarks                      bookmarks[]
   chats_chats_postIdToposts      chats[]         @relation("chats_postIdToposts")

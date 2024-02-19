@@ -36,6 +36,8 @@ export class AuthController {
   private async checkUser(res: Response, req: Request, user: any) {
     try {
       const checkUser = await this.authService.findUser(user);
+
+      
       
       //delete user.password
 

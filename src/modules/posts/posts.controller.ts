@@ -117,10 +117,11 @@ export class PostController {
     @Body('postType') postType: string,
     @Body('position') position: string,
     @Body('fileName') fileName: string,
+    @Body('skill') skill: string[], //머지 후 수정 스키마에 추가해줬다고 해셨음
     @UploadedFile() file: Express.Multer.File
   ) {
     try {
-      await this.postService.createPost(postTitle, content, postType, position, fileName, file);
+      await this.postService.createPost(postTitle, content, postType, position, fileName, skill, file);
       return { message: '게시글이 작성되었습니다' };
     } catch (error) {
       // console.error('error', error);

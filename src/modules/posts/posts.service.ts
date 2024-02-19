@@ -135,12 +135,14 @@ export class PostService {
     postType: string,
     position: string,
     fileName: string,
+    skill: string[],
     file: Express.Multer.File
   ) {
     // const uploadedFile = await this.s3Service.imageUploadToS3(file);
     const imageName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
     const ext = file.originalname.split('.').pop();
     const imageUrl = await this.s3Service.imageUploadToS3(`${imageName}.${ext}`, file, ext);
+
     const post = await this.prisma.posts.create({
       data: {
         postTitle,
@@ -152,12 +154,11 @@ export class PostService {
         post_userId: 1, //userId를 받아서 넣어야함
         views: 0,
         preference: 0,
-        // createdAt: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }),
+
         createdAt: new Date(),
         // post_userId: userId
       },
     });
-
     return post;
   }
 

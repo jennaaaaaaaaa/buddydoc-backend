@@ -39,7 +39,8 @@ export class CreatePostsDto {
   @IsNotEmpty()
   position: string;
 
-  // @ApiProperty()
-  // @IsNumber()
-  // post_userId: number;
+  //게시글 작성자
+  @ApiProperty()
+  @IsNumber()
+  post_userId: number;
 }

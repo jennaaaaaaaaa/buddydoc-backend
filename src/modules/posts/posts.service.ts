@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UploadedFile } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { posts, Prisma } from '@prisma/client';
 import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
+import { S3Service } from 'src/providers/aws/s3/s3.service';
 
 // import { PostsEntity } from './entities/post.entity';
 // import { SearchService } from '../search/search.service';
@@ -10,14 +11,16 @@ import { UpdatePostsDto } from './dto/update-post.dto';
 @Injectable()
 export class PostService {
   constructor(
-    private prisma: PrismaService
+    private prisma: PrismaService,
+    private s3Service: S3Service
     // esService: SearchService
   ) {}
 
   /**
-   * 목록조회 (+ 페이징, 최신순, 인기순<북마크많은순서>)
+   * 목록조회 (+ 페이징, 최신순, 인기순<북마크많은순서>
    * 로그인 안되있어도 됨
-   *
+   * @param orderField
+   * @param lastPostId
    * @returns
    */
   async getAllPosts(orderField: 'createdAt' | 'preference', lastPostId?: number) {
@@ -47,6 +50,11 @@ export class PostService {
         createdAt: true,
         updatedAt: true,
         post_userId: true,
+        users: {
+          select: {
+            userNickname: true,
+          },
+        },
       },
     });
 
@@ -60,18 +68,19 @@ export class PostService {
   }
 
   /**
-   * 게시글 상세조회(views +1, preference는 버튼 누를 때 올라가는 거라 프론트에서 해줘야되는지?)
-   * 로그인 안되있어도 됨
    *
+   * * 게시글 상세조회(views +1, preference는 버튼 누를 때 올라가는 거라 프론트에서 해줘야되는지?)
+   * 로그인 안되있어도 됨
    * @param postId
+   * @returns
    */
   async getOnePost(postId: number) {
-    const post = await this.prisma.posts.findUnique({ where: { postId }, include: { users: true } });
+    const post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });
     if (!post || post.deletedAt !== null) {
       throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
     }
     const updatePost = await this.prisma.posts.update({
-      where: { postId: postId },
+      where: { postId: +postId },
       data: { views: post.views + 1 },
       include: { users: true },
     });
@@ -100,17 +109,38 @@ export class PostService {
     return { data: [response] };
   }
 
-  async getProfileInPost(userId: number) {
-    const user = await this.prisma.users.findUnique({ where: { userId } });
-    if (!user) {
+  /**
+   * 게시글 참가 유저 프로필 조회
+   * @param postId
+   * @returns
+   */
+  async getParticipantsInPost(postId: number) {
+    const post = await this.prisma.posts.findUnique({
+      where: { postId: +postId },
+      include: { users: { include: { skills: true } } },
+    });
+    if (!post || post.deletedAt !== null) {
+      throw new NotFoundException({ errorMessage: '존재하지 않는 게시글 입니다' });
+    }
+    if (!post.users || post.users.deletedAt !== null) {
       throw new NotFoundException({ errorMessage: '존재하지 않는 사용자 입니다' });
     }
 
-    // const response = {
-    //   name: user.userName,
-    // };
+    const response = {
+      postId: true,
+      user: {
+        userId: post.users.userId,
+        nickname: post.users.userNickname,
+        name: post.users.userName,
+        gitURL: post.users.gitURL,
+        userStatus: post.users.userStatus,
+        introduction: post.users.introduction,
+        career: post.users.career,
+        skills: post.users.skills.map((skill) => skill.skill),
+      },
+    };
 
-    return user;
+    return response;
   }
 
   /**
@@ -119,13 +149,34 @@ export class PostService {
    * preference 기본값 0
    * 로그인 되어 있는지 확인
    * 본인인증하려고 가져온 userId 값을 post_userId에 넣기
-   * @param createPostsDto
+   * @param postTitle
+   * @param content
+   * @param postType
+   * @param position
+   * @param fileName
+   * @param file
    * @returns
    */
-  async createPost(createPostsDto: CreatePostsDto) {
+  async createPost(
+    postTitle: string,
+    content: string,
+    postType: string,
+    position: string,
+    fileName: string,
+    file: Express.Multer.File
+  ) {
+    // const uploadedFile = await this.s3Service.imageUploadToS3(file);
+    const imageName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
+    const ext = file.originalname.split('.').pop();
+    const imageUrl = await this.s3Service.imageUploadToS3(`${imageName}.${ext}`, file, ext);
     const post = await this.prisma.posts.create({
       data: {
-        ...createPostsDto,
+        postTitle,
+        content,
+        postType,
+        position,
+        fileName,
+        imageName: imageUrl,
         post_userId: 1, //userId를 받아서 넣어야함
         views: 0,
         preference: 0,
@@ -140,6 +191,7 @@ export class PostService {
 
   /**
    *수정
+   * 이미지 처리
    * 로그인 되어 있는지 확인
    * + reponse 값 수정
    * @param postId
@@ -166,11 +218,9 @@ export class PostService {
   }
 
   /**
-   *삭제
-   * + 본인인증
-   * + postId 게시글 존재 확인
+   * 삭제
+   * 본인인증
    * @param postId
-   * @param updatePostsDto
    * @returns
    */
   async deletePost(postId: number) {
@@ -186,25 +236,3 @@ export class PostService {
     return delPost;
   }
 }
-// async searchPosts(search: string) {
-//   return await this.esService.search(search);
-// }
-
-// getAllPosts(cursor: string | undefined, limit: number) {
-//   return this.prisma.posts.findMany({
-//     where: { deletedAt: null },
-//     select: {
-//       postTitle: true,
-//       post_userId: true,
-//     },
-//     take: limit,
-//     skip: 1,
-//     cursor: {
-//       id: cursor,
-//     },
-// orderBy: {
-//   id: 'desc',
-// },
-//   });
-// }
-//

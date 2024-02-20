@@ -91,7 +91,7 @@ export class PostController {
   }
 
   /**
-   * 게시글 작성
+   * 게시글 생성
    * post_userId는 나중에 로그인한 userId 넣어주기
    * @param postTitle
    * @param content
@@ -99,6 +99,8 @@ export class PostController {
    * @param position
    * @param fileName
    * @param file
+   * @param skill
+   * @param deadLine
    * @returns
    */
   @Post()
@@ -112,10 +114,12 @@ export class PostController {
     @Body('postType') postType: string,
     @Body('position') position: string,
     @Body('fileName') fileName: string,
+    @Body('skillList') skillList: string,
+    @Body('deadLine') deadLine: Date,
     @UploadedFile() file: Express.Multer.File
   ) {
     try {
-      await this.postService.createPost(postTitle, content, postType, position, fileName, file);
+      await this.postService.createPost(postTitle, content, postType, position, fileName, file, skillList, deadLine);
       return { message: '게시글이 작성되었습니다' };
     } catch (error) {
       // console.error('error', error);
@@ -146,6 +150,7 @@ export class PostController {
    * 본인인증
    *
    * @param postId
+   * @param updatePostsDto
    * @returns
    */
   @Delete(':postId')
@@ -155,6 +160,27 @@ export class PostController {
     try {
       await this.postService.deletePost(postId);
       return { message: '삭제되었습니다' };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * 북마크 추가/제거
+   * @param postId
+   * @returns
+   */
+  // @UseGuards(AuthGuard())
+  @Post(':postId/bookmarks')
+  async toggleBookmark(@Param('postId') postId: number) {
+    //@Request() req
+    // 로그인된 사용자의 ID를 가져옵니다.
+    // const userId = req.user.userId;
+    const userId = 2;
+
+    try {
+      const result = await this.postService.toggleBookmark(userId, postId);
+      return result;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

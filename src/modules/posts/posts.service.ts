@@ -5,7 +5,6 @@ import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
 
-// import { PostsEntity } from './entities/post.entity';
 // import { SearchService } from '../search/search.service';
 
 @Injectable()
@@ -71,6 +70,7 @@ export class PostService {
    *
    * * 게시글 상세조회(views +1, preference는 버튼 누를 때 올라가는 거라 프론트에서 해줘야되는지?)
    * 로그인 안되있어도 됨
+   *
    * @param postId
    * @returns
    */
@@ -163,12 +163,16 @@ export class PostService {
     postType: string,
     position: string,
     fileName: string,
-    file: Express.Multer.File
+    file: Express.Multer.File,
+    skillList: string,
+    deadLine: Date
   ) {
     // const uploadedFile = await this.s3Service.imageUploadToS3(file);
     const imageName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
     const ext = file.originalname.split('.').pop();
     const imageUrl = await this.s3Service.imageUploadToS3(`${imageName}.${ext}`, file, ext);
+
+    const skills = skillList.split(',');
     const post = await this.prisma.posts.create({
       data: {
         postTitle,
@@ -177,16 +181,23 @@ export class PostService {
         position,
         fileName,
         imageName: imageUrl,
+        skillList,
+        deadLine,
         post_userId: 1, //userId를 받아서 넣어야함
         views: 0,
         preference: 0,
-        // createdAt: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }),
         createdAt: new Date(),
         // post_userId: userId
       },
     });
 
-    return post;
+    // 새로운 객체를 만들고 필요한 데이터를 복사
+    const response = {
+      ...post,
+      skillList: post.skillList.split(','),
+    };
+
+    return response;
   }
 
   /**
@@ -221,6 +232,7 @@ export class PostService {
    * 삭제
    * 본인인증
    * @param postId
+   * @param updatePostsDto
    * @returns
    */
   async deletePost(postId: number) {
@@ -234,5 +246,59 @@ export class PostService {
 
     const delPost = await this.prisma.posts.update({ where: { postId }, data: { deletedAt: new Date() } });
     return delPost;
+  }
+
+  /**
+   * 북마크 추가/제거
+   * @param userId
+   * @param postId
+   * @returns
+   */
+  async toggleBookmark(userId: number, postId: number) {
+    const bookmark = await this.prisma.bookmarks.findUnique({
+      where: {
+        userId_postId: {
+          userId: userId,
+          postId: postId,
+        },
+      },
+    });
+
+    if (bookmark) {
+      const deleteBookmark = this.prisma.bookmarks.delete({
+        where: {
+          userId_postId: {
+            userId: userId,
+            postId: postId,
+          },
+        },
+      });
+      const decreasePreference = this.prisma.posts.update({
+        where: { postId: postId },
+        data: { preference: { decrement: 1 } },
+        select: { preference: true },
+      });
+
+      const [_, updatedPost] = await this.prisma.$transaction([deleteBookmark, decreasePreference]);
+
+      return { preference: updatedPost.preference }; // 변경된 preference 값 반환
+    } else {
+      const createBookmark = this.prisma.bookmarks.create({
+        data: {
+          userId: userId,
+          postId: postId,
+          createdAt: new Date(),
+        },
+      });
+      const increasePreference = this.prisma.posts.update({
+        where: { postId: postId },
+        data: { preference: { increment: 1 } },
+        select: { preference: true },
+      });
+
+      const [_, updatedPost] = await this.prisma.$transaction([createBookmark, increasePreference]);
+
+      return { preference: updatedPost.preference }; // 변경된 preference 값 반환
+    }
   }
 }

@@ -35,8 +35,8 @@ export class PostController {
 
   /**
    * 목록
-   * + 페이징 처리
    * '/posts?orderBy=createdAt&lastPostId=10', '/posts?orderBy=preference&lastPostId=10'
+   * @param pagingPostsDto
    * @returns
    */
   @Get()
@@ -65,8 +65,6 @@ export class PostController {
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number) {
-    // const post = await this.postService.getOnePost(postId);
-    // return post;
     try {
       const post = await this.postService.getOnePost(postId);
       return post;
@@ -80,21 +78,13 @@ export class PostController {
    * @param userId
    * @returns
    */
-  @Get(':userId')
+  @Get(':postId/participants')
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async getProfileInPost(@Param('userId') userId: number) {
-    // const user = await this.postService.getProfileInPost(userId);
-    // return user;
-
+  async getParticipantsInPost(@Param('postId') postId: number) {
     try {
-      const user = await this.postService.getProfileInPost(userId);
-      console.log('user', user);
-
-      // if(user. === 'private'){
-      //   return { message: '비공개계정입니다' };
-      // }
-      return user;
+      const users = await this.postService.getParticipantsInPost(postId);
+      return users;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -103,7 +93,12 @@ export class PostController {
   /**
    * 게시글 작성
    * post_userId는 나중에 로그인한 userId 넣어주기
-   * @param createPostsDto
+   * @param postTitle
+   * @param content
+   * @param postType
+   * @param position
+   * @param fileName
+   * @param file
    * @returns
    */
   @Post()
@@ -148,10 +143,9 @@ export class PostController {
 
   /**
    * 게시글 삭제
-   * + 본인인증
-   * + 해당 게시글 존재 확인
+   * 본인인증
+   *
    * @param postId
-   * @param updatePostsDto
    * @returns
    */
   @Delete(':postId')
@@ -164,14 +158,5 @@ export class PostController {
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
-
-    // await this.postService.deletePost(postId);
-    // return { message: '삭제되었습니다' };
   }
-
-  // //검색
-  // @Get()
-  // async searchPosts(@Query('search') search: string) {
-  //   return await this.postService.searchPosts(search);
-  // }
 }

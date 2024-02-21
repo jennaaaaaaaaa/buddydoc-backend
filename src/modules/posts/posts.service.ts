@@ -143,44 +143,46 @@ export class PostService {
     return response;
   }
 
-  /**
-   * 게시글 생성
-   * views 기본값 0
-   * preference 기본값 0
-   * 로그인 되어 있는지 확인
-   * 본인인증하려고 가져온 userId 값을 post_userId에 넣기
-   * @param postTitle
-   * @param content
-   * @param postType
-   * @param position
-   * @param fileName
-   * @param file
-   * @returns
-   */
+  // /**
+  //  * 게시글 생성
+  //  * views 기본값 0
+  //  * preference 기본값 0
+  //  * 로그인 되어 있는지 확인
+  //  * 본인인증하려고 가져온 userId 값을 post_userId에 넣기
+  //  * @param postTitle
+  //  * @param content
+  //  * @param postType
+  //  * @param position
+  //  * @param fileName
+  //  * @param file
+  //  * @returns
+  //  */
   async createPost(
     postTitle: string,
     content: string,
     postType: string,
     position: string,
-    fileName: string,
-    file: Express.Multer.File,
+    image: Express.Multer.File,
+    files: Express.Multer.File,
     skillList: string,
     deadLine: Date
   ) {
-    // const uploadedFile = await this.s3Service.imageUploadToS3(file);
     const imageName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
-    const ext = file.originalname.split('.').pop();
-    const imageUrl = await this.s3Service.imageUploadToS3(`${imageName}.${ext}`, file, ext);
+    const imageExt = image.originalname.split('.').pop();
+    const imageUrl = await this.s3Service.imageUploadToS3(`${imageName}.${imageExt}`, image, imageExt);
 
-    const skills = skillList.split(',');
+    const fileName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
+    const fileExt = files.originalname.split('.').pop();
+    const fileUrls = await this.s3Service.fileUploadToS3(`${fileName}.${fileExt}`, files, fileExt);
+
     const post = await this.prisma.posts.create({
       data: {
         postTitle,
         content,
         postType,
         position,
-        fileName,
         imageName: imageUrl,
+        fileName: fileUrls,
         skillList,
         deadLine,
         post_userId: 1, //userId를 받아서 넣어야함
@@ -209,7 +211,17 @@ export class PostService {
    * @param updatePostsDto
    * @returns
    */
-  async updatePost(postId: number, updatePostsDto: UpdatePostsDto) {
+  async updatePost(
+    postId: number,
+    postTitle: string,
+    content: string,
+    postType: string,
+    position: string,
+    image: Express.Multer.File,
+    files: Express.Multer.File,
+    skillList: string,
+    deadLine: Date
+  ) {
     const existPost = await this.prisma.posts.findUnique({ where: { postId } });
     if (!existPost || existPost.deletedAt !== null) {
       throw new NotFoundException({ errorMessage: '해당하는 게시글이 존재하지 않습니다.' });
@@ -217,15 +229,36 @@ export class PostService {
     // if(existPost.post_userId !== userId){
     //   본인이 작성한 게시물 아님
     // }
+
+    const imageName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
+    const imageExt = image.originalname.split('.').pop();
+    const imageUrl = await this.s3Service.imageUploadToS3(`${imageName}.${imageExt}`, image, imageExt);
+
+    const fileName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
+    const fileExt = files.originalname.split('.').pop();
+    const fileUrls = await this.s3Service.fileUploadToS3(`${fileName}.${fileExt}`, files, fileExt);
+
     const post = await this.prisma.posts.update({
       where: { postId },
       data: {
-        ...updatePostsDto,
+        postTitle,
+        content,
+        postType,
+        position,
+        imageName: imageUrl,
+        fileName: fileUrls,
+        skillList,
+        deadLine,
         updatedAt: new Date(),
+        // post_userId: userId
       },
     });
-    // post.post_userId === userId
-    return post;
+
+    const response = {
+      ...post,
+      skillList: post.skillList.split(','),
+    };
+    return response;
   }
 
   /**

@@ -68,7 +68,7 @@ export class PostService {
         // updatedAt: post.updatedAt
         //   ? new Date(post.updatedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false })
         //   : null,
-        skillList: post.skillList.split(','),
+        skillList: post.skillList ? post.skillList.split(',') : [],
       })),
       isLastPage,
     };
@@ -109,7 +109,7 @@ export class PostService {
       position: updatePost.position,
       createdAt: updatePost.createdAt,
       updatedAt: updatePost.updatedAt,
-      skillList: post.skillList.split(','),
+      skillList: updatePost.skillList ? updatePost.skillList.split(',') : [],
     };
     return { data: [response] };
   }
@@ -201,7 +201,7 @@ export class PostService {
     // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {
       ...post,
-      skillList: post.skillList.split(','),
+      skillList: post.skillList ? post.skillList.split(',') : [],
     };
 
     return response;
@@ -261,7 +261,7 @@ export class PostService {
 
     const response = {
       ...post,
-      skillList: post.skillList.split(','),
+      skillList: post.skillList ? post.skillList.split(',') : [],
     };
     return response;
   }

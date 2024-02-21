@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsInt } from 'class-validator';
 export class MessageDto {
-  // @ApiProperty()
-  // @IsInt()
-  // postId: number;
-  //클라이언트에서 받아와야함
+  @ApiProperty()
+  @IsInt()
+  postId: number;
+  // 클라이언트에서 받아와야함
 
   //z클라이언트에서 받아와야함
   @ApiProperty()

@@ -41,11 +41,18 @@ export class ChatController {
   async createMessage(@Param('postId') postId: number, @Body() messageDto: MessageDto) {
     // //사용자 인증jwt에 들어있는 userName사용??...
     try {
+      const userId = 1;
       const chat = await this.chatService.createMessage(messageDto, postId);
       return chat;
     } catch (error) {
       console.log(error);
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  //메세지 조회//아닌거 같은데
+  @Get(':postId')
+  async getMessages(@Param('postId') postId: number) {
+    return this.chatService.getMessages(postId);
   }
 }

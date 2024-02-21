@@ -23,7 +23,7 @@ export class UserService {
           email,
           userName,
           userNickname,
-          userTokken,
+          // userTokken,
           position,
           gitURL,
           userStatus: 'public', // 임시로 고정값

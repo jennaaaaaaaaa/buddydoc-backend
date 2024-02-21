@@ -152,7 +152,7 @@ model applications {
   alarmStatus                           applications_alarmStatus?
   createdAt                             DateTime?                 @db.Timestamp(0)
   updatedAt                             DateTime?                 @db.DateTime(0)
-  deletedAt                             DateTime?                 @db.DateTime(0)
+  deletedAt                              DateTime?                 @db.DateTime(0)
   users                                 users?                    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_1")
   notes_applications_noteIdTonotes      notes?                    @relation("applications_noteIdTonotes", fields: [noteId], references: [noteId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_2")
   notifications                         notifications?            @relation(fields: [postId, noti_userId], references: [postId, noti_userId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_4")

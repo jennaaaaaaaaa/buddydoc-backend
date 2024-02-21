@@ -12,6 +12,7 @@ import {
   Put,
   Query,
   UploadedFile,
+  UploadedFiles,
   UseFilters,
   UseInterceptors,
 } from '@nestjs/common';
@@ -21,7 +22,7 @@ import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { PagingPostsDto } from './dto/paging-post.dto';
 import { response } from 'express';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes } from '@nestjs/swagger';
 import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
@@ -91,34 +92,41 @@ export class PostController {
   }
 
   /**
-   * 게시글 작성
-   * post_userId는 나중에 로그인한 userId 넣어주기
+   * 게시글 생성
    * @param postTitle
    * @param content
    * @param postType
    * @param position
-   * @param fileName
-   * @param file
+   * @param skillList
+   * @param deadLine
+   * @param files
    * @returns
    */
   @Post()
   @UseFilters(HttpExceptionFilter)
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('imageName'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'image', maxCount: 1 },
+      { name: 'files', maxCount: 1 },
+    ])
+  )
   @HttpCode(200)
   async createPost(
     @Body('postTitle') postTitle: string,
     @Body('content') content: string,
     @Body('postType') postType: string,
     @Body('position') position: string,
-    @Body('fileName') fileName: string,
-    @UploadedFile() file: Express.Multer.File
+    @Body('skillList') skillList: string,
+    @Body('deadLine') deadLine: Date,
+    @UploadedFiles() files: { image: Express.Multer.File[]; files: Express.Multer.File[] }
   ) {
     try {
-      await this.postService.createPost(postTitle, content, postType, position, fileName, file);
+      const image = files.image[0];
+      const file = files.files[0];
+      await this.postService.createPost(postTitle, content, postType, position, image, file, skillList, deadLine);
       return { message: '게시글이 작성되었습니다' };
     } catch (error) {
-      // console.error('error', error);
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
@@ -130,11 +138,39 @@ export class PostController {
    * @returns
    */
   @Put(':postId')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'image', maxCount: 1 },
+      { name: 'files', maxCount: 1 },
+    ])
+  )
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async updatePost(@Param('postId') postId: number, @Body() updatePostsDto: UpdatePostsDto) {
+  async updatePost(
+    @Param('postId') postId: number,
+    @Body('postTitle') postTitle: string,
+    @Body('content') content: string,
+    @Body('postType') postType: string,
+    @Body('position') position: string,
+    @Body('skillList') skillList: string,
+    @Body('deadLine') deadLine: Date,
+    @UploadedFiles() files: { image: Express.Multer.File[]; files: Express.Multer.File[] }
+  ) {
     try {
-      await this.postService.updatePost(postId, updatePostsDto);
+      const image = files.image[0];
+      const file = files.files[0];
+      await this.postService.updatePost(
+        postId,
+        postTitle,
+        content,
+        postType,
+        position,
+        image,
+        file,
+        skillList,
+        deadLine
+      );
       return { message: '수정되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -155,6 +191,27 @@ export class PostController {
     try {
       await this.postService.deletePost(postId);
       return { message: '삭제되었습니다' };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * 북마크 추가/제거
+   * @param postId
+   * @returns
+   */
+  // @UseGuards(AuthGuard())
+  @Post(':postId/bookmarks')
+  async toggleBookmark(@Param('postId') postId: number) {
+    //@Request() req
+    // 로그인된 사용자의 ID를 가져옵니다.
+    // const userId = req.user.userId;
+    const userId = 2;
+
+    try {
+      const result = await this.postService.toggleBookmark(userId, postId);
+      return result;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

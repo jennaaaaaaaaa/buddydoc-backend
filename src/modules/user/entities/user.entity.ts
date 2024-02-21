@@ -37,15 +37,18 @@ export class UserEntity implements users {
 
   @ApiProperty()
   createdAt: Date;
+  @ApiProperty()
+  createdAt: Date;
 
+  @ApiProperty()
+  updatedAt: Date | null;
   @ApiProperty()
   updatedAt: Date | null;
 
   @ApiProperty()
   deletedAt: Date | null;
-  
+
   constructor({ ...data }: Partial<UserEntity>) {
     Object.assign(this, data);
   }
 }
-

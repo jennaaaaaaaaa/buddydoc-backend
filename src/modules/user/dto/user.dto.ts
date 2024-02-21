@@ -1,10 +1,11 @@
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 import { IsString, IsInt, IsNumber } from 'class-validator';
+import { IsString, IsInt, IsNumber } from 'class-validator';
 export class UserDto {
   @ApiProperty()
   @IsNumber()
   userId: number;
-  
+
   @ApiProperty()
   @IsString()
   email: string; // 이메일
@@ -46,6 +47,7 @@ export class UserDto {
   skills: string[]; // 기술
 
   @IsString()
+  name: string;
   name: string;
 
   @IsString()

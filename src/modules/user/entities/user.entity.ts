@@ -37,11 +37,7 @@ export class UserEntity implements users {
 
   @ApiProperty()
   createdAt: Date;
-  @ApiProperty()
-  createdAt: Date;
 
-  @ApiProperty()
-  updatedAt: Date | null;
   @ApiProperty()
   updatedAt: Date | null;
 

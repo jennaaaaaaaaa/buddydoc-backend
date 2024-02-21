@@ -23,7 +23,7 @@ import { UpdatePostsDto } from './dto/update-post.dto';
 import { PagingPostsDto } from './dto/paging-post.dto';
 import { response } from 'express';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
-import { ApiConsumes } from '@nestjs/swagger';
+import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
 
@@ -40,6 +40,9 @@ export class PostController {
    * @param pagingPostsDto
    * @returns
    */
+  @ApiOperation({
+    summary: '게시글목록 API',
+  })
   @Get()
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
@@ -62,6 +65,9 @@ export class PostController {
    * @param postId
    * @returns
    */
+  @ApiOperation({
+    summary: '게시글 상세조회 API',
+  })
   @Get(':postId')
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
@@ -79,6 +85,9 @@ export class PostController {
    * @param userId
    * @returns
    */
+  @ApiOperation({
+    summary: '게시글 참가 유저 프로필 조회 API',
+  })
   @Get(':postId/participants')
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
@@ -102,6 +111,9 @@ export class PostController {
    * @param files
    * @returns
    */
+  @ApiOperation({
+    summary: '게시글 생성 API',
+  })
   @Post()
   @UseFilters(HttpExceptionFilter)
   @ApiConsumes('multipart/form-data')
@@ -137,6 +149,9 @@ export class PostController {
    * @param updatePostsDto
    * @returns
    */
+  @ApiOperation({
+    summary: '게시글 수정 API',
+  })
   @Put(':postId')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
@@ -185,6 +200,9 @@ export class PostController {
    * @param updatePostsDto
    * @returns
    */
+  @ApiOperation({
+    summary: '게시글 삭제 API',
+  })
   @Delete(':postId')
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
@@ -203,6 +221,9 @@ export class PostController {
    * @returns
    */
   // @UseGuards(AuthGuard())
+  @ApiOperation({
+    summary: '북마크 추가/제거 API',
+  })
   @Post(':postId/bookmarks')
   async toggleBookmark(@Param('postId') postId: number) {
     //@Request() req

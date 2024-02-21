@@ -46,6 +46,7 @@ export class PostService {
         postType: true,
         preference: true,
         views: true,
+        skillList: true,
         createdAt: true,
         updatedAt: true,
         post_userId: true,
@@ -57,13 +58,20 @@ export class PostService {
       },
     });
 
-    return posts.map((post) => ({
-      ...post,
-      createdAt: new Date(post.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }),
-      updatedAt: post.updatedAt
-        ? new Date(post.updatedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false })
-        : null,
-    }));
+    //반환된 게시글 수가 요청한 수보다 적을 때 true
+    const isLastPage = posts.length < 10;
+
+    return {
+      posts: posts.map((post) => ({
+        ...post,
+        // createdAt: new Date(post.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }),
+        // updatedAt: post.updatedAt
+        //   ? new Date(post.updatedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false })
+        //   : null,
+        skillList: post.skillList.split(','),
+      })),
+      isLastPage,
+    };
   }
 
   /**
@@ -98,12 +106,9 @@ export class PostService {
       preference: updatePost.preference,
       views: updatePost.views,
       position: updatePost.position,
-      // createdAt: updatePost.createdAt,
-      // updatedAt: updatePost.updatedAt,
-      createdAt: new Date(updatePost.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }),
-      updatedAt: updatePost.updatedAt
-        ? new Date(updatePost.updatedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false })
-        : null,
+      createdAt: updatePost.createdAt,
+      updatedAt: updatePost.updatedAt,
+      skillList: post.skillList.split(','),
     };
     return { data: [response] };
   }

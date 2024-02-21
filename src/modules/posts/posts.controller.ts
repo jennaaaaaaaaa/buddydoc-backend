@@ -11,7 +11,10 @@ import {
   Post,
   Put,
   Query,
+  UploadedFile,
+  UploadedFiles,
   UseFilters,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PostService } from './posts.service';
 import { posts, users } from '@prisma/client';
@@ -19,18 +22,29 @@ import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { PagingPostsDto } from './dto/paging-post.dto';
 import { response } from 'express';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import { HttpExceptionFilter } from 'src/common/http-exception.filter';
+import { S3Service } from 'src/providers/aws/s3/s3.service';
 
 @Controller('post')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly s3Service: S3Service
+  ) {}
 
   /**
    * 목록
-   * + 페이징 처리
    * '/posts?orderBy=createdAt&lastPostId=10', '/posts?orderBy=preference&lastPostId=10'
+   * @param pagingPostsDto
    * @returns
    */
+  @ApiOperation({
+    summary: '게시글목록 API',
+  })
   @Get()
+  @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getAllPosts(@Query() pagingPostsDto: PagingPostsDto) {
     try {
@@ -51,11 +65,13 @@ export class PostController {
    * @param postId
    * @returns
    */
+  @ApiOperation({
+    summary: '게시글 상세조회 API',
+  })
   @Get(':postId')
+  @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number) {
-    // const post = await this.postService.getOnePost(postId);
-    // return post;
     try {
       const post = await this.postService.getOnePost(postId);
       return post;
@@ -69,56 +85,117 @@ export class PostController {
    * @param userId
    * @returns
    */
-  @Get(':userId')
+  @ApiOperation({
+    summary: '게시글 참가 유저 프로필 조회 API',
+  })
+  @Get(':postId/participants')
+  @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async getProfileInPost(@Param('userId') userId: number) {
-    // const user = await this.postService.getProfileInPost(userId);
-    // return user;
-
+  async getParticipantsInPost(@Param('postId') postId: number) {
     try {
-      const user = await this.postService.getProfileInPost(userId);
-      console.log('user', user);
-
-      // if(user. === 'private'){
-      //   return { message: '비공개계정입니다' };
-      // }
-      return user;
+      const users = await this.postService.getParticipantsInPost(postId);
+      return users;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
   /**
-   * 게시글 작성
-   * post_userId는 나중에 로그인한 userId 넣어주기
-   * @param createPostsDto
+   * 게시글생성
+   * @param postTitle
+   * @param content
+   * @param postType
+   * @param position
+   * @param skillList
+   * @param deadLine
+   * @param files
    * @returns
    */
+  @ApiOperation({
+    summary: '게시글 생성 API',
+  })
   @Post()
+  @UseFilters(HttpExceptionFilter)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'image', maxCount: 1 },
+      { name: 'files', maxCount: 1 },
+    ])
+  )
   @HttpCode(200)
-  async createPost(@Body() createPostsDto: CreatePostsDto) {
+  async createPost(
+    @Body('postTitle') postTitle: string,
+    @Body('content') content: string,
+    @Body('postType') postType: string,
+    @Body('position') position: string,
+    @Body('skillList') skillList: string,
+    @Body('deadLine') deadLine: Date,
+    @UploadedFiles() files: { image: Express.Multer.File[]; files: Express.Multer.File[] }
+  ) {
     try {
-      await this.postService.createPost(createPostsDto);
+      const image = files.image[0];
+      const file = files.files[0];
+      //사용자 인증에 필요한 userId도 보내줘야함
+      //const userId = 1
+      await this.postService.createPost(postTitle, content, postType, position, image, file, skillList, deadLine); //userId
       return { message: '게시글이 작성되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
-
-    // const post = await this.postService.createPost(createPostsDto);
-    // return post;
   }
 
   /**
-   * 게시글 수정
+   * 게시글수정
    * @param postId
-   * @param updatePostsDto
+   * @param postTitle
+   * @param content
+   * @param postType
+   * @param position
+   * @param skillList
+   * @param deadLine
+   * @param files
    * @returns
    */
+  @ApiOperation({
+    summary: '게시글 수정 API',
+  })
   @Put(':postId')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'image', maxCount: 1 },
+      { name: 'files', maxCount: 1 },
+    ])
+  )
+  @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async updatePost(@Param('postId') postId: number, @Body() updatePostsDto: UpdatePostsDto) {
+  async updatePost(
+    @Param('postId') postId: number,
+    @Body('postTitle') postTitle: string,
+    @Body('content') content: string,
+    @Body('postType') postType: string,
+    @Body('position') position: string,
+    @Body('skillList') skillList: string,
+    @Body('deadLine') deadLine: Date,
+    @UploadedFiles() files: { image: Express.Multer.File[]; files: Express.Multer.File[] }
+  ) {
     try {
-      await this.postService.updatePost(postId, updatePostsDto);
+      const image = files.image[0];
+      const file = files.files[0];
+
+      //사용자 인증에 필요한 userId 받아서 보내주기
+      await this.postService.updatePost(
+        postId,
+        postTitle,
+        content,
+        postType,
+        position,
+        image,
+        file,
+        skillList,
+        deadLine
+      );
       return { message: '수정되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -127,30 +204,48 @@ export class PostController {
 
   /**
    * 게시글 삭제
-   * + 본인인증
-   * + 해당 게시글 존재 확인
+   * 본인인증
+   *
    * @param postId
-   * @param updatePostsDto
    * @returns
    */
+  @ApiOperation({
+    summary: '게시글 삭제 API',
+  })
   @Delete(':postId')
-  // @UseFilters(HttpExceptionFilter)
+  @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async deletePost(@Param('postId') postId: number) {
     try {
+      //사용자 인증에 필요한 userId 받이서 보내주기
       await this.postService.deletePost(postId);
       return { message: '삭제되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
-
-    // await this.postService.deletePost(postId);
-    // return { message: '삭제되었습니다' };
   }
 
-  // //검색
-  // @Get()
-  // async searchPosts(@Query('search') search: string) {
-  //   return await this.postService.searchPosts(search);
-  // }
+  /**
+   * 북마크 추가/제거
+   * @param postId
+   * @returns
+   */
+  // @UseGuards(AuthGuard())
+  @ApiOperation({
+    summary: '북마크 추가/제거 API',
+  })
+  @Post(':postId/bookmarks')
+  async toggleBookmark(@Param('postId') postId: number) {
+    //@Request() req
+    // 로그인된 사용자의 ID를 가져옵니다.
+    // const userId = req.user.userId;
+    const userId = 2;
+
+    try {
+      const result = await this.postService.toggleBookmark(userId, postId);
+      return result;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 }

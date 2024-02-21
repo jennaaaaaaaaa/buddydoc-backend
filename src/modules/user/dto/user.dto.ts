@@ -4,7 +4,7 @@ export class UserDto {
   @ApiProperty()
   @IsNumber()
   userId: number;
-  
+
   @ApiProperty()
   @IsString()
   email: string; // 이메일

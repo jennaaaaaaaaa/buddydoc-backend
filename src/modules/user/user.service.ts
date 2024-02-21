@@ -13,9 +13,9 @@ export class UserService {
    */
   async createUser(usersDto: UserDto) {
     try {
-      const { email, userName, userNickname, position, gitURL, userStatus, introduction, career,password,platform } =
+      const { email, userName, userNickname, position, gitURL, userStatus, introduction, career, password, platform } =
         usersDto;
-      
+
       //dto 값을 entity 값으로 매핑 후 데이터에 넣어야하는가?
       // or 데이터 에 넣은값을 entitiy에 매핑후 핸들링 해야 하는가?
       const user = await this.prisma.users.create({
@@ -30,7 +30,7 @@ export class UserService {
           career: Number(career),
           createdAt: new Date(),
           password,
-          platform, 
+          platform,
         },
       });
 
@@ -47,8 +47,7 @@ export class UserService {
    * @returns prisma create 결과
    */
   async insertSkills(userId: number, userSkills: string[]) {
-    try {      
-    
+    try {
       const skillObj = userSkills.map((skill) => ({
         userId: userId,
         skill: skill.trim(),

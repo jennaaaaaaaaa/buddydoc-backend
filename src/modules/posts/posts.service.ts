@@ -202,12 +202,16 @@ export class PostService {
   }
 
   /**
-   *수정
-   * 이미지 처리
-   * 로그인 되어 있는지 확인
-   * + reponse 값 수정
+   *게시글 수정
    * @param postId
-   * @param updatePostsDto
+   * @param postTitle
+   * @param content
+   * @param postType
+   * @param position
+   * @param image
+   * @param files
+   * @param skillList
+   * @param deadLine
    * @returns
    */
   async updatePost(

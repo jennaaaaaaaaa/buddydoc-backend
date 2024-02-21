@@ -92,7 +92,7 @@ export class PostController {
   }
 
   /**
-   * 게시글 생성
+   * 게시글생성
    * @param postTitle
    * @param content
    * @param postType
@@ -124,7 +124,9 @@ export class PostController {
     try {
       const image = files.image[0];
       const file = files.files[0];
-      await this.postService.createPost(postTitle, content, postType, position, image, file, skillList, deadLine);
+      //사용자 인증에 필요한 userId도 보내줘야함
+      //const userId = 1
+      await this.postService.createPost(postTitle, content, postType, position, image, file, skillList, deadLine); //userId
       return { message: '게시글이 작성되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -132,9 +134,15 @@ export class PostController {
   }
 
   /**
-   * 게시글 수정
+   * 게시글수정
    * @param postId
-   * @param updatePostsDto
+   * @param postTitle
+   * @param content
+   * @param postType
+   * @param position
+   * @param skillList
+   * @param deadLine
+   * @param files
    * @returns
    */
   @Put(':postId')
@@ -160,6 +168,8 @@ export class PostController {
     try {
       const image = files.image[0];
       const file = files.files[0];
+
+      //사용자 인증에 필요한 userId 받아서 보내주기
       await this.postService.updatePost(
         postId,
         postTitle,
@@ -189,6 +199,7 @@ export class PostController {
   @HttpCode(200)
   async deletePost(@Param('postId') postId: number) {
     try {
+      //사용자 인증에 필요한 userId 받이서 보내주기
       await this.postService.deletePost(postId);
       return { message: '삭제되었습니다' };
     } catch (error) {

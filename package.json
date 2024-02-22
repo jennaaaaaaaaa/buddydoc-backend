@@ -28,9 +28,11 @@
     "@nestjs/elasticsearch": "^10.0.1",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.3.3",
     "@nestjs/swagger": "^7.3.0",
+    "@nestjs/websockets": "^10.3.3",
     "@prisma/client": "^5.9.1",
-    "@types/passport-kakao": "^1.0.3",
+    "@types/socket.io": "^3.0.2",
     "aws-sdk": "^2.1558.0",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
@@ -48,6 +50,7 @@
     "passport-naver": "^1.0.6",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.7.4",
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {

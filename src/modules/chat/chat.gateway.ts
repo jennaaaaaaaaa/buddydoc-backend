@@ -33,20 +33,42 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // private readonly infoService: InfoService
   ) {}
 
-  //연결 상태에 대한 모니터링
-  public handleConnection(@ConnectedSocket() client: Socket) {
-    console.log(`${client.id} 소켓 연결`);
-  }
-  public handleDisconnect(@ConnectedSocket() client: Socket) {
-    console.log(`${client.id} 소켓 연결 해제`);
-  }
   afterInit(server: Server) {
     console.log('afterInit');
   }
 
+  //연결 상태에 대한 모니터링
+  public handleConnection(@ConnectedSocket() client: Socket) {
+    console.log(`${client.id} 소켓 연결`);
+    // // 클라이언트의 요청 헤더에서 JWT를 추출합니다.
+    // const token = client.handshake.headers['authorization']?.split(' ')[1];
+
+    // if (!token) {
+    //   console.log('No token provided');
+    //   client.disconnect();
+    //   return;
+    // }
+
+    // // JWT를 확인하여 사용자를 인증합니다.
+    // try {
+    //   const decodedToken = this.jwtService.verify(token);
+    //   const userId = decodedToken.userId;
+
+    //   // 클라이언트 객체에 userId를 저장하여, 후속 요청에서 사용자 인증을 수행하도록 합니다.
+    //   client.userId = userId;
+    // } catch (error) {
+    //   console.log('Invalid token');
+    //   client.disconnect();
+    // }
+  }
+
+  public handleDisconnect(@ConnectedSocket() client: Socket) {
+    console.log(`${client.id} 소켓 연결 해제`);
+  }
+
   @SubscribeMessage('send-message')
   async handleSendMessage(
-    @ConnectedSocket() //client: Socket,
+    @ConnectedSocket() client: Socket,
     @MessageBody()
     data: {
       // postId: string;
@@ -55,17 +77,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       // userId: number;
     }
   ) {
-    console.log(data);
+    // console.log('data', data);
+    // console.log('client', client);
     try {
-      const user = await this.chatService.getUserInfo(data.messageDto.userId);
-      console.log('user', user);
+      //user는 나중에...jwt 검증 후 client.userId = userId;로 client userId 가져오기
+      // console.log(client userId ) //출력해서 값 확인해보기
+      const user = await this.chatService.getUserInfo(data.messageDto.userId); //client.userId
+      console.log('useruseruseruseruseruser', user);
       const message = await this.chatService.createMessage(data.messageDto); //Number(data.postId), Number(data.userId)
       this.server
         .to(`postRoom-${message.postId}`)
         .emit('receive-message', { message: message.chat_message, userName: user.userName });
       console.log(`메시지 '${message.chat_message}'가 ${user.userName}에 의해 ${message.postId} 방에 전송됨`);
     } catch (error) {
-      console.log('JWT 검증 실패', error);
+      console.log('error', error);
     }
   }
 

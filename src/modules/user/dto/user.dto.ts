@@ -1,5 +1,7 @@
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
-import { IsString, IsInt, IsNumber } from 'class-validator';
+import { IsString, IsInt, IsNumber, IsEnum } from 'class-validator';
+import { users_userStatus } from '@prisma/client';
+
 export class UserDto {
   @ApiProperty()
   @IsNumber()
@@ -30,8 +32,8 @@ export class UserDto {
   gitURL: string; // 깃주소
 
   @ApiProperty()
-  @IsString()
-  userStatus: string; // 공개상태
+  @IsEnum(users_userStatus)
+  userStatus: users_userStatus; // 공개상태
 
   @ApiProperty()
   @IsString()
@@ -45,9 +47,11 @@ export class UserDto {
   @IsString()
   skills: string[]; // 기술
 
+  @ApiProperty()
   @IsString()
-  name: string;
+  name: string; // 이름
 
+  @ApiProperty()
   @IsString()
   platform: string; // 플랫폼
 }

@@ -25,7 +25,7 @@ export class UserService {
           userNickname,
           position,
           gitURL,
-          userStatus: 'public', // 임시로 고정값
+          userStatus: userStatus,
           introduction,
           career: Number(career),
           createdAt: new Date(),

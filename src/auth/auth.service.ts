@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma/prisma.service';
+import { BcryptService } from '../utils/bcrypt/bcrypt.service'
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService,
+    private bcryptService: BcryptService) {}
 
   /**
    * 회원가입 체크
@@ -15,13 +17,14 @@ export class AuthService {
     const user = await this.prisma.users.findFirst({
       where: {
         email: loginUser.email,
-        password: loginUser.password,
         platform: loginUser.provider,
       },
       select: {
-        userId: true,
+        password:true
       },
     });
-    return user
+
+    
+    return this.bcryptService.comparePasswords(loginUser.password,user.password)
   }
 }

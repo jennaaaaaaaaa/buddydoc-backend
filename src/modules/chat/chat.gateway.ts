@@ -9,21 +9,28 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { ChatService } from './chat.service';
-import { Namespace, Socket, Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { MessageDto } from './dto/message.dto';
-import { InfoService } from '../myinfo/info.service';
-import { InfoDto } from '../myinfo/dto/info.dto';
+// import { InfoService } from '../myinfo/info.service';
+// import { InfoDto } from '../myinfo/dto/info.dto';
+import { PrismaService } from 'src/database/prisma/prisma.service';
 // import { ChatDto } from './dto/chat.dto';
 
-let createdRooms: string[] = []; //새로 만들어지는 채팅방
-
-@WebSocketGateway(81, { namespace: 'chat', transports: ['websocket'], cors: true }) //namespace로 채널?분리 , websocket 방식만 사용
+@WebSocketGateway({
+  namespace: 'chat', //namespace로 채널?분리, chat이랑 alram이랑 나눌수 있음
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+})
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
   constructor(
     private readonly chatService: ChatService,
-    private readonly infoService: InfoService
+    private prismaService: PrismaService
+    // private readonly infoService: InfoService
   ) {}
 
   //연결 상태에 대한 모니터링
@@ -33,29 +40,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   public handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`${client.id} 소켓 연결 해제`);
   }
-  afterInit(server) {
+  afterInit(server: Server) {
     console.log('afterInit');
-  }
-  // @SubscribeMessage('send-message')
-  // async handleMessage(@ConnectedSocket() socket: Socket, @MessageBody() chatDto: ChatDto) {
-  //   const { postId } = chatDto; // chatDto에서 postId 추출
-  //   await this.chatService.addChat(chatDto, postId);
-  //   socket.broadcast //특정 방에 있는 모든 클라이언트에게 메시지 전송
-  //     .to(chatDto.postId.toString()) //특정 방 정보
-  //     .emit('message', chatDto); //보낼 메시지
-  //   return chatDto;
-  // }
-
-  @SubscribeMessage('join-room')
-  handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() data: { postId: string }) {
-    client.join(data.postId);
-    console.log(`소켓 ${client.id}가 ${data.postId} 방에 입장함`);
-  }
-
-  @SubscribeMessage('leave-room')
-  handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() data: { postId: string }) {
-    client.leave(data.postId);
-    console.log(`소켓 ${client.id}가 ${data.postId} 방에서 나감`);
   }
 
   @SubscribeMessage('send-message')
@@ -63,22 +49,73 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @ConnectedSocket() //client: Socket,
     @MessageBody()
     data: {
-      postId: string;
+      // postId: string;
       messageDto: MessageDto;
-      userId: number;
+      // token: string;
+      // userId: number;
     }
   ) {
+    console.log(data);
     try {
-      const user = await this.chatService.getUserInfo(data.userId);
+      const user = await this.chatService.getUserInfo(data.messageDto.userId);
       console.log('user', user);
-      const chat = await this.chatService.createMessage(data.messageDto, Number(data.postId));
+      const message = await this.chatService.createMessage(data.messageDto); //Number(data.postId), Number(data.userId)
       this.server
-        .to(data.postId)
-        .emit('receive-message', { message: data.messageDto.chat_message, userName: user.userName });
-      console.log(`메시지 '${data.messageDto.chat_message}'가 ${user.userName}에 의해 ${data.postId} 방에 전송됨`);
+        .to(`postRoom-${message.postId}`)
+        .emit('receive-message', { message: message.chat_message, userName: user.userName });
+      console.log(`메시지 '${message.chat_message}'가 ${user.userName}에 의해 ${message.postId} 방에 전송됨`);
     } catch (error) {
       console.log('JWT 검증 실패', error);
     }
+  }
+
+  //<이부분은 영상보면서 필요한지 불필요한지 판단해야함(무한스크롤로 조회되게끔했는데 프론트에서 그냥 userId-massage로 창에 다 보여줄 수 있는지 확인)>
+  //postId를 받아와서 특정 postId의 메세지들을 조회
+  // @SubscribeMessage('getMessagesWithUser')
+  // async handleGetMessagesWithUser(
+  //   client: Socket,
+  //   payload: { page: number; pageSize: number },
+  // ) {
+  //   const messages = await this.prismaService.getMessagesWithUser(
+  //     payload.page,
+  //     payload.pageSize,
+  //   );
+  //   this.server.emit('messagesWithUser', messages);
+  // }
+
+  @SubscribeMessage('join-room')
+  handleJoinRoom(
+    @ConnectedSocket()
+    client: Socket,
+    @MessageBody() data: { userId: number; postId: string }
+  ) {
+    client.join(`postRoom-${data.postId}`);
+    //유저를 찾는 로직을 user service에서 가져와야함
+    // const user = await this.prismaService.users.findUnique({
+    //   where: { userId: payload.userId },
+    // });
+    console.log(`소켓 id: ${client.id}, ${data.postId} 방에 입장함`);
+    this.server.to(`post-${data.postId}`).emit('message', {
+      content: `User ${data.userId}가 들어왔습니다.`, //${user.userName}
+      // users: user, //유저정보를 나타내는건데 위에서 유저 이름만 잘 표기해주면 없어도 되지 않는지
+    });
+  }
+
+  @SubscribeMessage('leave-room')
+  handleLeaveRoom(
+    @ConnectedSocket()
+    client: Socket,
+    @MessageBody() data: { userId: number; postId: string }
+  ) {
+    client.leave(`post-${data.postId}`);
+    // const user = await this.prismaService.users.findUnique({
+    //   where: { userId: payload.userId },
+    // });
+    console.log(`소켓 id: ${client.id}, ${data.postId} 방에서 나감`);
+    this.server.to(`post-${data.postId}`).emit('message', {
+      content: `User ${data.userId}이(가) 나갔습니다.`, //${user.userName}
+      // users: user, //유저정보를 나타내는건데 위에서 유저 이름만 잘 표기해주면 없어도 되지 않는지
+    });
   }
 
   // @SubscribeMessage('join-room')

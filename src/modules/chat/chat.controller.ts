@@ -42,7 +42,7 @@ export class ChatController {
     // //사용자 인증jwt에 들어있는 userName사용??...
     try {
       const userId = 1;
-      const chat = await this.chatService.createMessage(messageDto, postId);
+      const chat = await this.chatService.createMessage(messageDto);
       return chat;
     } catch (error) {
       console.log(error);

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma/prisma.service';
 // import { ChatDto } from './dto/chat.dto';
 import { MessageDto } from './dto/message.dto';
-import { Socket } from 'socket.io';
+// import { Socket } from 'socket.io';
 
 @Injectable()
 export class ChatService {
@@ -14,15 +14,16 @@ export class ChatService {
    * @param postId
    * @returns
    */
-  async createMessage(messageDto: MessageDto, postId: number, userId: number) {
-    const user = await this.prisma.users.findUnique({ where: { userId: +userId } });
+  async createMessage(messageDto: MessageDto) {
+    //postId: number, userId: number
+    const user = await this.prisma.users.findUnique({ where: { userId: +messageDto.userId } });
 
     //다시 로그인하게끔
     if (!user || user.deletedAt !== null) {
       throw new NotFoundException({ errorMessage: '유저가 존재하지 않습니다.' });
     }
 
-    const post = await this.prisma.posts.findUnique({ where: { postId: +postId } });
+    const post = await this.prisma.posts.findUnique({ where: { postId: +messageDto.postId } });
 
     if (!post || post.deletedAt !== null) {
     }
@@ -30,8 +31,6 @@ export class ChatService {
     const chat = await this.prisma.chats.create({
       data: {
         ...messageDto,
-        postId: postId,
-        userId: userId,
         createdAt: new Date(),
       },
     });

@@ -96,17 +96,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   //<이부분은 영상보면서 필요한지 불필요한지 판단해야함(무한스크롤로 조회되게끔했는데 프론트에서 그냥 userId-massage로 창에 다 보여줄 수 있는지 확인)>
   //postId를 받아와서 특정 postId의 메세지들을 조회
-  // @SubscribeMessage('getMessagesWithUser')
-  // async handleGetMessagesWithUser(
-  //   client: Socket,
-  //   payload: { page: number; pageSize: number },
-  // ) {
-  //   const messages = await this.prismaService.getMessagesWithUser(
-  //     payload.page,
-  //     payload.pageSize,
-  //   );
-  //   this.server.emit('messagesWithUser', messages);
-  // }
+  @SubscribeMessage('read-Messages')
+  async handleGetMessagesWithUser(client: Socket, payload: { postId: number; page: number; pageSize: number }) {
+    const messages = await this.chatService.getMessages(payload.postId, payload.page, payload.pageSize);
+    this.server.emit('messagesWithUser', messages);
+  }
 
   @SubscribeMessage('join-room')
   handleJoinRoom(

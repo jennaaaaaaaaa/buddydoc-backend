@@ -19,17 +19,6 @@ import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  //본인이 참가한 채팅방 조회??
-
-  // //
-  // @Get(':postId')
-  // async getChat(@Param('postId') postId: number) {
-  //   return await this.chatService.getChat(postId);
-  // }
-
-  //채팅방별로 채팅 메세지 조회
-  // @Get(':postId')
-
   /**
    * 채팅메세지 create
    * @param postId
@@ -50,9 +39,11 @@ export class ChatController {
     }
   }
 
-  //메세지 조회//아닌거 같은데
-  @Get(':postId')
-  async getMessages(@Param('postId') postId: number) {
-    return this.chatService.getMessages(postId);
-  }
+  // //메세지 조회//아닌거 같은데
+  // @Get(':postId')
+  // async getMessages(@Param('postId') postId: number) {
+  //   return this.chatService.getMessages(postId);
+  // }
 }
+
+// 소켓 서버를 구현할 때 별도의 컨트롤러 파일이 필요하지는 않습니다. 컨트롤러는 주로 HTTP 요청을 처리하는데 사용되며, 소켓 서버는 별도의 게이트웨이 클래스에서 처리됩니다.

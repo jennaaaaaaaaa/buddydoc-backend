@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma/prisma.service';
-// import { ChatDto } from './dto/chat.dto';
 import { MessageDto } from './dto/message.dto';
 // import { Socket } from 'socket.io';
 
@@ -37,16 +36,55 @@ export class ChatService {
     return chat;
   }
 
-  async getMessages(postId: number) {
-    const message = await this.prisma.chats.findMany({
-      where: { postId: +postId },
-      // orderBy: {
-      //   createdAt: 'asc',
-      // },
+  // //채팅방별로 메세지 조회
+  // /**
+  //  *
+  //  * @param postId
+  //  * @returns
+  //  */
+  // async getMessages(postId: number) {
+  //   const message = await this.prisma.chats.findMany({
+  //     where: { postId: +postId },
+  //     orderBy: {
+  //       createdAt: 'asc',
+  //     },
+  //     select: {
+  //       postId: true,
+  //       userId: true,
+  //       chat_message: true,
+  //     },
+  //   });
+
+  //   if (message.length === 0) {
+  //     throw new NotFoundException({ errorMessage: '메시지가 존재하지 않습니다.' });
+  //   }
+  //   return message;
+  // }
+
+  async getMessages(postId: number, page: number, pageSize: number) {
+    const messages = await this.prisma.chats.findMany({
+      where: { postId: postId },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        postId: true,
+        userId: true,
+        chat_message: true,
+        createdAt: true,
+      },
     });
-    return message;
+
+    if (!messages || messages.length === 0) {
+      throw new NotFoundException({ errorMessage: '메시지가 존재하지 않습니다.' });
+    }
+
+    return messages;
   }
 
+  //임시로 유저 조회, 찾아본 바로는 원래는 클라이언트에서 토큰을 받아서?? 인증을 해야한다고함
   async getUserInfo(userId: number) {
     const chat = await this.prisma.users.findUnique({
       where: { userId },

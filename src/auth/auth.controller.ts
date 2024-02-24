@@ -19,9 +19,8 @@ import {
 import { Response, Request } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import {BcryptService} from '../utils/bcrypt/bcrypt.service'
-import { KakaoAuthGuard, NaverAuthGuard } from './oauth/auth.guard';
-import { GoogleAuthGuard } from './oauth/auth.guard';
+import { BcryptService } from '../utils/bcrypt/bcrypt.service';
+import { JwtAuthGuard, KakaoAuthGuard, NaverAuthGuard, GoogleAuthGuard } from './oauth/auth.guard';
 
 @ApiTags('login')
 @Controller()
@@ -32,28 +31,24 @@ export class AuthController {
   ) {}
 
   /**
-   * 사용자 인증 후 회원 체크
+   * oauth 사용자 인증 가입처리
    * @param res
    * @param req
    * @param user
    */
   private async checkUser(res: Response, req: Request, user: any) {
     try {
+      
+      //회원가입 체크
       const checkUser = await this.authService.findUser(user);
-
-      //비밀번호 암호화
-      user.password = await this.bcryptService.hashPassword(user.password)
-
-      res.cookie('authCookie', user, {
-        maxAge: 900000,
-        httpOnly: true,
-      });
-
-      if (checkUser) {
-        res.redirect('/login');
-      } else {
-        res.redirect('/signup');
-      }
+      console.log(user);
+    
+      console.log(`controller 사용자 체크 `, checkUser);
+      
+      
+      if(checkUser) {this.authService.login(checkUser)}
+      
+      return res.redirect('/signup')
     } catch (error) {
       console.log(error);
     }
@@ -104,17 +99,20 @@ export class AuthController {
     return this.checkUser(res, req, req.user);
   }
 
+  
+  @UseGuards(JwtAuthGuard)
   @Get('/signup')
   signUp(@Res() res: Response, @Req() req: Request) {
-    let test = req.cookies['authCookie'];
-    console.log('쿠키확인 ', test);
+    
+    console.log('사용자 확인/signup > ', req.user);
     res.status(200).json({ message: '회원가입 form' });
   }
-
-  @Get('/login')
+  
+  @UseGuards(JwtAuthGuard)
+  @Post('/login')
   async login(@Res() res: Response, @Req() req: Request) {
-    let test = req.cookies['authCookie'];
-    console.log('쿠키확인', test);
+    
+    console.log('사용자 확인/login > ', req.user);
     res.status(200).json({ message: '로그인' });
   }
 }

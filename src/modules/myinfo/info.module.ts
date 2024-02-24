@@ -4,8 +4,9 @@ import { InfoController } from './info.controller';
 import { PrismaModule } from 'src/database/prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [InfoController],
   providers: [InfoService],
-  imports: [PrismaModule],
+  
 })
-export class infoModule {}
+export class InfoModule {}

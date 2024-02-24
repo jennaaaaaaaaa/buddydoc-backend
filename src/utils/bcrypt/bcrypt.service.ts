@@ -9,6 +9,7 @@ export class BcryptService {
   }
 
   async comparePasswords(plainPassword: string, hashedPassword: string): Promise<boolean> {
+    //console.log(`bcrypt 비밀번호 비교 > ${plainPassword} <> ${hashedPassword}`)
     const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
     return isMatch;
   }

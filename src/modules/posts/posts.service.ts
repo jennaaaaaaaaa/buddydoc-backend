@@ -47,6 +47,7 @@ export class PostService {
         preference: true,
         views: true,
         skillList: true,
+        deadLine: true,
         createdAt: true,
         updatedAt: true,
         post_userId: true,
@@ -110,6 +111,7 @@ export class PostService {
       createdAt: updatePost.createdAt,
       updatedAt: updatePost.updatedAt,
       skillList: updatePost.skillList ? updatePost.skillList.split(',') : [],
+      deadLine: updatePost.deadLine,
     };
     return { data: [response] };
   }
@@ -296,6 +298,7 @@ export class PostService {
     const bookmark = await this.prisma.bookmarks.findUnique({
       where: {
         userId_postId: {
+          //Prisma가 자동으로 생성한 복합 키 이름인 userId_postId
           userId: userId,
           postId: postId,
         },
@@ -319,7 +322,7 @@ export class PostService {
 
       const [_, updatedPost] = await this.prisma.$transaction([deleteBookmark, decreasePreference]);
 
-      return { preference: updatedPost.preference }; // 변경된 preference 값 반환
+      return { preference: updatedPost.preference, bookmarked: false }; // 변경된 preference 값 반환
     } else {
       const createBookmark = this.prisma.bookmarks.create({
         data: {
@@ -336,7 +339,7 @@ export class PostService {
 
       const [_, updatedPost] = await this.prisma.$transaction([createBookmark, increasePreference]);
 
-      return { preference: updatedPost.preference }; // 변경된 preference 값 반환
+      return { preference: updatedPost.preference, bookmarked: true }; // 변경된 preference 값 반환
     }
   }
 }

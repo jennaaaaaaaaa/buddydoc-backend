@@ -47,7 +47,6 @@ export class PostService {
         preference: true,
         views: true,
         skillList: true,
-        deadLine: true,
         createdAt: true,
         updatedAt: true,
         post_userId: true,
@@ -69,6 +68,7 @@ export class PostService {
         // updatedAt: post.updatedAt
         //   ? new Date(post.updatedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false })
         //   : null,
+        position: post.position ? post.position.split(',') : [],
         skillList: post.skillList ? post.skillList.split(',') : [],
       })),
       isLastPage,
@@ -79,7 +79,6 @@ export class PostService {
    *
    * * 게시글 상세조회(views +1, preference는 버튼 누를 때 올라가는 거라 프론트에서 해줘야되는지?)
    * 로그인 안되있어도 됨
-   *
    * @param postId
    * @returns
    */
@@ -107,11 +106,10 @@ export class PostService {
       file: updatePost.fileName,
       preference: updatePost.preference,
       views: updatePost.views,
-      position: updatePost.position,
+      position: updatePost.position ? updatePost.position.split(',') : [],
       createdAt: updatePost.createdAt,
       updatedAt: updatePost.updatedAt,
       skillList: updatePost.skillList ? updatePost.skillList.split(',') : [],
-      deadLine: updatePost.deadLine,
     };
     return { data: [response] };
   }
@@ -203,6 +201,7 @@ export class PostService {
     // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {
       ...post,
+      position: post.position ? post.position.split(',') : [],
       skillList: post.skillList ? post.skillList.split(',') : [],
     };
 
@@ -210,12 +209,16 @@ export class PostService {
   }
 
   /**
-   *수정
-   * 이미지 처리
-   * 로그인 되어 있는지 확인
-   * + reponse 값 수정
+   *게시글 수정
    * @param postId
-   * @param updatePostsDto
+   * @param postTitle
+   * @param content
+   * @param postType
+   * @param position
+   * @param image
+   * @param files
+   * @param skillList
+   * @param deadLine
    * @returns
    */
   async updatePost(
@@ -263,6 +266,7 @@ export class PostService {
 
     const response = {
       ...post,
+      position: post.position ? post.position.split(',') : [],
       skillList: post.skillList ? post.skillList.split(',') : [],
     };
     return response;
@@ -272,7 +276,6 @@ export class PostService {
    * 삭제
    * 본인인증
    * @param postId
-   * @param updatePostsDto
    * @returns
    */
   async deletePost(postId: number) {
@@ -298,7 +301,6 @@ export class PostService {
     const bookmark = await this.prisma.bookmarks.findUnique({
       where: {
         userId_postId: {
-          //Prisma가 자동으로 생성한 복합 키 이름인 userId_postId
           userId: userId,
           postId: postId,
         },

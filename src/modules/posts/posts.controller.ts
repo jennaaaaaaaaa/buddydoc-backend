@@ -54,7 +54,8 @@ export class PostController {
         orderField = 'preference';
       }
       const lastPostId = Number(pagingPostsDto.lastPostId);
-      const posts = await this.postService.getAllPosts(orderField, lastPostId);
+      const postType = pagingPostsDto.postType;
+      const posts = await this.postService.getAllPosts(orderField, postType, lastPostId);
       return posts;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -111,6 +112,8 @@ export class PostController {
    * @param position
    * @param skillList
    * @param deadLine
+   * @param startDate
+   * @param memberCount
    * @returns
    */
   @ApiOperation({ summary: '게시글 생성 API' })
@@ -137,7 +140,7 @@ export class PostController {
         deadLine,
         startDate,
         memberCount
-      ); //, projectPeriod
+      );
       return { message: '게시글이 작성되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -153,6 +156,8 @@ export class PostController {
    * @param position
    * @param skillList
    * @param deadLine
+   * @param startDate
+   * @param memberCount
    * @returns
    */
   @ApiOperation({
@@ -259,11 +264,10 @@ export class PostController {
   }
 
   /**
+   *
    * 게시글 삭제
    * 본인인증
-   *
    * @param postId
-   * @param updatePostsDto
    * @returns
    */
   @ApiOperation({

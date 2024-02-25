@@ -47,6 +47,7 @@ export class PostService {
         preference: true,
         views: true,
         skillList: true,
+        deadLine: true,
         createdAt: true,
         updatedAt: true,
         post_userId: true,
@@ -135,6 +136,7 @@ export class PostService {
       createdAt: updatePost.createdAt,
       updatedAt: updatePost.updatedAt,
       skillList: updatePost.skillList ? updatePost.skillList.split(',') : [],
+      deadLine: updatePost.deadLine,
       bookmarked: !!bookmark,
     };
     return { data: [response] };

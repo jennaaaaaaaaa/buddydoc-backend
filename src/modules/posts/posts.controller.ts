@@ -48,6 +48,7 @@ export class PostController {
   @HttpCode(200)
   async getAllPosts(@Query() pagingPostsDto: PagingPostsDto) {
     try {
+      //const userId = 2; //임시값
       let orderField: 'createdAt' | 'preference' = 'createdAt'; //기본값 최신순
       if (pagingPostsDto.orderBy === 'preference') {
         orderField = 'preference';
@@ -73,7 +74,9 @@ export class PostController {
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number) {
     try {
-      const post = await this.postService.getOnePost(postId);
+      //const userinfo = req.user.userId
+      const userId = 2;
+      const post = await this.postService.getOnePost(postId, userId);
       return post;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -101,28 +104,18 @@ export class PostController {
   }
 
   /**
-   * 게시글 생성
+   *
    * @param postTitle
    * @param content
    * @param postType
    * @param position
    * @param skillList
    * @param deadLine
-   * @param files
    * @returns
    */
-  @ApiOperation({
-    summary: '게시글 생성 API',
-  })
+  @ApiOperation({ summary: '게시글 생성 API' })
   @Post()
   @UseFilters(HttpExceptionFilter)
-  @ApiConsumes('multipart/form-data')
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'image', maxCount: 1 },
-      { name: 'files', maxCount: 1 },
-    ])
-  )
   @HttpCode(200)
   async createPost(
     @Body('postTitle') postTitle: string,
@@ -130,13 +123,15 @@ export class PostController {
     @Body('postType') postType: string,
     @Body('position') position: string,
     @Body('skillList') skillList: string,
-    @Body('deadLine') deadLine: Date,
-    @UploadedFiles() files: { image: Express.Multer.File[]; files: Express.Multer.File[] }
+    @Body('deadLine') deadLine: Date
+    //IF 테이블이 따로 없다면, 있다면 따로 있든 없든 클라이언트에서 요청 하나씩 받아야함
+    //시작일 컬럼, 모집인원컬럼, 진행기간 컬럼
+    //@Body('startDate') startDate: Date,
+    //@Body('numberCount') numberCount: number,
+    //@Body('projectPeriod') projectPeriod: string,
   ) {
     try {
-      const image = files.image[0];
-      const file = files.files[0];
-      await this.postService.createPost(postTitle, content, postType, position, image, file, skillList, deadLine);
+      await this.postService.createPost(postTitle, content, postType, position, skillList, deadLine); //,startDate, numberCount, projectPeriod
       return { message: '게시글이 작성되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -144,22 +139,20 @@ export class PostController {
   }
 
   /**
-   * 게시글 수정
+   *
    * @param postId
-   * @param updatePostsDto
+   * @param postTitle
+   * @param content
+   * @param postType
+   * @param position
+   * @param skillList
+   * @param deadLine
    * @returns
    */
   @ApiOperation({
     summary: '게시글 수정 API',
   })
   @Put(':postId')
-  @ApiConsumes('multipart/form-data')
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'image', maxCount: 1 },
-      { name: 'files', maxCount: 1 },
-    ])
-  )
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async updatePost(
@@ -169,27 +162,87 @@ export class PostController {
     @Body('postType') postType: string,
     @Body('position') position: string,
     @Body('skillList') skillList: string,
-    @Body('deadLine') deadLine: Date,
-    @UploadedFiles() files: { image: Express.Multer.File[]; files: Express.Multer.File[] }
+    @Body('deadLine') deadLine: Date
+    //IF 테이블이 따로 없다면, 있다면 따로 있든 없든 클라이언트에서 요청 하나씩 받아야함
+    //시작일 컬럼, 모집인원컬럼, 진행기간 컬럼
+    //@Body('startDate') startDate: Date,
+    //@Body('numberCount') numberCount: number,
+    //@Body('projectPeriod') projectPeriod: string,
   ) {
     try {
-      const image = files.image[0];
-      const file = files.files[0];
-      await this.postService.updatePost(
-        postId,
-        postTitle,
-        content,
-        postType,
-        position,
-        image,
-        file,
-        skillList,
-        deadLine
-      );
+      await this.postService.updatePost(postId, postTitle, content, postType, position, skillList, deadLine); //,startDate, numberCount, projectPeriod
       return { message: '수정되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  // /**
+  //  *
+  //  * @param createPostsDto
+  //  * @returns
+  //  */
+  // @ApiOperation({
+  //   summary: '게시글 생성 API',
+  // })
+  // @Post()
+  // @UseFilters(HttpExceptionFilter)
+  // @HttpCode(200)
+  // async createPost(@Body() createPostsDto: CreatePostsDto) {
+  //   try {
+  //     const userId =1
+  //     await this.postService.createPost(createPostsDto, userId);
+  //     return { message: '게시글이 작성되었습니다' };
+  //   } catch (error) {
+  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
+
+  // @ApiOperation({
+  //   summary: '게시글 수정 API',
+  // })
+  // @Put(':postId')
+  // @UseFilters(HttpExceptionFilter)
+  // @HttpCode(200)
+  // async updatePost(@Param('postId') postId: number, @Body() updatePostsDto: CreatePostsDto) {
+  //   try {
+  //     await this.postService.updatePost(postId, updatePostsDto);
+  //     return { message: '수정되었습니다' };
+  //   } catch (error) {
+  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
+
+  // 토스트 UI 에디터에서 이미지와 파일 업로드를 위해 별도의 API를 호출
+  //따로 데이터베이스와 상호작용이 필요하지 않거나 비지니스 로직이 필요하지 않은 경우 서비스파일에 구현할 필요x
+  /**
+   *
+   * @param image
+   * @returns
+   */
+  @Post('upload-image')
+  @UseInterceptors(FileInterceptor('image'))
+  async uploadImage(@UploadedFile() image: Express.Multer.File) {
+    const imageName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
+    const imageExt = image.originalname.split('.').pop();
+    const imageUrl = await this.s3Service.imageUploadToS3(`${imageName}.${imageExt}`, image, imageExt);
+
+    return { imageUrl };
+  }
+
+  /**
+   *
+   * @param file
+   * @returns
+   */
+  @Post('upload-file')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    const fileName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
+    const fileExt = file.originalname.split('.').pop();
+    const fileUrl = await this.s3Service.fileUploadToS3(`${fileName}.${fileExt}`, file, fileExt);
+
+    return { fileUrl };
   }
 
   /**

@@ -61,16 +61,32 @@ export class PostService {
     //반환된 게시글 수가 요청한 수보다 적을 때 true
     const isLastPage = posts.length < 10;
 
+    const postsWithBookmark = await Promise.all(
+      posts.map(async (post) => {
+        let bookmark = false;
+        const userId = 2; //임시값
+        if (userId) {
+          const userBookmark = await this.prisma.bookmarks.findUnique({
+            where: {
+              userId_postId: {
+                userId: userId,
+                postId: post.postId,
+              },
+            },
+          });
+          bookmark = !!userBookmark;
+        }
+
+        return {
+          ...post,
+          bookmark,
+          position: post.position ? post.position.split(',') : [],
+          skillList: post.skillList ? post.skillList.split(',') : [],
+        };
+      })
+    );
     return {
-      posts: posts.map((post) => ({
-        ...post,
-        // createdAt: new Date(post.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }),
-        // updatedAt: post.updatedAt
-        //   ? new Date(post.updatedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false })
-        //   : null,
-        position: post.position ? post.position.split(',') : [],
-        skillList: post.skillList ? post.skillList.split(',') : [],
-      })),
+      posts: postsWithBookmark,
       isLastPage,
     };
   }
@@ -82,7 +98,7 @@ export class PostService {
    * @param postId
    * @returns
    */
-  async getOnePost(postId: number) {
+  async getOnePost(postId: number, userId: number) {
     const post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });
     if (!post || post.deletedAt !== null) {
       throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
@@ -91,6 +107,15 @@ export class PostService {
       where: { postId: +postId },
       data: { views: post.views + 1 },
       include: { users: true },
+    });
+
+    const bookmark = await this.prisma.bookmarks.findUnique({
+      where: {
+        userId_postId: {
+          userId: userId,
+          postId: post.postId,
+        },
+      },
     });
     // return updatePost;
     const response = {
@@ -110,6 +135,7 @@ export class PostService {
       createdAt: updatePost.createdAt,
       updatedAt: updatePost.updatedAt,
       skillList: updatePost.skillList ? updatePost.skillList.split(',') : [],
+      bookmarked: !!bookmark,
     };
     return { data: [response] };
   }
@@ -148,48 +174,38 @@ export class PostService {
     return response;
   }
 
-  // /**
-  //  * 게시글 생성
-  //  * views 기본값 0
-  //  * preference 기본값 0
-  //  * 로그인 되어 있는지 확인
-  //  * 본인인증하려고 가져온 userId 값을 post_userId에 넣기
-  //  * @param postTitle
-  //  * @param content
-  //  * @param postType
-  //  * @param position
-  //  * @param fileName
-  //  * @param file
-  //  * @returns
-  //  */
+  /**
+   * 게시글 생성
+   * @param postTitle
+   * @param content
+   * @param postType
+   * @param position
+   * @param skillList
+   * @param deadLine
+   * @returns
+   */
   async createPost(
     postTitle: string,
     content: string,
     postType: string,
     position: string,
-    image: Express.Multer.File,
-    files: Express.Multer.File,
     skillList: string,
     deadLine: Date
+    //startDate: Date,
+    //numberCount: number,
+    //projectPeriod: string,
   ) {
-    const imageName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
-    const imageExt = image.originalname.split('.').pop();
-    const imageUrl = await this.s3Service.imageUploadToS3(`${imageName}.${imageExt}`, image, imageExt);
-
-    const fileName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
-    const fileExt = files.originalname.split('.').pop();
-    const fileUrls = await this.s3Service.fileUploadToS3(`${fileName}.${fileExt}`, files, fileExt);
-
     const post = await this.prisma.posts.create({
       data: {
         postTitle,
         content,
         postType,
         position,
-        imageName: imageUrl,
-        fileName: fileUrls,
         skillList,
         deadLine,
+        //startDate
+        //numberCount
+        //projectPeriod,
         post_userId: 1, //userId를 받아서 넣어야함
         views: 0,
         preference: 0,
@@ -209,14 +225,12 @@ export class PostService {
   }
 
   /**
-   *게시글 수정
+   * 게시글 수정
    * @param postId
    * @param postTitle
    * @param content
    * @param postType
    * @param position
-   * @param image
-   * @param files
    * @param skillList
    * @param deadLine
    * @returns
@@ -227,26 +241,16 @@ export class PostService {
     content: string,
     postType: string,
     position: string,
-    image: Express.Multer.File,
-    files: Express.Multer.File,
     skillList: string,
     deadLine: Date
+    //startDate: Date,
+    //numberCount: number,
+    //projectPeriod: string,
   ) {
     const existPost = await this.prisma.posts.findUnique({ where: { postId } });
     if (!existPost || existPost.deletedAt !== null) {
       throw new NotFoundException({ errorMessage: '해당하는 게시글이 존재하지 않습니다.' });
     }
-    // if(existPost.post_userId !== userId){
-    //   본인이 작성한 게시물 아님
-    // }
-
-    const imageName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
-    const imageExt = image.originalname.split('.').pop();
-    const imageUrl = await this.s3Service.imageUploadToS3(`${imageName}.${imageExt}`, image, imageExt);
-
-    const fileName = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
-    const fileExt = files.originalname.split('.').pop();
-    const fileUrls = await this.s3Service.fileUploadToS3(`${fileName}.${fileExt}`, files, fileExt);
 
     const post = await this.prisma.posts.update({
       where: { postId },
@@ -255,20 +259,22 @@ export class PostService {
         content,
         postType,
         position,
-        imageName: imageUrl,
-        fileName: fileUrls,
         skillList,
         deadLine,
+        //startDate: Date,
+        //numberCount: number,
+        //projectPeriod: string,
         updatedAt: new Date(),
-        // post_userId: userId
       },
     });
 
+    // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {
       ...post,
       position: post.position ? post.position.split(',') : [],
       skillList: post.skillList ? post.skillList.split(',') : [],
     };
+
     return response;
   }
 
@@ -298,6 +304,7 @@ export class PostService {
    * @returns
    */
   async toggleBookmark(userId: number, postId: number) {
+    //컨트롤러에서 user를 가져와서 user테이블에서 user찾기 user가 없다면 에러처리
     const bookmark = await this.prisma.bookmarks.findUnique({
       where: {
         userId_postId: {
@@ -326,6 +333,12 @@ export class PostService {
 
       return { preference: updatedPost.preference, bookmarked: false }; // 변경된 preference 값 반환
     } else {
+      // const user = await this.prisma.users.findUnique({
+      //   where: { userId: userId },
+      // });
+      // if (!user) {
+      //   throw new Error('User not found');
+      // }
       const createBookmark = this.prisma.bookmarks.create({
         data: {
           userId: userId,

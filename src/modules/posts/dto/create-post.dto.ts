@@ -2,45 +2,36 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 // @MinLength :최소길이
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsString } from 'class-validator';
 
 export class CreatePostsDto {
   //게시글 제목
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
   postTitle: string;
 
   //게시글 내용
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
   content: string;
 
   //게시글종류
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
   postType: string;
-
-  //게시글업로드이미지
-  @ApiProperty()
-  @IsString()
-  imageName?: string;
-
-  //게시글업로드파일
-  @ApiProperty()
-  @IsString()
-  fileName?: string;
 
   //게시글모집분야
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
   position: string;
 
-  //게시글 작성자
   @ApiProperty()
-  @IsNumber()
-  post_userId: number;
+  @IsString()
+  skillList: string;
+
+  @ApiProperty()
+  @IsDate()
+  deadLine: Date;
 }
+
+//,startDate, numberCount, projectPeriod

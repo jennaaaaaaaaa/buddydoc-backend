@@ -40,10 +40,16 @@ export class PostEntity implements posts {
   deletedAt: Date | null;
 
   @ApiProperty()
-  post_userId: number;
+  deadLine: Date | null;
 
   @ApiProperty()
-  deadLine: Date | null;
+  startDate: Date | null;
+
+  @ApiProperty()
+  memberCount: number;
+
+  @ApiProperty()
+  post_userId: number;
 
   @ApiProperty()
   skillList: string;

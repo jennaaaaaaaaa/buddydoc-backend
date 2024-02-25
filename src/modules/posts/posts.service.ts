@@ -10,8 +10,7 @@ import { S3Service } from 'src/providers/aws/s3/s3.service';
 @Injectable()
 export class PostService {
   constructor(
-    private prisma: PrismaService,
-    private s3Service: S3Service
+    private prisma: PrismaService
     // esService: SearchService
   ) {}
 
@@ -22,6 +21,8 @@ export class PostService {
    * @param lastPostId
    * @returns
    */
+
+  //스터디랑 사이드프로젝트 게시물 나눠서 보여주기 postType이 스터디면 스터디만, ...
   async getAllPosts(orderField: 'createdAt' | 'preference', lastPostId?: number) {
     //whereCondition은 Prisma.PostsWhereInput 타입의 변수로서, 초기 조건으로 deletedAt이 null인 데이터를 대상으로 설정
     let whereCondition: Prisma.postsWhereInput = { deletedAt: null };
@@ -130,8 +131,6 @@ export class PostService {
       title: updatePost.postTitle,
       content: updatePost.content,
       postType: updatePost.postType,
-      image: updatePost.imageName,
-      file: updatePost.fileName,
       preference: updatePost.preference,
       views: updatePost.views,
       position: updatePost.position ? updatePost.position.split(',') : [],

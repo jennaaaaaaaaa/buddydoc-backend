@@ -13,5 +13,3 @@ export class NaverAuthGuard extends AuthGuard('naver') {}
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {}
 
-@Injectable()
-export class LocalAuthGuard extends AuthGuard('local') {}

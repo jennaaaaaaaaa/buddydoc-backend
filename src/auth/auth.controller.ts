@@ -15,6 +15,7 @@ import {
   Next,
   UseGuards,
   Redirect,
+  NotFoundException,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -38,17 +39,22 @@ export class AuthController {
    */
   private async checkUser(res: Response, req: Request, user: any) {
     try {
-      
-      //회원가입 체크
+      // 회원가입 체크
       const checkUser = await this.authService.findUser(user);
-      console.log(user);
-    
-      console.log(`controller 사용자 체크 `, checkUser);
-      
-      
-      if(checkUser) {this.authService.login(checkUser)}
-      
-      return res.redirect('/signup')
+
+      // 회원가입이 되어있으면 토큰 발급
+      if (checkUser) {
+        const accessToken = await this.authService.login(checkUser);
+
+        res.cookie('authCookie', accessToken, {
+          maxAge: 900000,
+          httpOnly: true,
+        });
+
+        return res.status(HttpStatus.OK).json({ accessToken });
+      }
+      return res.status(201).json({message : 'needsignup'})
+      //return res.redirect(`/signup?test=${accessToken}`);
     } catch (error) {
       console.log(error);
     }
@@ -99,20 +105,9 @@ export class AuthController {
     return this.checkUser(res, req, req.user);
   }
 
-  
   @UseGuards(JwtAuthGuard)
   @Get('/signup')
   signUp(@Res() res: Response, @Req() req: Request) {
-    
-    console.log('사용자 확인/signup > ', req.user);
     res.status(200).json({ message: '회원가입 form' });
-  }
-  
-  @UseGuards(JwtAuthGuard)
-  @Post('/login')
-  async login(@Res() res: Response, @Req() req: Request) {
-    
-    console.log('사용자 확인/login > ', req.user);
-    res.status(200).json({ message: '로그인' });
   }
 }

@@ -1,20 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException, Req, Res } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
+import { AuthService } from '../auth.service';
 
-@Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private authService: AuthService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // 헤더로부터 토큰 추출하는 함수
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request) => {
+          return request?.cookies?.authCookie;
+        },
+      ]),
       secretOrKey: process.env.JWT_SECRET_KEY,
       ignoreExpiration: false,
     });
   }
 
+  async validate(payload: any) {
+    console.log('payload > ',payload)
+    const loginUser = {
+      id:payload.id,
+    };
 
-  async validate (payload: any){
-    console.log(`strategy payload >> `, payload)
-    return {userId:payload.userId , nickname : payload.nickname , email: payload.email}
+    return loginUser;
   }
 }

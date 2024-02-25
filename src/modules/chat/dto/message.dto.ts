@@ -14,14 +14,14 @@ export class MessageDto {
   @ApiProperty()
   @IsString()
   chat_message: string;
-
-  // 클라이언트에서 받아와야함
-  // @ApiProperty()
-  // @IsString()
-  // token: string;
-
-  //   //jwt 사용자 인증 userId => jwt를 통해 서버에서 가져오는 데이터로 dto에 추가x
-  //   @ApiProperty()
-  //   @IsInt()
-  //   userName: string;
 }
+
+// 클라이언트에서 받아와야함
+// @ApiProperty()
+// @IsString()
+// token: string;
+
+//   //jwt 사용자 인증 userId => jwt를 통해 서버에서 가져오는 데이터로 dto에 추가x
+//   @ApiProperty()
+//   @IsInt()
+//   userName: string;

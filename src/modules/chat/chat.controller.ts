@@ -8,6 +8,7 @@ import {
   Logger,
   Param,
   Post,
+  Query,
   UseFilters,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
@@ -41,8 +42,8 @@ export class ChatController {
 
   // //메세지 조회//아닌거 같은데
   // @Get(':postId')
-  // async getMessages(@Param('postId') postId: number) {
-  //   return this.chatService.getMessages(postId);
+  // async getMessages(@Param('postId') postId: number, @Query() lastMessageId: number) {
+  //   return this.chatService.getMessagesByPostId(postId);
   // }
 }
 

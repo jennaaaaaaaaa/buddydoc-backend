@@ -48,6 +48,8 @@ export class PostService {
         views: true,
         skillList: true,
         deadLine: true,
+        startDate: true,
+        memberCount: true,
         createdAt: true,
         updatedAt: true,
         post_userId: true,
@@ -137,6 +139,8 @@ export class PostService {
       updatedAt: updatePost.updatedAt,
       skillList: updatePost.skillList ? updatePost.skillList.split(',') : [],
       deadLine: updatePost.deadLine,
+      startDate: updatePost.startDate,
+      memberCount: updatePost.memberCount,
       bookmarked: !!bookmark,
     };
     return { data: [response] };
@@ -166,6 +170,7 @@ export class PostService {
         nickname: post.users.userNickname,
         name: post.users.userName,
         gitURL: post.users.gitURL,
+        profileImage: post.users.profileImage,
         userStatus: post.users.userStatus,
         introduction: post.users.introduction,
         career: post.users.career,
@@ -192,10 +197,9 @@ export class PostService {
     postType: string,
     position: string,
     skillList: string,
-    deadLine: Date
-    //startDate: Date,
-    //numberCount: number,
-    //projectPeriod: string,
+    deadLine: Date,
+    startDate: Date,
+    memberCount: number
   ) {
     const post = await this.prisma.posts.create({
       data: {
@@ -205,9 +209,8 @@ export class PostService {
         position,
         skillList,
         deadLine,
-        //startDate
-        //numberCount
-        //projectPeriod,
+        startDate,
+        memberCount,
         post_userId: 1, //userId를 받아서 넣어야함
         views: 0,
         preference: 0,
@@ -244,10 +247,9 @@ export class PostService {
     postType: string,
     position: string,
     skillList: string,
-    deadLine: Date
-    //startDate: Date,
-    //numberCount: number,
-    //projectPeriod: string,
+    deadLine: Date,
+    startDate: Date,
+    memberCount: number
   ) {
     const existPost = await this.prisma.posts.findUnique({ where: { postId } });
     if (!existPost || existPost.deletedAt !== null) {
@@ -263,9 +265,8 @@ export class PostService {
         position,
         skillList,
         deadLine,
-        //startDate: Date,
-        //numberCount: number,
-        //projectPeriod: string,
+        startDate,
+        memberCount,
         updatedAt: new Date(),
       },
     });

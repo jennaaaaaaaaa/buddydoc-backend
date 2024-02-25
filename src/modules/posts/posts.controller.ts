@@ -123,15 +123,21 @@ export class PostController {
     @Body('postType') postType: string,
     @Body('position') position: string,
     @Body('skillList') skillList: string,
-    @Body('deadLine') deadLine: Date
-    //IF 테이블이 따로 없다면, 있다면 따로 있든 없든 클라이언트에서 요청 하나씩 받아야함
-    //시작일 컬럼, 모집인원컬럼, 진행기간 컬럼
-    //@Body('startDate') startDate: Date,
-    //@Body('numberCount') numberCount: number,
-    //@Body('projectPeriod') projectPeriod: string,
+    @Body('deadLine') deadLine: Date,
+    @Body('startDate') startDate: Date,
+    @Body('memberCount') memberCount: number
   ) {
     try {
-      await this.postService.createPost(postTitle, content, postType, position, skillList, deadLine); //,startDate, numberCount, projectPeriod
+      await this.postService.createPost(
+        postTitle,
+        content,
+        postType,
+        position,
+        skillList,
+        deadLine,
+        startDate,
+        memberCount
+      ); //, projectPeriod
       return { message: '게시글이 작성되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -162,15 +168,22 @@ export class PostController {
     @Body('postType') postType: string,
     @Body('position') position: string,
     @Body('skillList') skillList: string,
-    @Body('deadLine') deadLine: Date
-    //IF 테이블이 따로 없다면, 있다면 따로 있든 없든 클라이언트에서 요청 하나씩 받아야함
-    //시작일 컬럼, 모집인원컬럼, 진행기간 컬럼
-    //@Body('startDate') startDate: Date,
-    //@Body('numberCount') numberCount: number,
-    //@Body('projectPeriod') projectPeriod: string,
+    @Body('deadLine') deadLine: Date,
+    @Body('startDate') startDate: Date,
+    @Body('memberCount') memberCount: number
   ) {
     try {
-      await this.postService.updatePost(postId, postTitle, content, postType, position, skillList, deadLine); //,startDate, numberCount, projectPeriod
+      await this.postService.updatePost(
+        postId,
+        postTitle,
+        content,
+        postType,
+        position,
+        skillList,
+        deadLine,
+        startDate,
+        memberCount
+      );
       return { message: '수정되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

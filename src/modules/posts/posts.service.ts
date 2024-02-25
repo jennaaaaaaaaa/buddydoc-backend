@@ -251,13 +251,13 @@ export class PostService {
     startDate: Date,
     memberCount: number
   ) {
-    const existPost = await this.prisma.posts.findUnique({ where: { postId } });
+    const existPost = await this.prisma.posts.findUnique({ where: { postId: +postId } });
     if (!existPost || existPost.deletedAt !== null) {
       throw new NotFoundException({ errorMessage: '해당하는 게시글이 존재하지 않습니다.' });
     }
 
     const post = await this.prisma.posts.update({
-      where: { postId },
+      where: { postId: +postId },
       data: {
         postTitle,
         content,
@@ -288,7 +288,7 @@ export class PostService {
    * @returns
    */
   async deletePost(postId: number) {
-    const existPost = await this.prisma.posts.findUnique({ where: { postId } });
+    const existPost = await this.prisma.posts.findUnique({ where: { postId: +postId } });
     if (!existPost || existPost.deletedAt !== null) {
       throw new NotFoundException({ errorMessage: '해당하는 게시글이 존재하지 않습니다.' });
     }
@@ -296,7 +296,7 @@ export class PostService {
     //   본인 게시글만 삭제 가능 ForbiddenException
     // }
 
-    const delPost = await this.prisma.posts.update({ where: { postId }, data: { deletedAt: new Date() } });
+    const delPost = await this.prisma.posts.update({ where: { postId: +postId }, data: { deletedAt: new Date() } });
     return delPost;
   }
 
@@ -311,8 +311,8 @@ export class PostService {
     const bookmark = await this.prisma.bookmarks.findUnique({
       where: {
         userId_postId: {
-          userId: userId,
-          postId: postId,
+          userId: +userId,
+          postId: +postId,
         },
       },
     });
@@ -321,13 +321,13 @@ export class PostService {
       const deleteBookmark = this.prisma.bookmarks.delete({
         where: {
           userId_postId: {
-            userId: userId,
-            postId: postId,
+            userId: +userId,
+            postId: +postId,
           },
         },
       });
       const decreasePreference = this.prisma.posts.update({
-        where: { postId: postId },
+        where: { postId: +postId },
         data: { preference: { decrement: 1 } },
         select: { preference: true },
       });
@@ -350,7 +350,7 @@ export class PostService {
         },
       });
       const increasePreference = this.prisma.posts.update({
-        where: { postId: postId },
+        where: { postId: +postId },
         data: { preference: { increment: 1 } },
         select: { preference: true },
       });

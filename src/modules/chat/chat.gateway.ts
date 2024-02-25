@@ -66,6 +66,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(`${client.id} 소켓 연결 해제`);
   }
 
+  //메세지 보내기
   @SubscribeMessage('send-message')
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
@@ -87,7 +88,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const message = await this.chatService.createMessage(data.messageDto); //Number(data.postId), Number(data.userId)
       this.server
         .to(`postRoom-${message.postId}`)
-        .emit('receive-message', { message: message.chat_message, userName: user.userName });
+        .emit('send-message', { message: message.chat_message, userName: user.userName });
       console.log(`메시지 '${message.chat_message}'가 ${user.userName}에 의해 ${message.postId} 방에 전송됨`);
     } catch (error) {
       console.log('error', error);
@@ -97,9 +98,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   //<이부분은 영상보면서 필요한지 불필요한지 판단해야함(무한스크롤로 조회되게끔했는데 프론트에서 그냥 userId-massage로 창에 다 보여줄 수 있는지 확인)>
   //postId를 받아와서 특정 postId의 메세지들을 조회
   @SubscribeMessage('read-Messages')
-  async handleGetMessagesWithUser(client: Socket, payload: { postId: number; page: number; pageSize: number }) {
-    const messages = await this.chatService.getMessages(payload.postId, payload.page, payload.pageSize);
-    this.server.emit('messagesWithUser', messages);
+  async handleGetMessages(client: Socket, payload: { postId: number; lastMessageId?: number }) {
+    const { postId, lastMessageId } = payload;
+    const result = await this.chatService.getMessagesByPostId(postId, lastMessageId);
+    client.emit('read-Messages', result); //getMessages=> 클라이언트에서 발생시키는 이벤트
   }
 
   @SubscribeMessage('join-room')
@@ -114,7 +116,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     //   where: { userId: payload.userId },
     // });
     console.log(`소켓 id: ${client.id}, ${data.postId} 방에 입장함`);
-    this.server.to(`post-${data.postId}`).emit('message', {
+    this.server.to(`post-${data.postId}`).emit('join-room', {
       content: `User ${data.userId}가 들어왔습니다.`, //${user.userName}
       // users: user, //유저정보를 나타내는건데 위에서 유저 이름만 잘 표기해주면 없어도 되지 않는지
     });
@@ -131,7 +133,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     //   where: { userId: payload.userId },
     // });
     console.log(`소켓 id: ${client.id}, ${data.postId} 방에서 나감`);
-    this.server.to(`post-${data.postId}`).emit('message', {
+    this.server.to(`post-${data.postId}`).emit('leave-room', {
       content: `User ${data.userId}이(가) 나갔습니다.`, //${user.userName}
       // users: user, //유저정보를 나타내는건데 위에서 유저 이름만 잘 표기해주면 없어도 되지 않는지
     });

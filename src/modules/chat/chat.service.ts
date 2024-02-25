@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { MessageDto } from './dto/message.dto';
 // import { Socket } from 'socket.io';
 
@@ -36,52 +37,65 @@ export class ChatService {
     return chat;
   }
 
-  // //채팅방별로 메세지 조회
-  // /**
-  //  *
-  //  * @param postId
-  //  * @returns
-  //  */
-  // async getMessages(postId: number) {
-  //   const message = await this.prisma.chats.findMany({
-  //     where: { postId: +postId },
+  // async getMessages(postId: number, page: number, pageSize: number) {
+  //   const messages = await this.prisma.chats.findMany({
+  //     where: { postId: postId },
+  //     skip: (page - 1) * pageSize,
+  //     take: pageSize,
   //     orderBy: {
-  //       createdAt: 'asc',
+  //       createdAt: 'desc',
   //     },
   //     select: {
   //       postId: true,
   //       userId: true,
   //       chat_message: true,
+  //       createdAt: true,
   //     },
   //   });
 
-  //   if (message.length === 0) {
+  //   if (!messages || messages.length === 0) {
   //     throw new NotFoundException({ errorMessage: '메시지가 존재하지 않습니다.' });
   //   }
-  //   return message;
-  // }
 
-  async getMessages(postId: number, page: number, pageSize: number) {
+  //   return messages;
+  // }
+  async getMessagesByPostId(postId: number, lastMessageId?: number) {
+    let whereCondition: Prisma.chatsWhereInput = { postId: postId };
+
+    if (lastMessageId) {
+      whereCondition = {
+        ...whereCondition,
+        chatId: {
+          lt: lastMessageId,
+        },
+      };
+    }
+
     const messages = await this.prisma.chats.findMany({
-      where: { postId: postId },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
+      where: whereCondition,
       orderBy: {
-        createdAt: 'desc',
+        createdAt: 'asc',
       },
+      take: 10,
       select: {
-        postId: true,
-        userId: true,
+        chatId: true,
         chat_message: true,
         createdAt: true,
+        userId: true,
+        users: {
+          select: {
+            userNickname: true,
+          },
+        },
       },
     });
 
-    if (!messages || messages.length === 0) {
-      throw new NotFoundException({ errorMessage: '메시지가 존재하지 않습니다.' });
-    }
+    const isLastPage = messages.length < 10;
 
-    return messages;
+    return {
+      messages,
+      isLastPage,
+    };
   }
 
   //임시로 유저 조회, 찾아본 바로는 원래는 클라이언트에서 토큰을 받아서?? 인증을 해야한다고함

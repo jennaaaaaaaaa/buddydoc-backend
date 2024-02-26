@@ -179,7 +179,7 @@ export class PostService {
   /**
    *
    * * 게시글 상세조회(views +1, preference는 버튼 누를 때 올라가는 거라 프론트에서 해줘야되는지?)
-   * 로그인 안되있어도 됨
+   * 로그인 안되있으면 북마크 기본 false값
    * @param postId
    * @returns
    */
@@ -453,7 +453,6 @@ export class PostService {
    * @returns
    */
   async toggleBookmark(userId: number, postId: number) {
-    //컨트롤러에서 user를 가져와서 user테이블에서 user찾기 user가 없다면 에러처리
     const bookmark = await this.prisma.bookmarks.findUnique({
       where: {
         userId_postId: {

@@ -15,13 +15,14 @@ import {
   Next,
   UseGuards,
   Redirect,
+  NotFoundException,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import {BcryptService} from '../utils/bcrypt/bcrypt.service'
-import { KakaoAuthGuard, NaverAuthGuard } from './oauth/auth.guard';
-import { GoogleAuthGuard } from './oauth/auth.guard';
+import { BcryptService } from '../utils/bcrypt/bcrypt.service';
+import { JwtAuthGuard, KakaoAuthGuard, NaverAuthGuard, GoogleAuthGuard } from './oauth/auth.guard';
+import * as fs from 'fs';
 
 @ApiTags('login')
 @Controller()
@@ -32,28 +33,28 @@ export class AuthController {
   ) {}
 
   /**
-   * 사용자 인증 후 회원 체크
+   * oauth 사용자 인증 가입처리
    * @param res
    * @param req
    * @param user
    */
   private async checkUser(res: Response, req: Request, user: any) {
     try {
+      // 회원가입 체크
       const checkUser = await this.authService.findUser(user);
-
-      //비밀번호 암호화
-      user.password = await this.bcryptService.hashPassword(user.password)
-
-      res.cookie('authCookie', user, {
-        maxAge: 900000,
-        httpOnly: true,
-      });
-
+      console.log('회원가입 체크 ', checkUser);
+      // 회원가입이 되어있으면 토큰 발급
       if (checkUser) {
-        res.redirect('/login');
-      } else {
-        res.redirect('/signup');
+        const accessToken = await this.authService.login(checkUser);
+
+        res.cookie('authCookie', accessToken, {
+          maxAge: 900000,
+          httpOnly: false,
+        });
+        const html = fs.readFileSync('src/auth/assets/callback.html', 'utf8');
+        return res.send(html)
       }
+      return res.status(201).json({ message: '회원가입 필요' });
     } catch (error) {
       console.log(error);
     }
@@ -104,17 +105,9 @@ export class AuthController {
     return this.checkUser(res, req, req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('/signup')
   signUp(@Res() res: Response, @Req() req: Request) {
-    let test = req.cookies['authCookie'];
-    console.log('쿠키확인 ', test);
     res.status(200).json({ message: '회원가입 form' });
-  }
-
-  @Get('/login')
-  async login(@Res() res: Response, @Req() req: Request) {
-    let test = req.cookies['authCookie'];
-    console.log('쿠키확인', test);
-    res.status(200).json({ message: '로그인' });
   }
 }

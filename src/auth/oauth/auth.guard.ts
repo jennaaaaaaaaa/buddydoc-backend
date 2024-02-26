@@ -9,3 +9,7 @@ export class GoogleAuthGuard extends AuthGuard('google') {}
 
 @Injectable()
 export class NaverAuthGuard extends AuthGuard('naver') {}
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}
+

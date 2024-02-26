@@ -9,7 +9,7 @@ import { SearchModule } from './search/search.module';
 
 @Module({
   controllers: [PostController],
-  providers: [PostService, S3Module],
+  providers: [PostService],
   imports: [PrismaModule, S3Module, SearchModule],
 })
 export class postModule {}

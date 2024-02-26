@@ -70,8 +70,9 @@ export class PostController {
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   @Get('/search')
-  async postSearch(@Query() search: string) {
+  async postSearch(@Query('search') search: string) {
     try {
+      console.log('postController =>>>> search:', search);
       const result = await this.searchService.postSearch(search);
       return result;
     } catch (error) {

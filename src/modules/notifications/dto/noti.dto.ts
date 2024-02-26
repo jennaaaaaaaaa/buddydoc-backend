@@ -17,7 +17,7 @@ export class NotiDto {
 
   @ApiProperty()
   @IsString()
-  noti_message: String;
+  noti_message: string;
 
   @ApiProperty()
   @IsEnum(notifications_notiStatus)

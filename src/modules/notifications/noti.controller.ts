@@ -18,11 +18,10 @@ import {
   UseFilters,
   UseInterceptors,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
-import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
-import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 import { JwtAuthGuard } from 'src/auth/oauth/auth.guard';
 import { NotiService } from './noti.service';
 import { NotiDto } from './dto/noti.dto';
@@ -34,16 +33,18 @@ export class NotiContoller {
 
   @UseGuards(JwtAuthGuard)
   @Post(':post/noti')
-  async createNotification(@Res() res: Response, @Req() req: Request, notiDto: NotiDto) {
+  async createNotification(@Body() notiDto: NotiDto, @Res() res: Response, @Req() req: Request) {
     try {
-      const postId = Number(req.params);
-
+      const postId = Number(req.params['post']);
+      console.log(req.user['id']);
       notiDto.noti_userId = req.user['id'];
-      notiDto.noti_message = req.body.noti_message;
+      notiDto.postId=postId
       notiDto.userId = await this.notiService.getUserIdatPost(postId);
-
+      console.log(notiDto);
       await this.notiService.sendNotification(notiDto);
       return res.status(200).json({ message: '신청완료' });
-    } catch (error) {}
+    } catch (error) {
+      throw new BadRequestException('신청에러')
+    }
   }
 }

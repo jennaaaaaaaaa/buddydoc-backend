@@ -57,7 +57,7 @@ export class UserService {
           gitURL: gitURL,
           userStatus: userStatus,
           introduction: introduction,
-          career: career,
+          career: Number(career),
           createdAt: new Date(),
         },
       });

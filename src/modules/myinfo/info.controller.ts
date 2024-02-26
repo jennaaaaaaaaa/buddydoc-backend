@@ -24,8 +24,10 @@ import { UserService } from '../user/user.service';
 @ApiTags('user/my-info')
 @Controller('user')
 export class InfoController {
-  constructor(private readonly InfoService: InfoService,
-    private readonly userService:UserService) {}
+  constructor(
+    private readonly InfoService: InfoService,
+    private readonly userService: UserService
+  ) {}
 
   /**
    * 내 정보/북마크/스터디/게시물 조회
@@ -40,10 +42,9 @@ export class InfoController {
   @Get('/my-:table')
   async getUserInfo(@Body() infoDto: InfoDto, @Req() req: Request) {
     try {
-
       infoDto.userId = req.user['id'];
       infoDto.name = String(req.params['table']);
-      
+
       if (!infoDto.userId) throw new HttpException('로그인이 필요한 서비스 입니다', HttpStatus.BAD_REQUEST);
 
       const methodMap = {
@@ -64,23 +65,22 @@ export class InfoController {
 
   /**
    * 회원정보 수정
-   * @param userDto 
-   * @param req 
-   * @returns 
+   * @param userDto
+   * @param req
+   * @returns
    */
   @UseGuards(JwtAuthGuard)
   @Put('/my-info')
   async updateUserInfo(@Body() userDto: UserDto, @Req() req: Request, @Res() res: Response) {
     try {
-    
-      userDto.userId=req.user['id']
+      userDto.userId = req.user['id'];
       //정보 수정
-      await this.userService.updateUser(userDto)
+      await this.userService.updateUser(userDto);
 
       //스킬 수정
-      await this.userService.updateSkills(userDto.userId,userDto.skills)
+      await this.userService.updateSkills(userDto.userId, userDto.skills);
 
-      return res.status(200).json({message : '회원정보가 수정되었습니다.'});
+      return res.status(200).json({ message: '회원정보가 수정되었습니다.' });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

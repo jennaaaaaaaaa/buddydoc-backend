@@ -30,10 +30,11 @@ model posts {
   views                          Int?            @default(0)
   createdAt                      DateTime?       @db.Timestamp(0)
   updatedAt                      DateTime?       @db.DateTime(0)
-  deletedAt                      DateTime?      @db.DateTime(0)
+  deletedAt                      DateTime?       @db.DateTime(0)
   deadLine                       DateTime?       @db.DateTime(0)
-  startDate                      DateTime?      @db.DateTime(0)
+  startDate                      DateTime?       @db.DateTime(0)
   memberCount                    Int?
+  period                         String?         @db.VarChar(20)
   post_userId                    Int?
   bookmarks                      bookmarks[]
   chats_chats_postIdToposts      chats[]         @relation("chats_postIdToposts")

@@ -134,6 +134,7 @@ export class PostController {
    * @param deadLine
    * @param startDate
    * @param memberCount
+   * @param period
    * @returns
    */
   @ApiOperation({ summary: '게시글 생성 API' })
@@ -148,7 +149,8 @@ export class PostController {
     @Body('skillList') skillList: string,
     @Body('deadLine') deadLine: Date,
     @Body('startDate') startDate: Date,
-    @Body('memberCount') memberCount: number
+    @Body('memberCount') memberCount: number,
+    @Body('period') period: string
   ) {
     try {
       await this.postService.createPost(
@@ -159,7 +161,8 @@ export class PostController {
         skillList,
         deadLine,
         startDate,
-        memberCount
+        memberCount,
+        period
       );
       return { message: '게시글이 작성되었습니다' };
     } catch (error) {
@@ -178,6 +181,7 @@ export class PostController {
    * @param deadLine
    * @param startDate
    * @param memberCount
+   * @param period
    * @returns
    */
   @ApiOperation({
@@ -195,7 +199,8 @@ export class PostController {
     @Body('skillList') skillList: string,
     @Body('deadLine') deadLine: Date,
     @Body('startDate') startDate: Date,
-    @Body('memberCount') memberCount: number
+    @Body('memberCount') memberCount: number,
+    @Body('period') period: string
   ) {
     try {
       await this.postService.updatePost(
@@ -207,7 +212,8 @@ export class PostController {
         skillList,
         deadLine,
         startDate,
-        memberCount
+        memberCount,
+        period
       );
       return { message: '수정되었습니다' };
     } catch (error) {

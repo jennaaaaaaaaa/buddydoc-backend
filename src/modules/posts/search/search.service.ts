@@ -148,6 +148,77 @@ export class SearchService {
       })
     );
   }
+  // async updateDocument(id: number, post: any) {
+  //   console.log('id, post ===>>>>', id, post);
+  //   return this.elasticsearchService.update({
+  //     index: this.indexName,
+  //     id: String(id),
+  //     body: {
+  //       doc: {
+  //         title: post.postTitle,
+  //         content: post.content,
+  //         suggest: {
+  //           input: [...post.postTitle.split(' '), ...post.content.split(' ')],
+  //         },
+  //       },
+  //     },
+  //   });
+  // }
+
+  async updateDocument(id: number, post: any) {
+    // 문서가 존재하는지 확인
+    const isExists = await this.elasticsearchService.exists({
+      index: this.indexName,
+      id: String(id),
+    });
+
+    if (isExists) {
+      // 문서가 존재하면 업데이트
+      return this.elasticsearchService.update({
+        index: this.indexName,
+        id: String(id),
+        body: {
+          doc: {
+            title: post.postTitle,
+            content: post.content,
+            suggest: {
+              input: [...post.postTitle.split(' '), ...post.content.split(' ')],
+            },
+          },
+        },
+      });
+    } else {
+      // 문서가 존재하지 않으면 새로 추가
+      return this.elasticsearchService.create({
+        index: this.indexName,
+        id: String(id),
+        body: {
+          title: post.postTitle,
+          content: post.content,
+          suggest: {
+            input: [...post.postTitle.split(' '), ...post.content.split(' ')],
+          },
+        },
+      });
+    }
+  }
+
+  async deleteDoc(id: number) {
+    console.log('deleteDoc ====>>> id:', id);
+    // 문서가 존재하는지 확인
+    const isExists = await this.elasticsearchService.exists({
+      index: this.indexName,
+      id: String(id),
+    });
+
+    if (isExists) {
+      // 문서가 존재하면 삭제
+      return this.elasticsearchService.delete({
+        index: this.indexName,
+        id: String(id),
+      });
+    }
+  }
 }
 
 // import { Injectable } from '@nestjs/common';

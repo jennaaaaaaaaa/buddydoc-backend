@@ -51,15 +51,11 @@ export class AuthController {
         httpOnly: false,
       });
 
-      if (checkUser.userNickname === null) {
-        return res.status(201).json({ message: '회원가입 필요' });
-      }
+      // if (checkUser.userNickname === null) {
+      //   return res.status(201).json({ message: '회원가입 필요' });
+      // }
 
-      res.setHeader('Access-Control-Allow-origin', '*'); // 모든 출처(orogin)을 허용
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE'); // 모든 HTTP 메서드 허용
-      res.setHeader('Access-Control-Allow-Credentials', 'true'); // 클라이언트와 서버 간에 쿠키 주고받기 허용
-
-      return res.status(200).json({ accessToken });
+      res.redirect(`http://localhost:3001/callback?token=${accessToken}`)
     } catch (error) {
       console.log(error);
     }

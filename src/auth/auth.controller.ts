@@ -49,13 +49,10 @@ export class AuthController {
       res.cookie('authCookie', accessToken, {
         maxAge: 900000,
         httpOnly: false,
+        domain: 'localhost:3001',
       });
 
-      // if (checkUser.userNickname === null) {
-      //   return res.status(201).json({ message: '회원가입 필요' });
-      // }
-
-      res.redirect(`http://localhost:3001/callback?token=${accessToken}`)
+      res.redirect(`http://localhost:3001/callback?token=${accessToken}`);
     } catch (error) {
       console.log(error);
     }

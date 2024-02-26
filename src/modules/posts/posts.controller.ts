@@ -11,9 +11,11 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UploadedFile,
   UploadedFiles,
   UseFilters,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { PostService } from './posts.service';
@@ -21,17 +23,24 @@ import { posts, users } from '@prisma/client';
 import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { PagingPostsDto } from './dto/paging-post.dto';
-import { response } from 'express';
+import { Response, Request } from 'express';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
+import { JwtAuthGuard } from 'src/auth/oauth/auth.guard';
+
+//elastic 사용시 주석해제
+// import { SearchService } from './search/search.service';
 
 @Controller('post')
 export class PostController {
   constructor(
     private readonly postService: PostService,
     private readonly s3Service: S3Service
+
+    //elastic 사용시 주석해제
+    // private searchService: SearchService
   ) {}
 
   /**
@@ -54,12 +63,32 @@ export class PostController {
         orderField = 'preference';
       }
       const lastPostId = Number(pagingPostsDto.lastPostId);
-      const posts = await this.postService.getAllPosts(orderField, lastPostId);
+      const postType = pagingPostsDto.postType;
+      const posts = await this.postService.getAllPosts(orderField, postType, lastPostId);
       return posts;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  //elasticsearch 사용시 주석해제
+  // /**
+  //  * 게시글 검색
+  //  * @param search
+  //  * @returns
+  //  */
+  // @UseFilters(HttpExceptionFilter)
+  // @HttpCode(200)
+  // @Get('/search')
+  // async postSearch(@Query('search') search: string) {
+  //   try {
+  //     console.log('postController =>>>> search:', search);
+  //     const result = await this.searchService.postSearch(search);
+  //     return result;
+  //   } catch (error) {
+  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
 
   /**
    * 게시글 상세조회
@@ -70,12 +99,12 @@ export class PostController {
     summary: '게시글 상세조회 API',
   })
   @Get(':postId')
+  @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async getOnePost(@Param('postId') postId: number) {
+  async getOnePost(@Param('postId') postId: number, @Req() req: Request) {
     try {
-      //const userinfo = req.user.userId
-      const userId = 2;
+      const userId = req.user['id'];
       const post = await this.postService.getOnePost(postId, userId);
       return post;
     } catch (error) {
@@ -83,25 +112,28 @@ export class PostController {
     }
   }
 
-  /**
-   * 게시글 참가 유저 프로필 조회
-   * @param userId
-   * @returns
-   */
-  @ApiOperation({
-    summary: '게시글 참가 유저 프로필 조회 API',
-  })
-  @Get(':postId/participants')
-  @UseFilters(HttpExceptionFilter)
-  @HttpCode(200)
-  async getParticipantsInPost(@Param('postId') postId: number) {
-    try {
-      const users = await this.postService.getParticipantsInPost(postId);
-      return users;
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
+  // /**
+  //  * 게시글 참가 유저 프로필 조회
+  //  * @param userId
+  //  * @returns
+  //  */
+  // @ApiOperation({
+  //   summary: '게시글 참가 유저 프로필 조회 API',
+  // })
+  // @Get(':postId/participants')
+  // @UseFilters(HttpExceptionFilter)
+  // @HttpCode(200)
+  // async getParticipantsInPost(@Param('postId') postId: number) {
+  //   try {
+  //     const userId = 2
+  //     const users = await this.postService.getParticipantsInPost(postId, userId);
+  //     return users;
+  //   } catch (error) {
+  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
+  // // @UseGuards(JwtAuthGuard)
+  // // const userId = req.user['id']
 
   /**
    *
@@ -111,10 +143,14 @@ export class PostController {
    * @param position
    * @param skillList
    * @param deadLine
+   * @param startDate
+   * @param memberCount
+   * @param period
    * @returns
    */
   @ApiOperation({ summary: '게시글 생성 API' })
   @Post()
+  @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async createPost(
@@ -125,9 +161,12 @@ export class PostController {
     @Body('skillList') skillList: string,
     @Body('deadLine') deadLine: Date,
     @Body('startDate') startDate: Date,
-    @Body('memberCount') memberCount: number
+    @Body('memberCount') memberCount: number,
+    @Body('period') period: string,
+    @Req() req: Request
   ) {
     try {
+      const userId = req.user['id'];
       await this.postService.createPost(
         postTitle,
         content,
@@ -136,8 +175,10 @@ export class PostController {
         skillList,
         deadLine,
         startDate,
-        memberCount
-      ); //, projectPeriod
+        memberCount,
+        period,
+        userId
+      );
       return { message: '게시글이 작성되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -153,6 +194,9 @@ export class PostController {
    * @param position
    * @param skillList
    * @param deadLine
+   * @param startDate
+   * @param memberCount
+   * @param period
    * @returns
    */
   @ApiOperation({
@@ -160,6 +204,7 @@ export class PostController {
   })
   @Put(':postId')
   @UseFilters(HttpExceptionFilter)
+  @UseGuards(JwtAuthGuard)
   @HttpCode(200)
   async updatePost(
     @Param('postId') postId: number,
@@ -170,9 +215,12 @@ export class PostController {
     @Body('skillList') skillList: string,
     @Body('deadLine') deadLine: Date,
     @Body('startDate') startDate: Date,
-    @Body('memberCount') memberCount: number
+    @Body('memberCount') memberCount: number,
+    @Body('period') period: string,
+    @Req() req: Request
   ) {
     try {
+      const userId = req.user['id'];
       await this.postService.updatePost(
         postId,
         postTitle,
@@ -182,7 +230,9 @@ export class PostController {
         skillList,
         deadLine,
         startDate,
-        memberCount
+        memberCount,
+        period,
+        userId
       );
       return { message: '수정되었습니다' };
     } catch (error) {
@@ -259,22 +309,23 @@ export class PostController {
   }
 
   /**
+   *
    * 게시글 삭제
    * 본인인증
-   *
    * @param postId
    * @returns
    */
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '게시글 삭제 API',
   })
   @Delete(':postId')
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async deletePost(@Param('postId') postId: number) {
+  async deletePost(@Param('postId') postId: number, @Req() req: Request) {
     try {
-      //사용자 인증에 필요한 userId 받이서 보내주기
-      await this.postService.deletePost(postId);
+      const userId = req.user['id'];
+      await this.postService.deletePost(postId, userId);
       return { message: '삭제되었습니다' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -286,18 +337,14 @@ export class PostController {
    * @param postId
    * @returns
    */
-  // @UseGuards(AuthGuard())
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '북마크 추가/제거 API',
   })
   @Post(':postId/bookmarks')
-  async toggleBookmark(@Param('postId') postId: number) {
-    //@Request() req
-    // 로그인된 사용자의 ID를 가져옵니다.
-    // const userId = req.user.userId;
-    const userId = 2;
-
+  async toggleBookmark(@Param('postId') postId: number, @Req() req: Request) {
     try {
+      const userId = req.user['id'];
       const result = await this.postService.toggleBookmark(userId, postId);
       return result;
     } catch (error) {

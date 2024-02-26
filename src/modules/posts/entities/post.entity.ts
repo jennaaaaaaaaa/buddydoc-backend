@@ -19,12 +19,6 @@ export class PostEntity implements posts {
   postType: string;
 
   @ApiProperty()
-  imageName: string;
-
-  @ApiProperty()
-  fileName: string;
-
-  @ApiProperty()
   preference: number;
 
   @ApiProperty()
@@ -47,6 +41,9 @@ export class PostEntity implements posts {
 
   @ApiProperty()
   memberCount: number;
+
+  @ApiProperty()
+  period: string;
 
   @ApiProperty()
   post_userId: number;

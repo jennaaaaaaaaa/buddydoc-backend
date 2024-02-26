@@ -2,7 +2,7 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 // @MinLength :최소길이
-import { IsDate, IsInt, IsString, isNumber } from 'class-validator';
+import { IsDate, IsInt, IsNumber, IsString, isNumber } from 'class-validator';
 
 export class CreatePostsDto {
   //게시글 제목
@@ -29,6 +29,9 @@ export class CreatePostsDto {
   @IsString()
   skillList: string;
 
+  // preference
+  // views
+
   @ApiProperty()
   @IsDate()
   deadLine: Date;
@@ -39,7 +42,16 @@ export class CreatePostsDto {
 
   @ApiProperty()
   @IsInt()
-  numberCount: number;
+  memberCount: number;
+
+  @ApiProperty()
+  @IsString()
+  period: string;
+
+  //게시글 작성자
+  @ApiProperty()
+  @IsInt()
+  post_userId: number;
 }
 
 //,startDate, numberCount, projectPeriod

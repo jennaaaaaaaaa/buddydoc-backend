@@ -5,14 +5,11 @@ import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
 
-// import { SearchService } from '../search/search.service';
-
 @Injectable()
 export class PostService {
   constructor(
     private prisma: PrismaService,
     private s3Service: S3Service
-    // esService: SearchService
   ) {}
 
   /**
@@ -101,8 +98,8 @@ export class PostService {
       title: updatePost.postTitle,
       content: updatePost.content,
       postType: updatePost.postType,
-      image: updatePost.imageName,
-      file: updatePost.fileName,
+      // image: updatePost.imageName,
+      // file: updatePost.fileName,
       preference: updatePost.preference,
       views: updatePost.views,
       position: updatePost.position,
@@ -185,8 +182,8 @@ export class PostService {
         content,
         postType,
         position,
-        imageName: imageUrl,
-        fileName: fileUrls,
+        // imageName: imageUrl,
+        // fileName: fileUrls,
         skillList,
         deadLine,
         post_userId: 1, //userId를 받아서 넣어야함
@@ -253,8 +250,8 @@ export class PostService {
         content,
         postType,
         position,
-        imageName: imageUrl,
-        fileName: fileUrls,
+        // imageName: imageUrl,
+        // fileName: fileUrls,
         skillList,
         deadLine,
         updatedAt: new Date(),

@@ -4,11 +4,10 @@
     return cookies['authCookie'];
   }
 
-  //부모창에게 쿠키 전달 주소 변경 필요
+  // 부모창에게 쿠키 전달 주소 변경 필요
   function sendDataToParent() {
     window.parent.postMessage(getCookie(), 'localhost:3000/');
   }
 
   sendDataToParent();
-
 </script>

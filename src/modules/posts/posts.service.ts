@@ -5,8 +5,6 @@ import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
 
-// import { SearchService } from '../search/search.service';
-
 @Injectable()
 export class PostService {
   constructor(

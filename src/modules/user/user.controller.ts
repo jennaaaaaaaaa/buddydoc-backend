@@ -17,7 +17,7 @@ import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
-@ApiTags('/signup')
+@ApiTags('signup')
 @Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -36,16 +36,16 @@ export class UserController {
   async create(@Body() userDto: UserDto, @Res() res: Response) {
     try {
       //회원생성
-      let user = await this.userService.createUser(userDto);
+      const user = await this.userService.createUser(userDto);
 
       //회원생성 실패시 에러처리 필요
-
+      
       //skills에 skill 추가
       await this.userService.insertSkills(user.userId, userDto.skills);
+      
+      return res.status(201).json({ message: '회원가입 완료' });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
-
-    return res.status(201).json({ message: '회원가입 완료' });
   }
 }

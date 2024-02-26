@@ -6,8 +6,10 @@ import { AppService } from './app.service';
 import { userModule } from './modules/user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { infoModule } from './modules/myinfo/info.module';
+import { authModule } from './auth/auth.module';
 import { S3Service } from './providers/aws/s3/s3.service';
 import { S3Module } from './providers/aws/s3/s3.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -16,8 +18,10 @@ import { S3Module } from './providers/aws/s3/s3.module';
     }),
     userModule,
     infoModule,
+    authModule,
     postModule,
     S3Module,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService, S3Service],

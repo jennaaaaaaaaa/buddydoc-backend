@@ -21,17 +21,19 @@ import { posts, users } from '@prisma/client';
 import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { PagingPostsDto } from './dto/paging-post.dto';
-import { response } from 'express';
+import { query, response } from 'express';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
+import { SearchService } from './search/search.service';
 
 @Controller('post')
 export class PostController {
   constructor(
     private readonly postService: PostService,
-    private readonly s3Service: S3Service
+    private readonly s3Service: S3Service,
+    private searchService: SearchService
   ) {}
 
   /**
@@ -57,6 +59,24 @@ export class PostController {
       const postType = pagingPostsDto.postType;
       const posts = await this.postService.getAllPosts(orderField, postType, lastPostId);
       return posts;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * 게시글 검색
+   * @param search
+   * @returns
+   */
+  @UseFilters(HttpExceptionFilter)
+  @HttpCode(200)
+  @Get('/search')
+  async postSearch(@Query('search') search: string) {
+    try {
+      console.log('postController =>>>> search:', search);
+      const result = await this.searchService.postSearch(search);
+      return result;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -278,6 +298,7 @@ export class PostController {
   @HttpCode(200)
   async deletePost(@Param('postId') postId: number) {
     try {
+      //사용자 인증에 필요한 userId 받이서 보내주기
       await this.postService.deletePost(postId);
       return { message: '삭제되었습니다' };
     } catch (error) {

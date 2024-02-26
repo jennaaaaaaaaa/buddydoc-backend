@@ -18,11 +18,11 @@ export class PostEntity implements posts {
   @ApiProperty()
   postType: string;
 
-  @ApiProperty()
-  imageName: string;
+  // @ApiProperty()
+  // imageName: string;
 
-  @ApiProperty()
-  fileName: string;
+  // @ApiProperty()
+  // fileName: string;
 
   @ApiProperty()
   preference: number;
@@ -50,6 +50,10 @@ export class PostEntity implements posts {
 
   @ApiProperty()
   post_userId: number;
+
+  memberCount: number;
+
+  startDate: Date | null;
 
   @ApiProperty()
   skillList: string;

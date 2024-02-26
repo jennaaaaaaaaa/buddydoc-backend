@@ -1,6 +1,12 @@
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
-import { IsString, IsInt, IsNumber } from 'class-validator';
+import { IsString, IsInt, IsNumber, IsEnum } from 'class-validator';
+import { users_userStatus } from '@prisma/client';
+
 export class UserDto {
+  @ApiProperty()
+  @IsNumber()
+  userId: number;
+
   @ApiProperty()
   @IsString()
   email: string; // 이메일
@@ -13,9 +19,9 @@ export class UserDto {
   @IsString()
   userNickname: string; // 유저 닉네임
 
-  // @ApiProperty()
-  // @IsString()
-  // userTokken: string; // 토큰
+  @ApiProperty()
+  @IsString()
+  password: string; // 토큰
 
   @ApiProperty()
   @IsString()
@@ -26,8 +32,8 @@ export class UserDto {
   gitURL: string; // 깃주소
 
   @ApiProperty()
-  @IsString()
-  userStatus: string; // 공개상태
+  @IsEnum(users_userStatus)
+  userStatus: users_userStatus; // 공개상태
 
   @ApiProperty()
   @IsString()
@@ -39,11 +45,13 @@ export class UserDto {
 
   @ApiProperty()
   @IsString()
-  skills: string; // 기술
+  skills: string[]; // 기술
 
+  @ApiProperty()
   @IsString()
-  name: string;
+  name: string; // 이름
 
-  @IsNumber()
-  userId: number;
+  @ApiProperty()
+  @IsString()
+  platform: string; // 플랫폼
 }

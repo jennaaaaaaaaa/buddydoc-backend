@@ -22,6 +22,7 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { BcryptService } from '../utils/bcrypt/bcrypt.service';
 import { JwtAuthGuard, KakaoAuthGuard, NaverAuthGuard, GoogleAuthGuard } from './oauth/auth.guard';
+import * as fs from 'fs';
 
 @ApiTags('login')
 @Controller()
@@ -41,20 +42,19 @@ export class AuthController {
     try {
       // 회원가입 체크
       const checkUser = await this.authService.findUser(user);
-
+      console.log('회원가입 체크 ', checkUser);
       // 회원가입이 되어있으면 토큰 발급
       if (checkUser) {
         const accessToken = await this.authService.login(checkUser);
 
         res.cookie('authCookie', accessToken, {
           maxAge: 900000,
-          httpOnly: true,
+          httpOnly: false,
         });
-
-        return res.status(HttpStatus.OK).json({ accessToken });
+        const html = fs.readFileSync('src/auth/assets/callback.html', 'utf8');
+        return res.send(html)
       }
-      return res.status(201).json({message : 'needsignup'})
-      //return res.redirect(`/signup?test=${accessToken}`);
+      return res.status(201).json({ message: '회원가입 필요' });
     } catch (error) {
       console.log(error);
     }

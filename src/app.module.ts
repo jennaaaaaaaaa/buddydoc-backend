@@ -23,7 +23,7 @@ import { NotiModule } from './modules/notifications/noti.module';
     postModule,
     S3Module,
     ChatModule,
-    NotiModule,
+    
   ],
   controllers: [AppController],
   providers: [AppService, S3Service],

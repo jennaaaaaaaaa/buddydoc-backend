@@ -29,7 +29,7 @@ export class InfoService {
         },
       },
     });
-    
+
     const result = {
       userId: user.userId,
       userName: user.userName,
@@ -37,8 +37,8 @@ export class InfoService {
       position: user.position,
       skills: user.skills.map((skill) => skill.skill),
     };
-    
-    return result
+
+    return result;
   }
 
   /**

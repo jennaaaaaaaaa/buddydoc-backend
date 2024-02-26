@@ -43,18 +43,20 @@ export class AuthController {
       // 회원가입 체크
       const checkUser = await this.authService.findUser(user);
       console.log('회원가입 체크 ', checkUser);
-      // 회원가입이 되어있으면 토큰 발급
-      if (checkUser) {
-        const accessToken = await this.authService.login(checkUser);
+      //토큰 발급
+      const accessToken = await this.authService.login(checkUser);
+      //쿠키 등록
+      res.cookie('authCookie', accessToken, {
+        maxAge: 900000,
+        httpOnly: false,
+      });
 
-        res.cookie('authCookie', accessToken, {
-          maxAge: 900000,
-          httpOnly: false,
-        });
+      if (checkUser.userNickname === null) {
+        return res.status(201).json({ message: '회원가입 필요' });
+      } else {
         const html = fs.readFileSync('src/auth/assets/callback.html', 'utf8');
-        return res.send(html)
+        return res.send(html);
       }
-      return res.status(201).json({ message: '회원가입 필요' });
     } catch (error) {
       console.log(error);
     }

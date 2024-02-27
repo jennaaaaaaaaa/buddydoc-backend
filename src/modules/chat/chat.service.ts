@@ -102,7 +102,7 @@ export class ChatService {
   async getUserInfo(userId: number) {
     console.log('userId ===>>>>>>: ', userId);
     const chat = await this.prisma.users.findUnique({
-      where: { userId },
+      where: { userId: +userId },
       select: { userId: true, userName: true, userNickname: true },
     });
     return chat;

@@ -95,6 +95,7 @@ export class PostService {
    * @returns
    */
   async getOnePost(postId: number, userId: number) {
+    //userId: number
     const post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });
     if (!post || post.deletedAt !== null) {
       throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
@@ -122,10 +123,10 @@ export class PostService {
     // return updatePost;
     const response = {
       postId: updatePost.postId,
-      user: {
-        userId: updatePost.users.userId,
-        nickname: updatePost.users.userNickname,
-      },
+      // user: {
+      //   userId: updatePost.users.userId,
+      //   nickname: updatePost.users.userNickname,
+      // },
       title: updatePost.postTitle,
       content: updatePost.content,
       postType: updatePost.postType,
@@ -139,11 +140,13 @@ export class PostService {
       startDate: updatePost.startDate,
       memberCount: updatePost.memberCount,
       period: updatePost.period,
+      post_userId: updatePost.post_userId,
       bookmarked: !!bookmark,
     };
     return { data: [response] };
   }
 
+  //신청내역테이블에서 postId에 해당하는 userId 찾아오기
   // /**
   //  * 게시글 참가 유저 프로필 조회
   //  * @param postId

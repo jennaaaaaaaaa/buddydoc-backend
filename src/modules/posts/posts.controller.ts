@@ -98,12 +98,12 @@ export class PostController {
     summary: '게시글 상세조회 API',
   })
   @Get(':postId')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number, @Req() req: Request) {
     try {
-      const userId = req.user['id'];
+      const userId = req.user ? req.user['id'] : null;
       // const userId = 23;
       const post = await this.postService.getOnePost(postId, userId);
       return post;

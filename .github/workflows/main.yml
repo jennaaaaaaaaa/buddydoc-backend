@@ -22,3 +22,7 @@ jobs:
           script: | # 실행될 스크립트
             cd ~/buddydoc/buddydoc-backend
             git pull
+            npm install
+            npx prisma push
+            npx prisma generate
+            npm start

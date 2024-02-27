@@ -16,12 +16,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Prisma Migrate
-        run: npx prisma db push --schema=./src/database/prisma/schema.prisma
+      # - name: Prisma Migrate
+      #   run: npx prisma db push --schema=./src/database/prisma/schema.prisma
 
     
-      - name: Prisma Generate
-        run: npx prisma generate --schema=./src/database/prisma/schema.prisma
+      # - name: Prisma Generate
+      #   run: npx prisma generate --schema=./src/database/prisma/schema.prisma
 
       - name: Build and Test
         run: npm test

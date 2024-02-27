@@ -28,7 +28,7 @@ import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express
 import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
-import { JwtAuthGuard } from 'src/auth/oauth/auth.guard';
+// import { JwtAuthGuard } from 'src/auth/oauth/auth.guard';
 
 //elastic 사용시 주석해제
 // import { SearchService } from './search/search.service';
@@ -52,27 +52,25 @@ export class PostController {
   @ApiOperation({
     summary: '게시글목록 API',
   })
+  // @UseGuards(JwtAuthGuard)
   @Get()
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getAllPosts(@Query() pagingPostsDto: PagingPostsDto, @Req() req: Request) {
     try {
-      //const userId = 2; //임시값
-      const userId = req.user['id'];
-      let orderField: 'createdAt' | 'preference' = 'createdAt'; //기본값 최신순
-      if (pagingPostsDto.orderBy === 'preference') {
-        orderField = 'preference';
-      }
+      const userId = 24; //임시값
+      // const userId = req.user['id'];
+
       const lastPostId = Number(pagingPostsDto.lastPostId);
       const postType = pagingPostsDto.postType;
-      const posts = await this.postService.getAllPosts(userId, orderField, postType, lastPostId);
+      const posts = await this.postService.getAllPosts(userId, postType, lastPostId); //orderField
       return posts;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
-  //elasticsearch 사용시 주석해제
+  //elasticsearch 사용시 주석해제 or 주석처리
   // /**
   //  * 게시글 검색
   //  * @param search
@@ -100,13 +98,13 @@ export class PostController {
     summary: '게시글 상세조회 API',
   })
   @Get(':postId')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number, @Req() req: Request) {
     try {
       // const userId = req.user['id'];
-      const userId = 1;
+      const userId = 23;
       const post = await this.postService.getOnePost(postId, userId);
       return post;
     } catch (error) {
@@ -134,8 +132,8 @@ export class PostController {
   //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
   //   }
   // }
-  // // @UseGuards(JwtAuthGuard)
-  // // const userId = req.user['id']
+  // @UseGuards(JwtAuthGuard)
+  // const userId = req.user['id']
 
   /**
    *
@@ -152,7 +150,7 @@ export class PostController {
    */
   @ApiOperation({ summary: '게시글 생성 API' })
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async createPost(
@@ -168,7 +166,8 @@ export class PostController {
     @Req() req: Request
   ) {
     try {
-      const userId = req.user['id'];
+      // const userId = req.user['id'];
+      const userId = 23;
       await this.postService.createPost(
         postTitle,
         content,
@@ -206,7 +205,7 @@ export class PostController {
   })
   @Put(':postId')
   @UseFilters(HttpExceptionFilter)
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @HttpCode(200)
   async updatePost(
     @Param('postId') postId: number,
@@ -222,7 +221,8 @@ export class PostController {
     @Req() req: Request
   ) {
     try {
-      const userId = req.user['id'];
+      // const userId = req.user['id'];
+      const userId = 23;
       await this.postService.updatePost(
         postId,
         postTitle,
@@ -317,7 +317,7 @@ export class PostController {
    * @param postId
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '게시글 삭제 API',
   })
@@ -326,7 +326,8 @@ export class PostController {
   @HttpCode(200)
   async deletePost(@Param('postId') postId: number, @Req() req: Request) {
     try {
-      const userId = req.user['id'];
+      // const userId = req.user['id'];
+      const userId = 23;
       await this.postService.deletePost(postId, userId);
       return { message: '삭제되었습니다' };
     } catch (error) {
@@ -339,14 +340,15 @@ export class PostController {
    * @param postId
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '북마크 추가/제거 API',
   })
   @Post(':postId/bookmarks')
   async toggleBookmark(@Param('postId') postId: number, @Req() req: Request) {
     try {
-      const userId = req.user['id'];
+      // const userId = req.user['id'];
+      const userId = 23;
       const result = await this.postService.toggleBookmark(userId, postId);
       return result;
     } catch (error) {

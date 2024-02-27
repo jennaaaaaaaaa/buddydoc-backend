@@ -23,5 +23,5 @@ jobs:
             cd ~/buddydoc/buddydoc-backend
             git pull
             npm install
-            npx prisma db push
-            npx prisma generate
+            npx prisma db push --schema=./src/database/prisma/schema.prisma
+            npx prisma generate --schema=./src/database/prisma/schema.prisma

@@ -80,8 +80,7 @@ export class PostService {
       position: post.position ? post.position.split(',') : [],
     }));
 
-    console.log('postsWithBookmark.length', postsWithBookmark.length);
-    console.log('rawPosts.length', rawPosts.length);
+    // console.log('postsWithBookmark.length', postsWithBookmark.length);
 
     return {
       posts: postsWithBookmark,

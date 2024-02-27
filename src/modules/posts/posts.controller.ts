@@ -99,6 +99,7 @@ export class PostController {
   })
   @Get(':postId')
   // @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number, @Req() req: Request) {
@@ -150,7 +151,7 @@ export class PostController {
    */
   @ApiOperation({ summary: '게시글 생성 API' })
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async createPost(
@@ -205,7 +206,7 @@ export class PostController {
   })
   @Put(':postId')
   @UseFilters(HttpExceptionFilter)
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @HttpCode(200)
   async updatePost(
     @Param('postId') postId: number,
@@ -317,7 +318,7 @@ export class PostController {
    * @param postId
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '게시글 삭제 API',
   })
@@ -340,7 +341,7 @@ export class PostController {
    * @param postId
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '북마크 추가/제거 API',
   })

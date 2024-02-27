@@ -47,17 +47,32 @@ export class PostService {
     // let rawPosts: PostWithBookmark[];
 
     let limit = 10; //10개씩 게시물 조회
+    // const rawPosts: PostWithBookmark[] = await this.prisma.$queryRaw`
+    //   SELECT posts.*,
+    //   CASE WHEN bookmarks.postId IS NOT NULL THEN TRUE ELSE FALSE END AS is_bookmarked
+    //   FROM posts
+    //   LEFT JOIN bookmarks ON posts.postId = bookmarks.postId AND bookmarks.userId = ${userId}
+    //   WHERE posts.deletedAt IS NULL
+    //   ${postType ? Prisma.sql`AND posts.postType = ${postType}` : Prisma.empty}
+    //   ${lastPostId ? Prisma.sql`AND posts.postId < ${lastPostId}` : Prisma.empty}
+    //   ORDER BY posts.createdAt DESC
+    //   LIMIT ${limit}
+    // `;
+
     const rawPosts: PostWithBookmark[] = await this.prisma.$queryRaw`
-      SELECT posts.*, 
-      CASE WHEN bookmarks.postId IS NOT NULL THEN TRUE ELSE FALSE END AS is_bookmarked
-      FROM posts 
-      LEFT JOIN bookmarks ON posts.postId = bookmarks.postId AND bookmarks.userId = ${userId}
-      WHERE posts.deletedAt IS NULL
-      ${postType ? Prisma.sql`AND posts.postType = ${postType}` : Prisma.empty}
-      ${lastPostId ? Prisma.sql`AND posts.postId < ${lastPostId}` : Prisma.empty}
-      ORDER BY posts.createdAt DESC
-      LIMIT ${limit}
-    `;
+  SELECT posts.*, users.userId, users.userNickname, users.position, users.gitURL, users.profileImage, users.career,
+  CASE WHEN bookmarks.postId IS NOT NULL THEN TRUE ELSE FALSE END AS is_bookmarked
+  FROM posts 
+  LEFT JOIN bookmarks ON posts.postId = bookmarks.postId AND bookmarks.userId = ${userId}
+  INNER JOIN users ON posts.post_userId = users.userId
+  WHERE posts.deletedAt IS NULL
+  ${postType ? Prisma.sql`AND posts.postType = ${postType}` : Prisma.empty}
+  ${lastPostId ? Prisma.sql`AND posts.postId < ${lastPostId}` : Prisma.empty}
+  ORDER BY posts.createdAt DESC
+  LIMIT ${limit}
+`;
+
+    // console.log('rawPosts =>>>>>>:', rawPosts);
 
     //인기순 정렬 추가 무한루푸 문제
     // let orderBy = 'preference'
@@ -123,10 +138,10 @@ export class PostService {
     // return updatePost;
     const response = {
       postId: updatePost.postId,
-      // user: {
-      //   userId: updatePost.users.userId,
-      //   nickname: updatePost.users.userNickname,
-      // },
+      user: {
+        userId: updatePost.users.userId,
+        nickname: updatePost.users.userNickname,
+      },
       title: updatePost.postTitle,
       content: updatePost.content,
       postType: updatePost.postType,

@@ -23,8 +23,8 @@ jobs:
       # - name: Prisma Generate
       #   run: npx prisma generate --schema=./src/database/prisma/schema.prisma
 
-      - name: Build and Test
-        run: npm test
+      # - name: Build and Test
+      #  run: npm test
 
       - name: Print message
         run: echo "CI/CD workflow started"

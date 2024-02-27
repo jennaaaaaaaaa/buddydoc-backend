@@ -1,0 +1,29 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and Test
+        run: npm test
+
+      - name: Print message
+        run: echo "CI/CD workflow started"
+
+      - name: Run project
+        run: npm start
+
+      - name: Print message
+        run: echo "project running"

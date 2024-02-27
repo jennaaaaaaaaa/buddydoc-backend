@@ -55,16 +55,17 @@ export class PostController {
   @Get()
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async getAllPosts(@Query() pagingPostsDto: PagingPostsDto) {
+  async getAllPosts(@Query() pagingPostsDto: PagingPostsDto, @Req() req: Request) {
     try {
       //const userId = 2; //임시값
+      const userId = req.user['id'];
       let orderField: 'createdAt' | 'preference' = 'createdAt'; //기본값 최신순
       if (pagingPostsDto.orderBy === 'preference') {
         orderField = 'preference';
       }
       const lastPostId = Number(pagingPostsDto.lastPostId);
       const postType = pagingPostsDto.postType;
-      const posts = await this.postService.getAllPosts(orderField, postType, lastPostId);
+      const posts = await this.postService.getAllPosts(userId, orderField, postType, lastPostId);
       return posts;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest # 실행될 인스턴스 OS와 버전
 
     steps:
-      - uses: actions/checkout@4
+      - uses: actions/checkout@v4
     
       - name: excuting remote ssh commands
         uses: appleboy/ssh-action@master # ssh 접속하는 오픈소스

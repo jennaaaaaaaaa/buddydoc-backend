@@ -150,7 +150,7 @@ export class PostController {
    */
   @ApiOperation({ summary: '게시글 생성 API' })
   @Post()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async createPost(
@@ -205,7 +205,7 @@ export class PostController {
   })
   @Put(':postId')
   @UseFilters(HttpExceptionFilter)
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @HttpCode(200)
   async updatePost(
     @Param('postId') postId: number,

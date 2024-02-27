@@ -97,13 +97,13 @@ export class PostController {
     summary: '게시글 상세조회 API',
   })
   @Get(':postId')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number) {
     try {
-      //const userinfo = req.user.userId
-      const userId = req.user['id'];
+      // const userId = req.user['id'];
+      const userId = 1;
       const post = await this.postService.getOnePost(postId, userId);
       return post;
     } catch (error) {
@@ -149,7 +149,7 @@ export class PostController {
    */
   @ApiOperation({ summary: '게시글 생성 API' })
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async createPost(
@@ -164,7 +164,8 @@ export class PostController {
     @Body('period') period: string
   ) {
     try {
-      const userId = req.user['id'];
+      // const userId = req.user['id'];
+      const userId = 1;
       await this.postService.createPost(
         postTitle,
         content,
@@ -202,7 +203,7 @@ export class PostController {
   })
   @Put(':postId')
   @UseFilters(HttpExceptionFilter)
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @HttpCode(200)
   async updatePost(
     @Param('postId') postId: number,
@@ -217,7 +218,8 @@ export class PostController {
     @Body('period') period: string
   ) {
     try {
-      const userId = req.user['id'];
+      // const userId = req.user['id'];
+      const userId = 1;
       await this.postService.updatePost(
         postId,
         postTitle,
@@ -312,7 +314,7 @@ export class PostController {
    * @param postId
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '게시글 삭제 API',
   })
@@ -321,7 +323,8 @@ export class PostController {
   @HttpCode(200)
   async deletePost(@Param('postId') postId: number) {
     try {
-      const userId = req.user['id'];
+      // const userId = req.user['id'];
+      const userId = 1;
       await this.postService.deletePost(postId, userId);
       return { message: '삭제되었습니다' };
     } catch (error) {
@@ -334,14 +337,15 @@ export class PostController {
    * @param postId
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '북마크 추가/제거 API',
   })
   @Post(':postId/bookmarks')
   async toggleBookmark(@Param('postId') postId: number) {
     try {
-      const userId = req.user['id'];
+      // const userId = req.user['id'];
+      const userId = 1;
       const result = await this.postService.toggleBookmark(userId, postId);
       return result;
     } catch (error) {

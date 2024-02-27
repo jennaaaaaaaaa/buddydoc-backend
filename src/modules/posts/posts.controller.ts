@@ -121,17 +121,20 @@ export class PostController {
   //   summary: '게시글 참가 유저 프로필 조회 API',
   // })
   // @Get(':postId/participants')
+  // // @UseGuards(JwtAuthGuard)
   // @UseFilters(HttpExceptionFilter)
   // @HttpCode(200)
   // async getParticipantsInPost(@Param('postId') postId: number) {
   //   try {
-  //     const userId = 2
+  //     // const userId = req.user['id']
+  //     // const userId = 2
   //     const users = await this.postService.getParticipantsInPost(postId, userId);
   //     return users;
   //   } catch (error) {
   //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
   //   }
   // }
+
   // @UseGuards(JwtAuthGuard)
   // const userId = req.user['id']
 

@@ -144,6 +144,23 @@ export class PostService {
     return { data: [response] };
   }
 
+  // async getParticipantsInPost(postId: number) {
+  //   const participatingUsers = await this.prisma.notifications.findMany({
+  //     where: {
+  //       postId: +postId,
+  //     },
+  //     select: {
+  //       noti_userId: true,
+  //       users: {
+  //         select: {
+  //           userNickname
+  //         }
+  //       }
+  //     }
+  //   })
+
+  // }
+
   // /**
   //  * 게시글 참가 유저 프로필 조회
   //  * @param postId

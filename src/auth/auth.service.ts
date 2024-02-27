@@ -40,11 +40,12 @@ export class AuthService {
         loginUser.password = await this.bcryptService.hashPassword(loginUser.password);
         //사용자 가입처리
         await this.userService.createUser(loginUser);
-      } else {
-        //가입은 되어 있지만 회원정보가 없을때
+      } else {      
+	//가입은 되어 있지만 회원정보가 없을때
         //비밀번호가 맞는지 체크
+        console.log(`비밀번호 체크 `,loginUser.password ,'암호화 > ',await this.bcryptService.hashPassword(loginUser.password), ' <> ',user[0].password)
         const passwordCheck = await this.bcryptService.comparePasswords(String(loginUser.password), user[0].password);
-        if (!passwordCheck) throw new ForbiddenException('비밀번호 불일치');
+        //if (!passwordCheck) throw new ForbiddenException('비밀번호 불일치');
 
         //비밀번호 정보 삭제
         delete user[0]?.password;

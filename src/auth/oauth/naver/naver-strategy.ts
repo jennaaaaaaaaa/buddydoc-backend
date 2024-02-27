@@ -11,6 +11,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile, done) {
+    console.log(accessToken,refreshToken);
     console.log('네이버 로그인 > ', profile);
     const user = {
       email: profile._json.email,

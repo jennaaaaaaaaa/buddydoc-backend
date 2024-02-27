@@ -55,8 +55,7 @@ export class AuthController {
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
       res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-      //test
-      res.redirect(`http://localhost:3001/callback?token=${accessToken}`);
+      res.redirect(`https://buddydoc.vercel.app/callback?token=${accessToken}`);
     } catch (error) {
       console.log(error);
     }

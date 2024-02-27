@@ -52,14 +52,14 @@ export class PostController {
   @ApiOperation({
     summary: '게시글목록 API',
   })
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Get()
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getAllPosts(@Query() pagingPostsDto: PagingPostsDto, @Req() req: Request) {
     try {
       // const userId = 24; //임시값
-      const userId = req.user['id'];
+      const userId = req.user ? req.user['id'] : null;
 
       const lastPostId = Number(pagingPostsDto.lastPostId);
       const postType = pagingPostsDto.postType;

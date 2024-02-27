@@ -28,8 +28,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer()
   server: Server;
   constructor(
-    private readonly chatService: ChatService,
-    private prismaService: PrismaService
+    private readonly chatService: ChatService
+    // private readonly prismaService: PrismaService
     // private readonly infoService: InfoService
   ) {}
 
@@ -71,22 +71,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('send-message')
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    data: {
-      // postId: string;
-      messageDto: MessageDto;
-      // token: string;
-      // userId: number;
-    }
+    @MessageBody() messageDto: MessageDto
+    // postId: string;
+    // token: string;
+    // userId: number;
   ) {
-    // console.log('data', data);
+    console.log('messageDto', messageDto);
+    console.log('messageDto.userId', messageDto.userId);
     // console.log('client', client);
     try {
       //user는 나중에...jwt 검증 후 client.userId = userId;로 client userId 가져오기
       // console.log(client userId ) //출력해서 값 확인해보기
-      const user = await this.chatService.getUserInfo(data.messageDto.userId); //client.userId
+      const user = await this.chatService.getUserInfo(messageDto.userId); //client.userId
       console.log('useruseruseruseruseruser', user);
-      const message = await this.chatService.createMessage(data.messageDto); //Number(data.postId), Number(data.userId)
+      const message = await this.chatService.createMessage(messageDto); //Number(data.postId), Number(data.userId)
       this.server
         .to(`postRoom-${message.postId}`)
         .emit('send-message', { message: message.chat_message, userName: user.userName });
@@ -96,7 +94,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
-  //<이부분은 영상보면서 필요한지 불필요한지 판단해야함(무한스크롤로 조회되게끔했는데 프론트에서 그냥 userId-massage로 창에 다 보여줄 수 있는지 확인)>
   //postId를 받아와서 특정 postId의 메세지들을 조회
   @SubscribeMessage('read-Messages')
   async handleGetMessages(client: Socket, payload: { postId: number; lastMessageId?: number }) {

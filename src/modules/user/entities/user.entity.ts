@@ -24,6 +24,9 @@ export class UserEntity implements users {
   gitURL: string;
 
   @ApiProperty()
+  profileImage: string;
+
+  @ApiProperty()
   userStatus: users_userStatus;
 
   @ApiProperty()

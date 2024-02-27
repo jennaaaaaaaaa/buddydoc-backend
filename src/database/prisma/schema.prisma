@@ -25,15 +25,16 @@ model posts {
   content                        String?         @db.Text
   position                       String?         @db.VarChar(20)
   postType                       String?         @db.VarChar(100)
-  imageName                      String?         @db.VarChar(255)
-  fileName                       String?         @db.VarChar(255)
   skillList                      String?         @db.VarChar(255)
   preference                     Int?            @default(0)
   views                          Int?            @default(0)
   createdAt                      DateTime?       @db.Timestamp(0)
   updatedAt                      DateTime?       @db.DateTime(0)
-  deletedAt                       DateTime?       @db.DateTime(0)
+  deletedAt                      DateTime?       @db.DateTime(0)
   deadLine                       DateTime?       @db.DateTime(0)
+  startDate                      DateTime?       @db.DateTime(0)
+  memberCount                    Int?
+  period                         String?         @db.VarChar(20)
   post_userId                    Int?
   bookmarks                      bookmarks[]
   chats_chats_postIdToposts      chats[]         @relation("chats_postIdToposts")
@@ -71,16 +72,17 @@ model users {
   email         String?           @db.VarChar(255)
   userName      String?           @db.VarChar(20)
   userNickname  String?           @db.VarChar(20)
-  password    String?           @db.VarChar(255)
+  password      String?           @db.VarChar(255)
   position      String?           @db.VarChar(20)
   gitURL        String?           @db.VarChar(255)
-  userStatus    users_userStatus?
+  profileImage  String?           @db.VarChar(255)
+  userStatus    users_userStatus? @default(public)
   introduction  String?           @db.VarChar(50)
   career        Int?
   platform      String?
   createdAt     DateTime?         @db.Timestamp(0)
   updatedAt     DateTime?         @db.DateTime(0)
-  deletedAt      DateTime?         @db.DateTime(0)
+  deletedAt      DateTime?        @db.DateTime(0)
   applications  applications[]
   bookmarks     bookmarks[]
   chats         chats[]
@@ -109,7 +111,7 @@ model notifications {
   postId       Int
   noti_userId  Int
   noti_message String?                   @db.VarChar(255)
-  notiStatus   notifications_notiStatus?
+  notiStatus   notifications_notiStatus? @default(pending)
   createdAt    DateTime?                 @db.Timestamp(0)
   updatedAt    DateTime?                 @db.DateTime(0)
   deletedAt    DateTime?                 @db.DateTime(0)
@@ -128,7 +130,7 @@ model notes {
   postId                                       Int?
   post_userId                                  Int?
   note_message                                 String?           @db.Text
-  noteStatus                                   notes_noteStatus?
+  noteStatus                                   notes_noteStatus? @default(unread)
   createdAt                                    DateTime?         @db.Timestamp(0)
   updatedAt                                    DateTime?         @db.DateTime(0)
   deletedAt                                     DateTime?         @db.DateTime(0)
@@ -149,7 +151,7 @@ model applications {
   note_userId                           Int?
   postId                                Int?
   noti_userId                           Int?
-  alarmStatus                           applications_alarmStatus?
+  alarmStatus                           applications_alarmStatus? @default(unread)
   createdAt                             DateTime?                 @db.Timestamp(0)
   updatedAt                             DateTime?                 @db.DateTime(0)
   deletedAt                              DateTime?                 @db.DateTime(0)

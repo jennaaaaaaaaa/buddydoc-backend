@@ -104,7 +104,8 @@ export class PostController {
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number, @Req() req: Request) {
     try {
-      const userId = req.user['id'];
+      // const userId = req.user['id'];
+      const userId = 1;
       const post = await this.postService.getOnePost(postId, userId);
       return post;
     } catch (error) {

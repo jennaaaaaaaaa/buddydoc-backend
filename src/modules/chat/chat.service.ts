@@ -30,8 +30,8 @@ export class ChatService {
 
     const chat = await this.prisma.chats.create({
       data: {
-        postId: Number(messageDto.postId),
-        userId: Number(messageDto.userId),
+        postId: +messageDto.postId,
+        userId: +messageDto.userId,
         chat_message: messageDto.chat_message,
         createdAt: new Date(),
       },

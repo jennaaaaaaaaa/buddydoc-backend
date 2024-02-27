@@ -99,7 +99,6 @@ export class PostController {
   })
   @Get(':postId')
   // @UseGuards(JwtAuthGuard)
-  // @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number, @Req() req: Request) {
@@ -121,11 +120,13 @@ export class PostController {
   // @ApiOperation({
   //   summary: '게시글 참가 유저 프로필 조회 API',
   // })
+  // @UseGuards(JwtAuthGuard)
   // @Get(':postId/participants')
   // @UseFilters(HttpExceptionFilter)
   // @HttpCode(200)
   // async getParticipantsInPost(@Param('postId') postId: number) {
   //   try {
+  //     // const userId = req.user['id']
   //     const userId = 2
   //     const users = await this.postService.getParticipantsInPost(postId, userId);
   //     return users;
@@ -133,8 +134,6 @@ export class PostController {
   //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
   //   }
   // }
-  // @UseGuards(JwtAuthGuard)
-  // const userId = req.user['id']
 
   /**
    *

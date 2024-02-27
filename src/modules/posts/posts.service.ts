@@ -116,7 +116,7 @@ export class PostService {
       throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
     }
     const updatePost = await this.prisma.posts.update({
-      where: { postId: +postId },
+      where: { postId: +postId }, //post_userId: +userId
       data: { views: post.views + 1 },
       include: { users: true },
     });
@@ -142,7 +142,7 @@ export class PostService {
         userId: updatePost.users.userId,
         nickname: updatePost.users.userNickname,
       },
-      title: updatePost.postTitle,
+      postTitle: updatePost.postTitle,
       content: updatePost.content,
       postType: updatePost.postType,
       preference: updatePost.preference,

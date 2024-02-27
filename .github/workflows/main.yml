@@ -19,8 +19,34 @@ jobs:
       - name: access to secrets
         run: |
           echo "DATABASE_URL=$DATABASE_URL" >> .env
+
+          echo "JWT_SECRET_KEY=$JWT_SECRET_KEY" >> .env
+          echo "JWT_EXPIRESIN=$JWT_EXPIRESIN" >> .env
+
+          echo "KAKAO_CLIENT_ID=$KAKAO_CLIENT_ID" >> .env
+          echo "KAKAO_SECRET_KEY=$KAKAO_SECRET_KEY" >> .env
+          echo "KAKAO_CALLBACK_URL=$KAKAO_CALLBACK_URL" >> .env
+
+          echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> .env
+          echo "GOOGLE_SECRET_KEY=$GOOGLE_SECRET_KEY" >> .env
+          echo "GOOGLE_CALLBACK_URL=$GOOGLE_CALLBACK_URL" >> .env
+
+          echo "NAVER_CLIENT_ID=$NAVER_CLIENT_ID" >> .env
+          echo "NAVER_SECRET_KEY=$NAVER_SECRET_KEY" >> .env
+          echo "NAVER_CALLBACK_URL=$NAVER_CALLBACK_URL" >> .env
+
         env:
-          DATABASE_URL: ${{secrets.DATABASE_URL}}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_SECRET_KEY: ${{ secrets.KAKAO_SECRET_KEY }}
+          KAKAO_CALLBACK_URL: ${{ secrets.KAKAO_CALLBACK_URL }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_SECRET_KEY: ${{ secrets.GOOGLE_SECRET_KEY }}
+          GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_SECRET_KEY: ${{ secrets.NAVER_SECRET_KEY }}
+          NAVER_CALLBACK_URL: ${{ secrets.NAVER_CALLBACK_URL }}
 
       - name: Prisma Migrate
         run: npx prisma db push --schema=./src/database/prisma/schema.prisma

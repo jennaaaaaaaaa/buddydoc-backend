@@ -1,47 +1,53 @@
-// import { ApiProperty } from '@nestjs/swagger';
-// import { users, users_userStatus } from '@prisma/client';
+import { ApiProperty } from '@nestjs/swagger';
+import { users, users_userStatus } from '@prisma/client';
 
-// export class UserEntity implements users {
-//   @ApiProperty()
-//   userId: number;
+export class UserEntity implements users {
+  @ApiProperty()
+  userId: number;
 
-//   @ApiProperty()
-//   email: string;
+  @ApiProperty()
+  email: string;
 
-//   @ApiProperty()
-//   userName: string;
+  @ApiProperty()
+  userName: string;
 
-//   @ApiProperty()
-//   userNickname: string;
+  @ApiProperty()
+  userNickname: string;
 
-//   // @ApiProperty()
-//   // userTokken: string;
+  @ApiProperty()
+  password: string;
 
-//   @ApiProperty()
-//   position: string;
+  @ApiProperty()
+  position: string;
 
-//   @ApiProperty()
-//   gitURL: string;
+  @ApiProperty()
+  gitURL: string;
 
-//   @ApiProperty()
-//   userStatus: users_userStatus;
+  @ApiProperty()
+  profileImage: string;
 
-//   @ApiProperty()
-//   introduction: string;
+  @ApiProperty()
+  userStatus: users_userStatus;
 
-//   @ApiProperty()
-//   career: number;
+  @ApiProperty()
+  introduction: string;
 
-//   @ApiProperty()
-//   createdAt: Date;
+  @ApiProperty()
+  career: number;
 
-//   @ApiProperty()
-//   updatedAt: Date | null;
+  @ApiProperty()
+  platform: string;
 
-//   @ApiProperty()
-//   deletedAt: Date | null;
+  @ApiProperty()
+  createdAt: Date;
 
-//   constructor({ ...data }: Partial<UserEntity>) {
-//     Object.assign(this, data);
-//   }
-// }
+  @ApiProperty()
+  updatedAt: Date | null;
+
+  @ApiProperty()
+  deletedAt: Date | null;
+
+  constructor({ ...data }: Partial<UserEntity>) {
+    Object.assign(this, data);
+  }
+}

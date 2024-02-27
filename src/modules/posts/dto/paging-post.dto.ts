@@ -1,10 +1,14 @@
-import { IsIn, IsOptional, IsInt } from 'class-validator';
+import { IsIn, IsOptional, IsInt, IsString } from 'class-validator';
 
 export class PagingPostsDto {
   @IsIn(['createdAt', 'preference'])
   @IsOptional()
-  orderBy?: string;
+  orderBy?: 'createdAt' | 'preference';
 
   @IsOptional()
   lastPostId?: string;
+
+  @IsOptional()
+  @IsString()
+  postType?: 'study' | 'project';
 }

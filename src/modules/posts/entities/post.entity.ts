@@ -19,12 +19,6 @@ export class PostEntity implements posts {
   postType: string;
 
   @ApiProperty()
-  imageName: string;
-
-  @ApiProperty()
-  fileName: string;
-
-  @ApiProperty()
   preference: number;
 
   @ApiProperty()
@@ -40,10 +34,19 @@ export class PostEntity implements posts {
   deletedAt: Date | null;
 
   @ApiProperty()
-  post_userId: number;
+  deadLine: Date | null;
 
   @ApiProperty()
-  deadLine: Date | null;
+  startDate: Date | null;
+
+  @ApiProperty()
+  memberCount: number;
+
+  @ApiProperty()
+  period: string;
+
+  @ApiProperty()
+  post_userId: number;
 
   @ApiProperty()
   skillList: string;

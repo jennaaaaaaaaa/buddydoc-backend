@@ -16,15 +16,20 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # - name: Prisma Migrate
-      #   run: npx prisma db push --schema=./src/database/prisma/schema.prisma
+      - name: access to secrets
+        run: |
+          echo "DATABASE_URL=$DATABASE_URL" >> .env
+        env:
+          DATABASE_URL: ${{secrets.DATABASE_URL}}
 
-    
-      # - name: Prisma Generate
-      #   run: npx prisma generate --schema=./src/database/prisma/schema.prisma
+      - name: Prisma Migrate
+        run: npx prisma db push --schema=./src/database/prisma/schema.prisma
 
-      # - name: Build and Test
-      #  run: npm test
+      - name: Prisma Generate
+        run: npx prisma generate --schema=./src/database/prisma/schema.prisma
+
+      - name: Build and Test
+        run: npm test
 
       - name: Print message
         run: echo "CI/CD workflow started"

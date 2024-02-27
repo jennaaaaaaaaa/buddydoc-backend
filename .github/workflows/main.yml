@@ -20,5 +20,5 @@ jobs:
           password: ${{ secrets.EC2_REMOTE_PWD}}
           port: ${{ secrets.EC2_SSH_PORT }} # 접속포트번호 (보통 22)
           script: | # 실행될 스크립트
-            cd ubuntu/buddydoc/buddydoc-backend
+            cd ~/buddydoc/buddydoc-backend
             git pull

@@ -46,11 +46,14 @@ export class AuthController {
       //토큰 발급
       const accessToken = await this.authService.login(checkUser);
       //쿠키 등록
-      res.cookie('authCookie', accessToken, {
-        maxAge: 900000,
-        httpOnly: false,
-        domain: 'localhost:3001',
-      });
+      // res.cookie('authCookie', accessToken, {
+      //   maxAge: 900000,
+      //   httpOnly: true,
+      //   domain: 'localhost:3001',
+      // });
+      res.setHeader('Access-Control-Allow-origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
 
       res.redirect(`http://localhost:3001/callback?token=${accessToken}`);
     } catch (error) {

@@ -22,7 +22,12 @@ export class PostService {
    */
 
   //스터디랑 사이드프로젝트 게시물 나눠서 보여주기 postType이 스터디면 스터디만, ...
-  async getAllPosts(orderField: 'createdAt' | 'preference', postType?: 'study' | 'project', lastPostId?: number) {
+  async getAllPosts(
+    userId: number,
+    orderField: 'createdAt' | 'preference',
+    postType?: 'study' | 'project',
+    lastPostId?: number
+  ) {
     //whereCondition은 Prisma.PostsWhereInput 타입의 변수로서, 초기 조건으로 deletedAt이 null인 데이터를 대상으로 설정
     let whereCondition: Prisma.postsWhereInput = { deletedAt: null };
 
@@ -71,10 +76,16 @@ export class PostService {
     //반환된 게시글 수가 요청한 수보다 적을 때 true
     const isLastPage = posts.length < 10;
 
+    // const getBookmark = await this.prisma.bookmarks.findUnique({where: {
+    //   userId_postId: {
+    //     userId: +userId,
+    //     postId: posts.postId
+    //   }
+    // }})
+
     const postsWithBookmark = await Promise.all(
       posts.map(async (post) => {
         let bookmark = false;
-        const userId = 2; //임시값
         if (userId) {
           const userBookmark = await this.prisma.bookmarks.findUnique({
             where: {
@@ -177,7 +188,6 @@ export class PostService {
   // }
 
   /**
-   *
    * * 게시글 상세조회(views +1, preference는 버튼 누를 때 올라가는 거라 프론트에서 해줘야되는지?)
    * 로그인 안되있으면 북마크 기본 false값
    * @param postId

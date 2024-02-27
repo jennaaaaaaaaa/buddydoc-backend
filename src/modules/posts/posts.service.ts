@@ -489,8 +489,8 @@ export class PostService {
       // }
       const createBookmark = this.prisma.bookmarks.create({
         data: {
-          userId: userId,
-          postId: postId,
+          userId: +userId,
+          postId: +postId,
           createdAt: new Date(),
         },
       });

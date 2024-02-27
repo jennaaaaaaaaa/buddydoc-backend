@@ -30,7 +30,9 @@ export class ChatService {
 
     const chat = await this.prisma.chats.create({
       data: {
-        ...messageDto,
+        postId: +messageDto.postId,
+        userId: +messageDto.userId,
+        chat_message: messageDto.chat_message,
         createdAt: new Date(),
       },
     });
@@ -102,7 +104,7 @@ export class ChatService {
   async getUserInfo(userId: number) {
     console.log('userId ===>>>>>>: ', userId);
     const chat = await this.prisma.users.findUnique({
-      where: { userId },
+      where: { userId: +userId },
       select: { userId: true, userName: true, userNickname: true },
     });
     return chat;

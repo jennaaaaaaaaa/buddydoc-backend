@@ -6,7 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { SearchService } from './modules/posts/search/search.service';
 
-//elastic서버 연결부분
+// //elastic서버 연결부분 주석처리 or 해제
 // async function bootstrap() {
 //   const app = await NestFactory.create(AppModule);
 
@@ -30,10 +30,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: "*",
-    methods: ['GET', 'POST'], // 허용할 HTTP method
-    credentials: true, // 쿠키 인증 요청 허용
-    maxAge: 3000, // pre-flight 리퀘스트를 캐싱할 시간
+    credentials: true,
   }); // cors 활성화;
   app.use(cookieParser());
   setupSwagger(app);

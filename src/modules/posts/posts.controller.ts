@@ -52,26 +52,25 @@ export class PostController {
   @ApiOperation({
     summary: '게시글목록 API',
   })
+  // @UseGuards(JwtAuthGuard)
   @Get()
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async getAllPosts(@Query() pagingPostsDto: PagingPostsDto) {
+  async getAllPosts(@Query() pagingPostsDto: PagingPostsDto, @Req() req: Request) {
     try {
-      //const userId = 2; //임시값
-      let orderField: 'createdAt' | 'preference' = 'createdAt'; //기본값 최신순
-      if (pagingPostsDto.orderBy === 'preference') {
-        orderField = 'preference';
-      }
+      // const userId = 24; //임시값
+      const userId = req.user ? req.user['id'] : null;
+
       const lastPostId = Number(pagingPostsDto.lastPostId);
       const postType = pagingPostsDto.postType;
-      const posts = await this.postService.getAllPosts(orderField, postType, lastPostId);
+      const posts = await this.postService.getAllPosts(userId, postType, lastPostId); //orderField
       return posts;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
-  //elasticsearch 사용시 주석해제
+  //elasticsearch 사용시 주석해제 or 주석처리
   // /**
   //  * 게시글 검색
   //  * @param search
@@ -99,13 +98,13 @@ export class PostController {
     summary: '게시글 상세조회 API',
   })
   @Get(':postId')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number, @Req() req: Request) {
     try {
-      // const userId = req.user['id'];
-      const userId = 1;
+      const userId = req.user ? req.user['id'] : null;
+      // const userId = 23;
       const post = await this.postService.getOnePost(postId, userId);
       return post;
     } catch (error) {
@@ -121,11 +120,13 @@ export class PostController {
   // @ApiOperation({
   //   summary: '게시글 참가 유저 프로필 조회 API',
   // })
+  // @UseGuards(JwtAuthGuard)
   // @Get(':postId/participants')
   // @UseFilters(HttpExceptionFilter)
   // @HttpCode(200)
   // async getParticipantsInPost(@Param('postId') postId: number) {
   //   try {
+  //     // const userId = req.user['id']
   //     const userId = 2
   //     const users = await this.postService.getParticipantsInPost(postId, userId);
   //     return users;
@@ -133,8 +134,6 @@ export class PostController {
   //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
   //   }
   // }
-  // // @UseGuards(JwtAuthGuard)
-  // // const userId = req.user['id']
 
   /**
    *
@@ -158,8 +157,8 @@ export class PostController {
     @Body('postTitle') postTitle: string,
     @Body('content') content: string,
     @Body('postType') postType: string,
-    @Body('position') position: string,
-    @Body('skillList') skillList: string,
+    @Body('position') position: string[],
+    @Body('skillList') skillList: string[],
     @Body('deadLine') deadLine: Date,
     @Body('startDate') startDate: Date,
     @Body('memberCount') memberCount: number,
@@ -168,6 +167,7 @@ export class PostController {
   ) {
     try {
       const userId = req.user['id'];
+      // const userId = 23;
       await this.postService.createPost(
         postTitle,
         content,
@@ -212,8 +212,8 @@ export class PostController {
     @Body('postTitle') postTitle: string,
     @Body('content') content: string,
     @Body('postType') postType: string,
-    @Body('position') position: string,
-    @Body('skillList') skillList: string,
+    @Body('position') position: string[],
+    @Body('skillList') skillList: string[],
     @Body('deadLine') deadLine: Date,
     @Body('startDate') startDate: Date,
     @Body('memberCount') memberCount: number,
@@ -222,6 +222,7 @@ export class PostController {
   ) {
     try {
       const userId = req.user['id'];
+      // const userId = 23;
       await this.postService.updatePost(
         postId,
         postTitle,
@@ -326,6 +327,7 @@ export class PostController {
   async deletePost(@Param('postId') postId: number, @Req() req: Request) {
     try {
       const userId = req.user['id'];
+      // const userId = 23;
       await this.postService.deletePost(postId, userId);
       return { message: '삭제되었습니다' };
     } catch (error) {
@@ -346,6 +348,7 @@ export class PostController {
   async toggleBookmark(@Param('postId') postId: number, @Req() req: Request) {
     try {
       const userId = req.user['id'];
+      // const userId = 23;
       const result = await this.postService.toggleBookmark(userId, postId);
       return result;
     } catch (error) {

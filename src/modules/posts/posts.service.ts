@@ -227,21 +227,23 @@ export class PostService {
     postTitle: string,
     content: string,
     postType: string,
-    position: string,
-    skillList: string,
+    position: string[],
+    skillList: string[],
     deadLine: Date,
     startDate: Date,
     memberCount: number,
     period: string,
     userId: number
   ) {
+    const skillListString = skillList.join(',');
+    const positionString = position.join(',');
     const post = await this.prisma.posts.create({
       data: {
         postTitle,
         content,
         postType,
-        position,
-        skillList,
+        position: positionString,
+        skillList: skillListString,
         deadLine,
         startDate,
         memberCount,
@@ -286,14 +288,16 @@ export class PostService {
     postTitle: string,
     content: string,
     postType: string,
-    position: string,
-    skillList: string,
+    position: string[],
+    skillList: string[],
     deadLine: Date,
     startDate: Date,
     memberCount: number,
     period: string,
     userId: number
   ) {
+    const skillListString = skillList.join(',');
+    const positionString = position.join(',');
     const existPost = await this.prisma.posts.findUnique({ where: { postId: +postId } });
     if (!existPost || existPost.deletedAt !== null) {
       throw new NotFoundException({ errorMessage: '해당하는 게시글이 존재하지 않습니다.' });
@@ -309,8 +313,8 @@ export class PostService {
         postTitle,
         content,
         postType,
-        position,
-        skillList,
+        position: positionString,
+        skillList: skillListString,
         deadLine,
         startDate,
         memberCount,

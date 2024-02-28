@@ -144,88 +144,46 @@ export class PostService {
     return { data: [response] };
   }
 
-  // async getParticipantsInPost(postId: number) {
-  //   const participatingUsers = await this.prisma.notifications.findMany({
-  //     where: {
-  //       postId: +postId,
-  //     },
-  //     select: {
-  //       noti_userId: true,
-  //       users: {
-  //         select: {
-  //           userNickname
-  //         }
-  //       }
-  //     }
-  //   })
+  //신청하면 승인된 사람만 조회
+  async getParticipantsInPost(postId: number) {
+    try {
+      const participatingUsers = await this.prisma.notifications.findMany({
+        where: {
+          postId: +postId,
+          notiStatus: 'accept',
+        },
+        select: {
+          noti_userId: true,
+          users: {
+            select: {
+              profileImage: true,
+              userNickname: true,
+              career: true,
+              position: true,
+              gitURL: true,
+              skills: {
+                select: {
+                  skill: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-  // }
+      const usersWithSkillsArray = participatingUsers.map((user) => ({
+        ...user,
+        users: {
+          ...user.users,
+          skills: user.users.skills.map((skillObj) => skillObj.skill),
+        },
+      }));
 
-  // /**
-  //  * 게시글 참가 유저 프로필 조회
-  //  * @param postId
-  //  * @returns
-  //  */
-  // async getParticipantsInPost(postId: number) {
-  //   const users = await this.prisma.applications.findMany({
-  //     where: {postId: +postId},
-  //     select: {userId: true}
-  //   })
-
-  //   // 가져온 데이터에서 userId만 추출하여 배열
-  // const userIds = users.map(user => user.userId);
-
-  //   const post = await this.prisma.posts.findUnique({
-  //     where: { postId: +postId },
-  //     include: { users: { include: { skills: true } } },
-  //   });
-  //   if (!post || post.deletedAt !== null) {
-  //     throw new NotFoundException({ errorMessage: '존재하지 않는 게시글 입니다' });
-  //   }
-  //   if (!post.users || post.users.deletedAt !== null) {
-  //     throw new NotFoundException({ errorMessage: '존재하지 않는 사용자 입니다' });
-  //   }
-
-  //   const response = {
-  //     postId: true,
-  //     post_userId: {
-  //       user: {
-  //         userId: post.users.userId,
-  //         nickname: post.users.userNickname,
-  //         name: post.users.userName,
-  //         gitURL: post.users.gitURL,
-  //         profileImage: post.users.profileImage,
-  //         userStatus: post.users.userStatus,
-  //         introduction: post.users.introduction,
-  //         career: post.users.career,
-  //         skills: post.users.skills.map((skill) => skill.skill),
-  //       },
-  //     },
-
-  //   };
-
-  //   return response;
-  // }
-
-  // async getApplicationUsersByPost(postId: number) {
-  //   // applications 테이블에서 postId에 해당하는 모든 데이터
-  //   const applications = await this.prisma.applications.findMany({
-  //     where: { postId: postId },
-  //   });
-
-  //   // 가져온 데이터에서 userId만 추출하여 배열로 만듭니다.
-  //   const userIds = applications.map(application => application.userId);
-
-  //   // userIds를 사용하여 users 테이블에서 사용자 정보를 조회합니다.
-  //   const users = await this.prisma.users.findMany({
-  //     where: { userId: { in: userIds } }, // userId가 userIds 배열에 포함된 경우를 조회합니다.
-  //   });
-
-  //   // 각 사용자의 정보를 문자열로 만듭니다.
-  //   const usersInfo = users.map(user => `userId: ${user.userId}, userName: ${user.userName}, userNickname: ${user.userNickname}`).join(', ');
-
-  //   return { postId, usersInfo };
-  // }
+      return { data: usersWithSkillsArray };
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   /**
    *

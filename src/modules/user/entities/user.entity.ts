@@ -33,7 +33,7 @@ export class UserEntity implements users {
   introduction: string;
 
   @ApiProperty()
-  career: number;
+  career: string;
 
   @ApiProperty()
   platform: string;

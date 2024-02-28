@@ -38,10 +38,13 @@ export class UserController {
   @Post('/signup')
   async create(@Body() userDto: UserDto, @Res() res: Response, @Req() req: Request) {
     try {
-      userDto.userId = req.user['id'];
+	    console.log('가입하려는 정보 확인 ',req.user, userDto)
+      	     
+	    userDto.userId = req.user['id'];
+      console.log('userDto 확인',userDto)
       //회원가입
       const user = await this.userService.updateUser(userDto);
-
+	console.log('회원가입 성공 ',user)
       //회원생성 실패시 에러처리 필요
 
       // skills에 skill 추가

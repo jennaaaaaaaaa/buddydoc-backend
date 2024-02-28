@@ -40,8 +40,8 @@ export class UserDto {
   introduction: string; // 자기소개
 
   @ApiProperty()
-  @IsInt()
-  career: number; // 경력
+  @IsString()
+  career: string; // 경력
 
   @ApiProperty()
   @IsString()

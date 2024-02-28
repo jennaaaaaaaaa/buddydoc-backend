@@ -41,16 +41,17 @@ export class AuthController {
   private async checkUser(res: Response, req: Request, user: any) {
     try {
       // 회원가입 체크
+      console.log('넘겨받은 유저 ',user)
       const checkUser = await this.authService.findUser(user);
       console.log('회원가입 체크 ', checkUser);
       //토큰 발급
       const accessToken = await this.authService.login(checkUser);
       //쿠키 등록
-      // res.cookie('authCookie', accessToken, {
-      //   maxAge: 900000,
-      //   httpOnly: true,
-      //   domain: 'localhost:3001',
-      // });
+      res.cookie('authCookie', accessToken, {
+         maxAge: 900000,
+         httpOnly: false,
+   	 domain:"buddydoc.vercel.app"
+       });
       res.setHeader('Access-Control-Allow-origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
       res.setHeader('Access-Control-Allow-Credentials', 'true');

@@ -20,6 +20,7 @@ export class AuthService {
    */
   async findUser(loginUser: any) {
     try {
+      console.log('프리즈마 전 user ',loginUser)
       const user = await this.prisma.users.findMany({
         where: {
           email: loginUser.email,
@@ -37,9 +38,10 @@ export class AuthService {
       //유저 가입이 안되어 있을때
       if (user.length == 0) {
         //비밀번호 암호화
+	console.log('로그인 유저',loginUser)
         loginUser.password = await this.bcryptService.hashPassword(loginUser.password);
         //사용자 가입처리
-        await this.userService.createUser(loginUser);
+        return await this.userService.createUser(loginUser);
       } else {      
 	//가입은 되어 있지만 회원정보가 없을때
         //비밀번호가 맞는지 체크

@@ -31,7 +31,8 @@ async function bootstrap() {
 
   app.enableCors({
     credentials: true,
-  }); // cors 활성화;
+    origin:"*"
+    }); // cors 활성화;
   app.use(cookieParser());
   setupSwagger(app);
   app.useGlobalFilters(new HttpExceptionFilter());

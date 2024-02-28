@@ -13,18 +13,18 @@ export class UserService {
    */
   async createUser(userDto: UserDto) {
     try {
-      const { email, userName, userNickname, position, gitURL, userStatus, introduction, career, password, platform } =
+	    console.log('회원가입 ',userDto)
+      const { email, userNickname, position, gitURL, userStatus, introduction, career, password, platform } =
         userDto;
       const user = await this.prisma.users.create({
         data: {
           email,
-          userName,
           userNickname,
           position,
           gitURL,
           userStatus: userStatus,
           introduction,
-          career: Number(career),
+          career: career,
           createdAt: new Date(),
           password,
           platform,
@@ -44,21 +44,24 @@ export class UserService {
    */
   async updateUser(userDto: UserDto) {
     try {
-      const { userName, userNickname, position, gitURL, userStatus, introduction, career } = userDto;
-
+	    console.log('회원수정 ',userDto)
+      const { userId,userNickname, position, gitURL, userStatus, introduction, career } = userDto;
+      console.log(userId,userNickname,position,career)
+      //const updateResult = await this.prisma.$queryRaw`
+      //update users set userNickname=${userNickname},position=${position},
+      //career=${career} where userId=${userId}`
       const updateResult = await this.prisma.users.update({
-        where: {
-          userId: userDto.userId,
-        },
-        data: {
-          userName: userName,
-          userNickname: userNickname,
-          position: position,
-          gitURL: gitURL,
-          userStatus: userStatus,
-          introduction: introduction,
-          career: Number(career),
-          createdAt: new Date(),
+       where: {
+        userId: userId,
+       },
+       data: {
+        userNickname: userNickname,
+        position: position,
+        gitURL: gitURL,
+        userStatus: userStatus,
+        introduction: introduction,
+        career: career,
+        createdAt: new Date(),
         },
       });
 

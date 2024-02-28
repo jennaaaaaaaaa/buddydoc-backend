@@ -10,5 +10,5 @@ export class PagingPostsDto {
 
   @IsOptional()
   @IsString()
-  postType?: 'study' | 'project';
+  postType?: '스터디' | '프로젝트';
 }

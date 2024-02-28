@@ -22,7 +22,7 @@ export class PostService {
    */
   async getAllPosts(
     userId: number,
-    postType?: 'study' | 'project',
+    postType?: '스터디' | '프로젝트',
     lastPostId?: number
     // orderField: 'createdAt' | 'preference',
     // orderField: 'createdAt' | 'preference',

@@ -87,8 +87,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const message = await this.chatService.createMessage(messageDto); //Number(data.postId), Number(data.userId)
       this.server
         .to(`postRoom-${message.postId}`)
-        .emit('send-message', { message: message.chat_message, userName: user.userName });
-      console.log(`메시지 '${message.chat_message}'가 ${user.userName}에 의해 ${message.postId} 방에 전송됨`);
+        .emit('send-message', { message: message.chat_message, userNickname: user.userNickname });
+      console.log(`메시지 '${message.chat_message}'가 ${user.userNickname}에 의해 ${message.postId} 방에 전송됨`);
     } catch (error) {
       console.log('error', error);
     }

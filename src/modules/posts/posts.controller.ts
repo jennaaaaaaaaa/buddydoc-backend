@@ -31,16 +31,15 @@ import { S3Service } from 'src/providers/aws/s3/s3.service';
 // import { JwtAuthGuard } from 'src/auth/oauth/auth.guard';
 
 //elastic 사용시 주석해제
-// import { SearchService } from './search/search.service';
+import { SearchService } from './search/search.service';
 
 @Controller('post')
 export class PostController {
   constructor(
     private readonly postService: PostService,
-    private readonly s3Service: S3Service
-
+    private readonly s3Service: S3Service,
     //elastic 사용시 주석해제
-    // private searchService: SearchService
+    private searchService: SearchService
   ) {}
 
   /**
@@ -70,24 +69,25 @@ export class PostController {
     }
   }
 
-  //elasticsearch 사용시 주석해제 or 주석처리
-  // /**
-  //  * 게시글 검색
-  //  * @param search
-  //  * @returns
-  //  */
-  // @UseFilters(HttpExceptionFilter)
-  // @HttpCode(200)
-  // @Get('/search')
-  // async postSearch(@Query('search') search: string) {
-  //   try {
-  //     console.log('postController =>>>> search:', search);
-  //     const result = await this.searchService.postSearch(search);
-  //     return result;
-  //   } catch (error) {
-  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-  //   }
-  // }
+  // elasticsearch 사용시 주석해제 or 주석처리
+  /**
+   * 게시글 검색
+   * @param search
+   * @returns
+   */
+  @UseFilters(HttpExceptionFilter)
+  @HttpCode(200)
+  @Get('/search')
+  async postSearch(@Query('search') search: string) {
+    try {
+      console.log('검색한 키워드 postController =>>>> search:', search);
+      const result = await this.searchService.postSearch(search);
+      // console.log('result =>>>> 🎈🎈🎈🎈', result);
+      return result;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 
   /**
    * 게시글 상세조회

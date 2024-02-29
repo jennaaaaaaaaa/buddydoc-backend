@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { PrismaService } from '../../../database/prisma/prisma.service';
+import { SearchInterfaces } from './search.interfaces';
+// import { SearchResponse } from './search.interfaces';
 @Injectable()
 export class SearchService {
   private readonly indexName = 'title_content';
@@ -46,11 +48,12 @@ export class SearchService {
   }
 
   async postSearch(search: string) {
-    console.log('searchService =>>>> search:', search);
+    // console.log('검색한 키워드 searchService =>>>> search:', search);
     if (!search || typeof search !== 'string') {
       throw new Error('Invalid search parameter');
     }
-    return this.elasticsearchService.search({
+
+    const result = (await this.elasticsearchService.search({
       index: this.indexName,
       body: {
         suggest: {
@@ -65,7 +68,10 @@ export class SearchService {
           },
         },
       },
-    });
+    })) as unknown as SearchInterfaces;
+
+    let options = result.suggest.docsuggest[0].options;
+    return options;
   }
 
   async init() {
@@ -100,8 +106,12 @@ export class SearchService {
         },
       })) as any;
 
-      if (!result.body || !result.body.hits || !result.body.hits.total) {
-        console.log(`No search results for title: ${postTitle}, content: ${content}`);
+      if (
+        !result.body ||
+        !result.body.hits ||
+        (!result.body.hits.total && !result.body.suggest.docsuggest[0].options.length)
+      ) {
+        // console.log(`No search results for title: ${postTitle}, content: ${content}`);
         return false;
       }
 
@@ -119,6 +129,10 @@ export class SearchService {
           console.error('Title or content is missing in post:', post);
           return null;
         }
+
+        const user = await this.prisma.users.findUnique({ where: { userId: +post.post_userId } });
+        const userNickname = user ? user.userNickname : 'Unknown';
+
         let response;
         const exists = await this.checkExistence(post.postTitle, post.content);
 
@@ -126,15 +140,28 @@ export class SearchService {
           try {
             response = await this.elasticsearchService.index({
               index: this.indexName,
+              id: post.postId,
               body: {
                 title: post.postTitle,
                 content: post.content,
+                position: post.position ? post.position.split(',') : [],
+                postType: post.postType,
+                skillList: post.skillList ? post.skillList.split(',') : [],
+                preference: post.preference,
+                views: post.views,
+                createdAt: post.createdAt,
+                updatedAt: post.updatedAt,
+                deadLine: post.deadLine,
+                startDate: post.startDate,
+                memberCount: post.memberCount,
+                period: post.period,
+                userNickname: userNickname,
                 suggest: {
                   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
                 },
               },
             });
-            console.log(`Document added successfully for title: ${post.postTitle}, content: ${post.content}`);
+            // console.log(`Document added successfully for title: ${post.postTitle}, content: ${post.content}`);
             await new Promise((resolve) => setTimeout(resolve, 1000));
             return response;
           } catch (error) {

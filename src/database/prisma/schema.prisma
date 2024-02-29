@@ -78,7 +78,7 @@ model users {
   profileImage  String?           @db.VarChar(255)
   userStatus    users_userStatus?
   introduction  String?           @db.VarChar(50)
-  career        Int?
+  career        String?           @db.VarChar(20)
   platform      String?
   createdAt     DateTime?         @db.Timestamp(0)
   updatedAt     DateTime?         @db.DateTime(0)

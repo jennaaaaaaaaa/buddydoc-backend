@@ -61,8 +61,9 @@ export class PostController {
       // const userId = req.user['id'];
 
       const lastPostId = Number(pagingPostsDto.lastPostId);
+      const isEnd = pagingPostsDto.isEnd;
       const postType = pagingPostsDto.postType;
-      const posts = await this.postService.getAllPosts(userId, postType, lastPostId); //orderField
+      const posts = await this.postService.getAllPosts(userId, isEnd, postType, lastPostId); //orderField
       return posts;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

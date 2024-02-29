@@ -20,72 +20,149 @@ export class PostService {
    * @param lastPostId
    * @returns
    */
+
+  // async getAllPosts(orderField: 'createdAt' | 'preference', postType?: 'study' | 'project', lastPostId?: number)
   async getAllPosts(
     userId: number,
+    isEnd: 0 | 1,
     postType?: 'study' | 'project',
     lastPostId?: number
+
     // orderField: 'createdAt' | 'preference',
     // orderField: 'createdAt' | 'preference',
   ) {
-    type PostWithBookmark = {
-      postId: number;
-      position: string | null;
-      postType: string | null;
-      preference: number;
-      views: number;
-      createdAt: Date | null;
-      updatedAt: Date | null;
-      post_userId: number | null;
-      skillList: string | null;
-      deadLine: Date | null;
-      memberCount: number | null;
-      startDate: Date | null;
-      period: string | null;
-      is_bookmarked: boolean;
+    let whereCondition: Prisma.postsWhereInput = { deletedAt: null };
+    if (postType) {
+      whereCondition = {
+        ...whereCondition,
+        postType: postType,
+      };
+    }
+    const posts = await this.prisma.posts.findMany({
+      where: whereCondition,
+      // orderBy: { [orderField]: 'desc' }, //인기순, 최신순
+      take: 10, //한번에 11개씩 불러옴
+      cursor: lastPostId ? { postId: lastPostId } : undefined, // cursor 추가
+      skip: lastPostId ? 1 : undefined, // cursor가 가리키는 레코드를 제외
+      //11번은 제외해서 10개만 조회되는 것, 11번째 게시물은 다음 페이지가 있는지 없는지를 판단하기 위한 용도로 사용
+      select: {
+        postId: true,
+        postTitle: true,
+        position: true,
+        postType: true,
+        preference: true,
+        views: true,
+        skillList: true,
+        deadLine: true,
+        startDate: true,
+        memberCount: true,
+        createdAt: true,
+        updatedAt: true,
+        post_userId: true,
+        users: {
+          select: {
+            userNickname: true,
+          },
+        },
+      },
+    });
+    const isLastPage = posts.length < 10; // 11개 미만이면 마지막 페이지
+    if (!isLastPage) {
+      posts.pop();
+    } // 마지막 요소 제거
+    const postsWithBookmark = await Promise.all(
+      posts.map(async (post) => {
+        let bookmark = false;
+        const userId = 2;
+        if (userId) {
+          const userBookmark = await this.prisma.bookmarks.findUnique({
+            where: {
+              userId_postId: {
+                userId: userId,
+                postId: post.postId,
+              },
+            },
+          });
+
+          console.log(userBookmark, !userBookmark, !!userBookmark);
+          bookmark = !!userBookmark;
+        }
+        return {
+          ...post,
+          bookmark,
+          position: post.position ? post.position.split(',') : [],
+          skillList: post.skillList ? post.skillList.split(',') : [],
+        };
+      })
+    );
+    return {
+      posts: postsWithBookmark,
+      isLastPage,
     };
 
-    // let rawPosts: PostWithBookmark[];
+    // type PostWithBookmark = {
+    //   postId: number;
+    //   position: string | null;
+    //   postType: string | null;
+    //   preference: number;
+    //   views: number;
+    //   createdAt: Date | null;
+    //   updatedAt: Date | null;
+    //   post_userId: number | null;
+    //   skillList: string | null;
+    //   deadLine: Date | null;
+    //   memberCount: number | null;
+    //   startDate: Date | null;
+    //   period: string | null;
+    //   is_bookmarked: boolean;
+    // };
 
-    let limit = 10; //10개씩 게시물 조회
-    const rawPosts: PostWithBookmark[] = await this.prisma.$queryRaw`
-      SELECT posts.*, 
-      CASE WHEN bookmarks.postId IS NOT NULL THEN TRUE ELSE FALSE END AS is_bookmarked
-      FROM posts 
-      LEFT JOIN bookmarks ON posts.postId = bookmarks.postId AND bookmarks.userId = ${userId}
-      WHERE posts.deletedAt IS NULL
-      ${postType ? Prisma.sql`AND posts.postType = ${postType}` : Prisma.empty}
-      ${lastPostId ? Prisma.sql`AND posts.postId < ${lastPostId}` : Prisma.empty}
-      ORDER BY posts.createdAt DESC
-      LIMIT ${limit}
-    `;
+    // // let rawPosts: PostWithBookmark[];
 
-    //인기순 정렬 추가 무한루푸 문제
-    // let orderBy = 'preference'
+    // let limit = 10; //10개씩 게시물 조회
     // const rawPosts: PostWithBookmark[] = await this.prisma.$queryRaw`
     //   SELECT posts.*,
     //   CASE WHEN bookmarks.postId IS NOT NULL THEN TRUE ELSE FALSE END AS is_bookmarked
+    //   CASE WHEN posts.deadLine < CURRENT_DATE THEN 'y' ELSE 'n' END AS isEnd
     //   FROM posts
     //   LEFT JOIN bookmarks ON posts.postId = bookmarks.postId AND bookmarks.userId = ${userId}
     //   WHERE posts.deletedAt IS NULL
+
+    //   ${isEnd === 0 ? Prisma.sql`AND posts.deadLine > CURDATE()` : Prisma.empty}
+
     //   ${postType ? Prisma.sql`AND posts.postType = ${postType}` : Prisma.empty}
     //   ${lastPostId ? Prisma.sql`AND posts.postId < ${lastPostId}` : Prisma.empty}
-    //   ORDER BY ${orderField === 'preference' ? 'posts.preference DESC' : 'posts.createdAt DESC'}
+    //   ORDER BY posts.createdAt DESC
     //   LIMIT ${limit}
     // `;
 
-    const postsWithBookmark = rawPosts.map((post) => ({
-      ...post,
-      is_bookmarked: Boolean(Number(post.is_bookmarked)), // BigInt to boolean
-      skillList: post.skillList ? post.skillList.split(',') : [],
-      position: post.position ? post.position.split(',') : [],
-    }));
+    // //인기순 정렬 추가 무한루푸 문제
+    // // let orderBy = 'preference'
+    // // const rawPosts: PostWithBookmark[] = await this.prisma.$queryRaw`
+    // //   SELECT posts.*,
+    // //   CASE WHEN bookmarks.postId IS NOT NULL THEN TRUE ELSE FALSE END AS is_bookmarked
+    // //   FROM posts
+    // //   LEFT JOIN bookmarks ON posts.postId = bookmarks.postId AND bookmarks.userId = ${userId}
+    // //   WHERE posts.deletedAt IS NULL
+    // //   ${postType ? Prisma.sql`AND posts.postType = ${postType}` : Prisma.empty}
+    // //   ${lastPostId ? Prisma.sql`AND posts.postId < ${lastPostId}` : Prisma.empty}
+    // //   ORDER BY ${orderField === 'preference' ? 'posts.preference DESC' : 'posts.createdAt DESC'}
+    // //   LIMIT ${limit}
+    // // `;
 
-    // console.log('postsWithBookmark.length', postsWithBookmark.length);
+    // const postsWithBookmark = rawPosts.map((post) => ({
+    //   ...post,
+    //   is_bookmarked: Boolean(Number(post.is_bookmarked)), // BigInt to boolean
+    //   skillList: post.skillList ? post.skillList.split(',') : [],
+    //   position: post.position ? post.position.split(',') : [],
+    // }));
 
-    return {
-      posts: postsWithBookmark,
-      isLastPage: postsWithBookmark.length < 10, //반환된 게시글 수가 요청한 수보다 적을 때 true
-    };
+    // // console.log('postsWithBookmark.length', postsWithBookmark.length);
+
+    // return {
+    //   posts: postsWithBookmark,
+    //   isLastPage: postsWithBookmark.length < 10, //반환된 게시글 수가 요청한 수보다 적을 때 true
+    // };
   }
 
   /**

@@ -167,61 +167,101 @@ export class PostService {
   /**
    * * 게시글 상세조회(views +1, preference는 버튼 누를 때 올라가는 거라 프론트에서 해줘야되는지?)
    * 로그인 안되있으면 북마크 기본 false값
+   * 조회수 본인은 view 안 올라감
+   * 유저 이미지 추가
+   *
    * @param postId
    * @returns
    */
   async getOnePost(postId: number, userId: number) {
-    const post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });
-    if (!post || post.deletedAt !== null) {
-      throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
-    }
-    const updatePost = await this.prisma.posts.update({
-      where: { postId: +postId },
-      data: { views: post.views + 1 },
-      include: { users: true },
-    });
+    try {
+      let post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });
 
-    let bookmark;
-    if (userId) {
-      //유저 아이디가 있다면
-      bookmark = await this.prisma.bookmarks.findUnique({
-        where: {
-          userId_postId: {
-            userId: userId,
-            postId: post.postId,
-          },
-        },
+      if (!post || post.deletedAt !== null) {
+        throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
+      }
+
+      console.log('post.post_userId', post.post_userId);
+      console.log('userId', userId);
+      if (post.post_userId !== userId) {
+        await this.prisma.posts.update({ where: { postId: +postId }, data: { views: post.views + 1 } });
+        post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });
+      }
+
+      //views는 작성자본인이 조회 할 땐 증가하지 않음
+      console.log('post =>>>', post);
+
+      const bookmarked = await this.prisma.bookmarks.findUnique({
+        where: { userId_postId: { postId: +postId, userId: +userId } },
       });
+
+      //bookmarked가 되어 있는걸 찾았다면 null이 아니라면 true null이면 false 반환
+      const isBookmarked = bookmarked !== null;
+
+      //북마크 되어 있으면 true 안되어 있으면 false 확인
+      console.log('bookmarked ===>>>>>', isBookmarked);
+
+      const response = {
+        postId: post.postId,
+        //게시글 작성자 정보
+        user: {
+          userId: post.users.userId,
+          userNickname: post.users.userNickname,
+          profileImage: post.users.profileImage,
+        },
+        postTitle: post.postTitle,
+        content: post.content,
+        postType: post.postType,
+        preference: post.preference,
+        views: post.views,
+        position: post.position ? post.position.split(',') : [],
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        skillList: post.skillList ? post.skillList.split(',') : [],
+        deadLine: post.deadLine,
+        startDate: post.startDate,
+        memberCount: post.memberCount,
+        period: post.period,
+      };
+
+      return { response, isBookmarked };
+    } catch (error) {
+      console.error(error);
     }
+
     //로그인하지 않은 사용자가 게시글을 조회할 때 bookmarked 프로퍼티가 false로 설정
 
-    // return updatePost;
-    const response = {
-      postId: updatePost.postId,
-      user: {
-        userId: updatePost.users.userId,
-        nickname: updatePost.users.userNickname,
-        profileImage: updatePost.users.profileImage,
-      },
-      title: updatePost.postTitle,
-      content: updatePost.content,
-      postType: updatePost.postType,
-      preference: updatePost.preference,
-      views: updatePost.views,
-      position: updatePost.position ? updatePost.position.split(',') : [],
-      createdAt: updatePost.createdAt,
-      updatedAt: updatePost.updatedAt,
-      skillList: updatePost.skillList ? updatePost.skillList.split(',') : [],
-      deadLine: updatePost.deadLine,
-      startDate: updatePost.startDate,
-      memberCount: updatePost.memberCount,
-      period: updatePost.period,
-      bookmarked: !!bookmark,
-    };
-    return { data: [response] };
+    // // return updatePost;
+    // const response = {
+    //   postId: updatePost.postId,
+    //   user: {
+    //     userId: updatePost.users.userId,
+    //     nickname: updatePost.users.userNickname,
+    //     profileImage: updatePost.users.profileImage,
+    //   },
+    //   title: updatePost.postTitle,
+    //   content: updatePost.content,
+    //   postType: updatePost.postType,
+    //   preference: updatePost.preference,
+    //   views: updatePost.views,
+    //   position: updatePost.position ? updatePost.position.split(',') : [],
+    //   createdAt: updatePost.createdAt,
+    //   updatedAt: updatePost.updatedAt,
+    //   skillList: updatePost.skillList ? updatePost.skillList.split(',') : [],
+    //   deadLine: updatePost.deadLine,
+    //   startDate: updatePost.startDate,
+    //   memberCount: updatePost.memberCount,
+    //   period: updatePost.period,
+    //   bookmarked: !!bookmark,
+    // };
+    // return { data: [response] };
   }
 
-  //신청하면 승인된 사람만 조회
+  /**
+   * 신청하면 승인된 사람만 조회
+   * @param postId
+   * @returns
+   */
   async getParticipantsInPost(postId: number) {
     try {
       const participatingUsers = await this.prisma.notifications.findMany({

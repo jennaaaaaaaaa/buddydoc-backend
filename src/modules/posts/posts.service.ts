@@ -20,13 +20,85 @@ export class PostService {
    * @param lastPostId
    * @returns
    */
+
+  // async getAllPosts(orderField: 'createdAt' | 'preference', postType?: 'study' | 'project', lastPostId?: number)
   async getAllPosts(
     userId: number,
+    isEnd: 0 | 1,
     postType?: 'study' | 'project',
     lastPostId?: number
+
     // orderField: 'createdAt' | 'preference',
     // orderField: 'createdAt' | 'preference',
   ) {
+    // let whereCondition: Prisma.postsWhereInput = { deletedAt: null };
+    // if (postType) {
+    //   whereCondition = {
+    //     ...whereCondition,
+    //     postType: postType,
+    //   };
+    // }
+    // const posts = await this.prisma.posts.findMany({
+    //   where: whereCondition,
+    //   orderBy: { [orderField]: 'desc' }, //인기순, 최신순
+    //   take: 10, //한번에 11개씩 불러옴
+    //   cursor: lastPostId ? { postId: lastPostId } : undefined, // cursor 추가
+    //   skip: lastPostId ? 1 : undefined, // cursor가 가리키는 레코드를 제외
+    //   //11번은 제외해서 10개만 조회되는 것, 11번째 게시물은 다음 페이지가 있는지 없는지를 판단하기 위한 용도로 사용
+    //   select: {
+    //     postId: true,
+    //     postTitle: true,
+    //     position: true,
+    //     postType: true,
+    //     preference: true,
+    //     views: true,
+    //     skillList: true,
+    //     deadLine: true,
+    //     startDate: true,
+    //     memberCount: true,
+    //     createdAt: true,
+    //     updatedAt: true,
+    //     post_userId: true,
+    //     users: {
+    //       select: {
+    //         userNickname: true,
+    //       },
+    //     },
+    //   },
+    // });
+    // const isLastPage = posts.length < 10; // 11개 미만이면 마지막 페이지
+    // if (!isLastPage) {
+    //   posts.pop();
+    // } // 마지막 요소 제거
+    // const postsWithBookmark = await Promise.all(
+    //   posts.map(async (post) => {
+    //     let bookmark = false;
+    //     if (userId) {
+    //       const userBookmark = await this.prisma.bookmarks.findUnique({
+    //         where: {
+    //           userId_postId: {
+    //             userId: userId,
+    //             postId: post.postId,
+    //           },
+    //         },
+    //       });
+
+    //       console.log(userBookmark, !userBookmark, !!user)
+    //       bookmark = !!userBookmark;
+    //     }
+    //     return {
+    //       ...post,
+    //       bookmark,
+    //       position: post.position ? post.position.split(',') : [],
+    //       skillList: post.skillList ? post.skillList.split(',') : [],
+    //     };
+    //   })
+    // );
+    // return {
+    //   posts: postsWithBookmark,
+    //   isLastPage,
+    // };
+
     type PostWithBookmark = {
       postId: number;
       position: string | null;
@@ -60,19 +132,20 @@ export class PostService {
     // `;
 
     const rawPosts: PostWithBookmark[] = await this.prisma.$queryRaw`
-  SELECT posts.*, users.userId, users.userNickname, users.position, users.gitURL, users.profileImage, users.career,
-  CASE WHEN bookmarks.postId IS NOT NULL THEN TRUE ELSE FALSE END AS is_bookmarked
-  FROM posts 
-  LEFT JOIN bookmarks ON posts.postId = bookmarks.postId AND bookmarks.userId = ${userId}
-  INNER JOIN users ON posts.post_userId = users.userId
-  WHERE posts.deletedAt IS NULL
-  ${postType ? Prisma.sql`AND posts.postType = ${postType}` : Prisma.empty}
-  ${lastPostId ? Prisma.sql`AND posts.postId < ${lastPostId}` : Prisma.empty}
-  ORDER BY posts.createdAt DESC
-  LIMIT ${limit}
-`;
+      SELECT posts.*, 
+      CASE WHEN bookmarks.postId IS NOT NULL THEN TRUE ELSE FALSE END AS is_bookmarked
+      CASE WHEN posts.deadLine < CURRENT_DATE THEN 'y' ELSE 'n' END AS isEnd
+      FROM posts 
+      LEFT JOIN bookmarks ON posts.postId = bookmarks.postId AND bookmarks.userId = ${userId}
+      WHERE posts.deletedAt IS NULL
 
-    // console.log('rawPosts =>>>>>>:', rawPosts);
+      ${isEnd === 0 ? Prisma.sql`AND posts.deadLine > CURDATE()` : Prisma.empty}
+
+      ${postType ? Prisma.sql`AND posts.postType = ${postType}` : Prisma.empty}
+      ${lastPostId ? Prisma.sql`AND posts.postId < ${lastPostId}` : Prisma.empty}
+      ORDER BY posts.createdAt DESC
+      LIMIT ${limit}
+    `;
 
     //인기순 정렬 추가 무한루푸 문제
     // let orderBy = 'preference'
@@ -106,62 +179,101 @@ export class PostService {
   /**
    * * 게시글 상세조회(views +1, preference는 버튼 누를 때 올라가는 거라 프론트에서 해줘야되는지?)
    * 로그인 안되있으면 북마크 기본 false값
+   * 조회수 본인은 view 안 올라감
+   * 유저 이미지 추가
+   *
    * @param postId
    * @returns
    */
   async getOnePost(postId: number, userId: number) {
-    //userId: number
-    const post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });
-    if (!post || post.deletedAt !== null) {
-      throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
-    }
-    const updatePost = await this.prisma.posts.update({
-      where: { postId: +postId }, //post_userId: +userId
-      data: { views: post.views + 1 },
-      include: { users: true },
-    });
+    try {
+      let post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });
 
-    let bookmark;
-    if (userId) {
-      //유저 아이디가 있다면
-      bookmark = await this.prisma.bookmarks.findUnique({
-        where: {
-          userId_postId: {
-            userId: userId,
-            postId: post.postId,
-          },
-        },
+      if (!post || post.deletedAt !== null) {
+        throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
+      }
+
+      console.log('post.post_userId', post.post_userId);
+      console.log('userId', userId);
+      if (post.post_userId !== userId) {
+        await this.prisma.posts.update({ where: { postId: +postId }, data: { views: post.views + 1 } });
+        post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });
+      }
+
+      //views는 작성자본인이 조회 할 땐 증가하지 않음
+      console.log('post =>>>', post);
+
+      const bookmarked = await this.prisma.bookmarks.findUnique({
+        where: { userId_postId: { postId: +postId, userId: +userId } },
       });
+
+      //bookmarked가 되어 있는걸 찾았다면 null이 아니라면 true null이면 false 반환
+      const isBookmarked = bookmarked !== null;
+
+      //북마크 되어 있으면 true 안되어 있으면 false 확인
+      console.log('bookmarked ===>>>>>', isBookmarked);
+
+      const response = {
+        postId: post.postId,
+        //게시글 작성자 정보
+        user: {
+          userId: post.users.userId,
+          userNickname: post.users.userNickname,
+          profileImage: post.users.profileImage,
+        },
+        postTitle: post.postTitle,
+        content: post.content,
+        postType: post.postType,
+        preference: post.preference,
+        views: post.views,
+        position: post.position ? post.position.split(',') : [],
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        skillList: post.skillList ? post.skillList.split(',') : [],
+        deadLine: post.deadLine,
+        startDate: post.startDate,
+        memberCount: post.memberCount,
+        period: post.period,
+      };
+
+      return { response, isBookmarked };
+    } catch (error) {
+      console.error(error);
     }
+
     //로그인하지 않은 사용자가 게시글을 조회할 때 bookmarked 프로퍼티가 false로 설정
 
-    // return updatePost;
-    const response = {
-      postId: updatePost.postId,
-      user: {
-        userId: updatePost.users.userId,
-        nickname: updatePost.users.userNickname,
-      },
-      postTitle: updatePost.postTitle,
-      content: updatePost.content,
-      postType: updatePost.postType,
-      preference: updatePost.preference,
-      views: updatePost.views,
-      position: updatePost.position ? updatePost.position.split(',') : [],
-      createdAt: updatePost.createdAt,
-      updatedAt: updatePost.updatedAt,
-      skillList: updatePost.skillList ? updatePost.skillList.split(',') : [],
-      deadLine: updatePost.deadLine,
-      startDate: updatePost.startDate,
-      memberCount: updatePost.memberCount,
-      period: updatePost.period,
-      post_userId: updatePost.post_userId,
-      bookmarked: !!bookmark,
-    };
-    return { data: [response] };
+    // // return updatePost;
+    // const response = {
+    //   postId: updatePost.postId,
+    //   user: {
+    //     userId: updatePost.users.userId,
+    //     nickname: updatePost.users.userNickname,
+    //     profileImage: updatePost.users.profileImage,
+    //   },
+    //   title: updatePost.postTitle,
+    //   content: updatePost.content,
+    //   postType: updatePost.postType,
+    //   preference: updatePost.preference,
+    //   views: updatePost.views,
+    //   position: updatePost.position ? updatePost.position.split(',') : [],
+    //   createdAt: updatePost.createdAt,
+    //   updatedAt: updatePost.updatedAt,
+    //   skillList: updatePost.skillList ? updatePost.skillList.split(',') : [],
+    //   deadLine: updatePost.deadLine,
+    //   startDate: updatePost.startDate,
+    //   memberCount: updatePost.memberCount,
+    //   period: updatePost.period,
+    //   bookmarked: !!bookmark,
+    // };
+    // return { data: [response] };
   }
 
-  //신청하면 승인된 사람만 조회
+  /**
+   * 신청하면 승인된 사람만 조회
+   * @param postId
+   * @returns
+   */
   async getParticipantsInPost(postId: number) {
     try {
       const participatingUsers = await this.prisma.notifications.findMany({
@@ -193,6 +305,7 @@ export class PostService {
         users: {
           ...user.users,
           skills: user.users.skills.map((skillObj) => skillObj.skill),
+          position: user.users.position ? user.users.position.split(',') : [],
         },
       }));
 
@@ -249,7 +362,7 @@ export class PostService {
 
     // elasticsearch 사용시 주석 풀어야함
     // Elasticsearch에 인덱싱
-    // await this.searchService.addDocument([post]);
+    await this.searchService.addDocument([post]);
 
     // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {
@@ -317,7 +430,7 @@ export class PostService {
 
     // elasticsearch 사용시 주석 풀어야함
     // Elasticsearch에 인덱싱된 데이터 업데이트
-    // await this.searchService.updateDocument(postId, post);
+    await this.searchService.updateDocument(postId, post);
 
     // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {
@@ -347,8 +460,8 @@ export class PostService {
     const delPost = await this.prisma.posts.update({ where: { postId: +postId }, data: { deletedAt: new Date() } });
 
     // Elasticsearch 인덱스에서 해당 문서 삭제
-    // const deleteResult = await this.searchService.deleteDoc(postId);
-    // console.log('deleteResult ====>>>>', deleteResult);
+    const deleteResult = await this.searchService.deleteDoc(postId);
+    console.log('deleteResult ====>>>>', deleteResult);
 
     return delPost;
   }

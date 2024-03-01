@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { PrismaService } from '../../../database/prisma/prisma.service';
+import { SearchInterfaces } from './search.interfaces';
+// import { SearchResponse } from './search.interfaces';
 @Injectable()
 export class SearchService {
   private readonly indexName = 'title_content';
@@ -35,37 +37,83 @@ export class SearchService {
         properties: {
           postTitle: { type: 'text' },
           content: { type: 'text' },
-          suggest: {
-            type: 'completion',
-            analyzer: 'simple',
-            search_analyzer: 'simple',
-          },
+          createdAt: { type: 'date' }, // 추가
+          postId: { type: 'integer' }, // 추가
+          deletedAt: { type: 'date' }, // 추가
         },
       },
     });
   }
 
-  async postSearch(search: string) {
-    console.log('searchService =>>>> search:', search);
+  async postSearch(search: string, pageCursor?: string) {
     if (!search || typeof search !== 'string') {
       throw new Error('Invalid search parameter');
     }
-    return this.elasticsearchService.search({
-      index: this.indexName,
-      body: {
-        suggest: {
-          docsuggest: {
-            prefix: search,
-            completion: {
-              field: 'suggest',
-              fuzzy: {
-                fuzziness: 'auto',
+
+    let body: any = {
+      query: {
+        bool: {
+          should: [{ match: { title: search } }, { match: { content: search } }],
+          filter: {
+            bool: {
+              must_not: {
+                exists: {
+                  field: 'deletedAt',
+                },
               },
             },
           },
+          minimum_should_match: 1,
         },
       },
-    });
+      sort: [{ createdAt: 'desc' }, { postId: 'desc' }],
+      size: 3,
+    };
+
+    // 페이지 커서가 있다면 search_after에 추가
+
+    if (pageCursor) {
+      const pageCursorValues = pageCursor.split(',');
+
+      body.search_after = pageCursorValues;
+    }
+
+    // console.log('pageCursor', pageCursor);
+    // console.log('pageCursorValues', pageCursorValues);
+
+    // console.log('body.search_after', body.search_after);
+
+    const result = (await this.elasticsearchService.search({
+      index: this.indexName,
+      body,
+    })) as unknown as SearchInterfaces;
+
+    // console.log('body', body);
+    // console.log('result.hits', result.hits);
+
+    let options = result.hits.hits;
+
+    // console.log('options', options.map((option) => ));
+
+    // options.forEach((option) => {
+    //   console.log(option._source.postId);
+    // });
+
+    // 다음 페이지 커서 생성
+    let lastPageCursor;
+    if (options.length > 0) {
+      // options를 createdAt으로 내림차순 정렬
+      // options.sort((a, b) => {
+      //   return new Date(b._source.createdAt).getTime() - new Date(a._source.createdAt).getTime();
+      // });
+      const lastOption = options[options.length - 1];
+      // console.log('lastOption._source.postIdlastOption._source.postId ===>>>>', lastOption._source);
+      lastPageCursor = [lastOption._source.postId]; // 현재 마지막 문서의 'createdAt'과 'postId'
+    }
+
+    let isLastPage = options.length < body.size;
+
+    return { options, lastPageCursor, isLastPage };
   }
 
   async init() {
@@ -100,8 +148,12 @@ export class SearchService {
         },
       })) as any;
 
-      if (!result.body || !result.body.hits || !result.body.hits.total) {
-        console.log(`No search results for title: ${postTitle}, content: ${content}`);
+      if (
+        !result.body ||
+        !result.body.hits ||
+        (!result.body.hits.total && !result.body.suggest.docsuggest[0].options.length)
+      ) {
+        // console.log(`No search results for title: ${postTitle}, content: ${content}`);
         return false;
       }
 
@@ -119,6 +171,10 @@ export class SearchService {
           console.error('Title or content is missing in post:', post);
           return null;
         }
+
+        const user = await this.prisma.users.findUnique({ where: { userId: +post.post_userId } });
+        const userNickname = user ? user.userNickname : 'Unknown';
+
         let response;
         const exists = await this.checkExistence(post.postTitle, post.content);
 
@@ -126,15 +182,31 @@ export class SearchService {
           try {
             response = await this.elasticsearchService.index({
               index: this.indexName,
+              id: post.postId,
               body: {
+                postId: post.postId,
                 title: post.postTitle,
                 content: post.content,
+                position: post.position ? post.position.split(',') : [],
+                postType: post.postType,
+                skillList: post.skillList ? post.skillList.split(',') : [],
+                preference: post.preference,
+                views: post.views,
+                createdAt: post.createdAt,
+                updatedAt: post.updatedAt,
+                deletedAt: post.deletedAt,
+                deadLine: post.deadLine,
+                startDate: post.startDate,
+                memberCount: post.memberCount,
+                period: post.period,
+                userNickname: userNickname,
+                profileImage: user.profileImage,
                 suggest: {
                   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
                 },
               },
             });
-            console.log(`Document added successfully for title: ${post.postTitle}, content: ${post.content}`);
+            // console.log(`Document added successfully for title: ${post.postTitle}, content: ${post.content}`);
             await new Promise((resolve) => setTimeout(resolve, 1000));
             return response;
           } catch (error) {
@@ -148,6 +220,7 @@ export class SearchService {
       })
     );
   }
+
   // async updateDocument(id: number, post: any) {
   //   console.log('id, post ===>>>>', id, post);
   //   return this.elasticsearchService.update({
@@ -220,162 +293,3 @@ export class SearchService {
     }
   }
 }
-
-// import { Injectable } from '@nestjs/common';
-// import { Client } from '@elastic/elasticsearch';
-// import { PrismaService } from '../../../database/prisma/prisma.service';
-
-// @Injectable()
-// export class SearchService {
-//   private readonly elasticClient: Client;
-//   private readonly indexName = 'title_content'; //인덱스 이름 저장
-
-//   // @elastic/elasticsearch 라이브러리에서는 클라이언트 옵션 중 log 옵션을 지원하지않음 대신 로깅을 위해 별도의 로깅 시스템을 사용
-//   constructor(private prisma: PrismaService) {
-//     this.elasticClient = new Client({
-//       node: 'http://localhost:9200',
-//       // log: 'info',
-//     });
-//   }
-
-//   //인덱스 삭제
-//   async deleteIndex() {
-//     return this.elasticClient.indices.delete({
-//       index: this.indexName,
-//     });
-//   }
-
-//   //인덱스 생성
-//   async initIndex() {
-//     return this.elasticClient.indices.create({
-//       index: this.indexName,
-//     });
-//   }
-
-//   //인덱스 존재 여부
-//   async indexExists() {
-//     return this.elasticClient.indices.exists({
-//       index: this.indexName,
-//     });
-//   }
-
-//   async initMapping() {
-//     return this.elasticClient.indices.putMapping({
-//       index: this.indexName,
-//       body: {
-//         properties: {
-//           //title이랑 content라는 필드 타입은text
-//           postTitle: { type: 'text' },
-//           content: { type: 'text' },
-//           suggest: {
-//             type: 'completion', //자동완성기능
-//             analyzer: 'simple', //문서가 인덱싱 될 때 사용하는 분석기
-//             search_analyzer: 'simple', //검색시 사용되는 분석기, 대소문자 구별 x, 공백기준으로 텍스트 분리
-//           },
-//         },
-//       },
-//     });
-//   }
-
-//   async postSearch(search: string) {
-//     return this.elasticClient.search({
-//       index: this.indexName,
-//       body: {
-//         suggest: {
-//           docsuggest: {
-//             prefix: search, //사용자가 입력한 검색어
-//             completion: {
-//               field: 'suggest',
-//               fuzzy: {
-//                 //부분 일치 검색을 활성화하는 옵션
-//                 fuzziness: 'auto', //검색어와 약간 다른 단어도 결과에 포함
-//               },
-//             },
-//           },
-//         },
-//       },
-//     });
-//   }
-
-//   async init() {
-//     const exists = await this.indexExists();
-//     if (exists) {
-//       await this.deleteIndex();
-//     }
-
-//     await this.initIndex();
-//     await this.initMapping();
-
-//     const posts = await this.prisma.posts.findMany();
-
-//     await this.addDocument(posts);
-//   }
-
-//   ////elasticsearch내의 해당 인덱스의 document 중복체크
-//   async checkExistence(postTitle: string, content: string) {
-//     try {
-//       if (!postTitle || !content) {
-//         console.error('Title or content is missing');
-//         return false;
-//       }
-
-//       const result = (await this.elasticClient.search({
-//         index: this.indexName,
-//         body: {
-//           query: {
-//             bool: {
-//               must: [{ match: { title: postTitle } }, { match: { content: content } }],
-//             },
-//           },
-//         },
-//       })) as any;
-
-//       if (!result.body || !result.body.hits || !result.body.hits.total) {
-//         console.log(`No search results for title: ${postTitle}, content: ${content}`);
-//         return false;
-//       }
-
-//       return result.body.hits.total.value > 0;
-//     } catch (error) {
-//       console.error(`Error occurred in Elasticsearch query for title: ${postTitle}, content: ${content}`, error);
-//       return false; // 오류가 발생하면 'false'를 반환
-//     }
-//   }
-
-//   async addDocument(posts: any[]) {
-//     return Promise.all(
-//       posts.map(async (post) => {
-//         if (!post.postTitle || !post.content) {
-//           console.error('Title or content is missing in post:', post);
-//           return null;
-//         }
-//         let response;
-//         const exists = await this.checkExistence(post.postTitle, post.content);
-
-//         if (!exists) {
-//           try {
-//             response = await this.elasticClient.index({
-//               index: this.indexName,
-//               body: {
-//                 title: post.postTitle,
-//                 content: post.content,
-//                 suggest: {
-//                   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
-//                 },
-//               },
-//             });
-//             console.log(`Document added successfully for title: ${post.postTitle}, content: ${post.content}`);
-//             await new Promise((resolve) => setTimeout(resolve, 1000));
-//             return response;
-//           } catch (error) {
-//             console.error(
-//               `Error occurred while adding document for title: ${post.postTitle}, content: ${post.content}`,
-//               error
-//             );
-//           }
-//         }
-//         return null;
-//       })
-//     );
-//   }
-// }

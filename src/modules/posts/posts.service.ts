@@ -193,8 +193,8 @@ export class PostService {
         throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
       }
 
-      console.log('post.post_userId', post.post_userId);
-      console.log('userId', userId);
+      console.log('post.post_userId: 게시글 작성자', post.post_userId);
+      console.log('userId: 로그인 한 사람, null이면 로그인 안되어있음', userId);
       if (post.post_userId !== userId) {
         await this.prisma.posts.update({ where: { postId: +postId }, data: { views: post.views + 1 } });
         post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });

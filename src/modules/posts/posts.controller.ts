@@ -79,11 +79,12 @@ export class PostController {
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   @Get('/search')
-  async postSearch(@Query('search') search: string) {
+  async postSearch(@Query('search') search: string, @Query('pageCursor') pageCursor?: string) {
     try {
-      console.log('검색한 키워드 postController =>>>> search:', search);
-      const result = await this.searchService.postSearch(search);
-      // console.log('result =>>>> 🎈🎈🎈🎈', result);
+      // const cursor = pageCursor ? parseInt(pageCursor) : undefined;
+      // console.log('검색한 키워드 postController =>>>> search:', search);
+      // console.log('검색한 키워드 postController =>>>> pageCursor:', pageCursor);
+      const result = await this.searchService.postSearch(search, pageCursor);
       return result;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

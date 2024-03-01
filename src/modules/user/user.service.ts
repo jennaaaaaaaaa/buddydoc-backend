@@ -13,9 +13,8 @@ export class UserService {
    */
   async createUser(userDto: UserDto) {
     try {
-	    console.log('회원가입 ',userDto)
-      const { email, userNickname, position, gitURL, userStatus, introduction, career, password, platform } =
-        userDto;
+      console.log('회원가입 ', userDto);
+      const { email, userNickname, position, gitURL, userStatus, introduction, career, password, platform } = userDto;
       const user = await this.prisma.users.create({
         data: {
           email,
@@ -44,24 +43,24 @@ export class UserService {
    */
   async updateUser(userDto: UserDto) {
     try {
-	    console.log('회원수정 ',userDto)
-      const { userId,userNickname, position, gitURL, userStatus, introduction, career } = userDto;
-      console.log(userId,userNickname,position,career)
+      console.log('회원수정 ', userDto);
+      const { userId, userNickname, position, gitURL, userStatus, introduction, career } = userDto;
+      console.log(userId, userNickname, position, career);
       //const updateResult = await this.prisma.$queryRaw`
       //update users set userNickname=${userNickname},position=${position},
       //career=${career} where userId=${userId}`
       const updateResult = await this.prisma.users.update({
-       where: {
-        userId: userId,
-       },
-       data: {
-        userNickname: userNickname,
-        position: position,
-        gitURL: gitURL,
-        userStatus: userStatus,
-        introduction: introduction,
-        career: career,
-        createdAt: new Date(),
+        where: {
+          userId: userId,
+        },
+        data: {
+          userNickname: userNickname,
+          position: position,
+          gitURL: gitURL,
+          userStatus: userStatus,
+          introduction: introduction,
+          career: career,
+          createdAt: new Date(),
         },
       });
 
@@ -74,12 +73,12 @@ export class UserService {
   /**
    * userId로 기술스택 row 생성
    * @param userId
-   * @param userSkills
+   * @param skillList
    * @returns prisma create 결과
    */
-  async insertSkills(userId: number, userSkills: string[]) {
+  async insertSkills(userId: number, skillList: string[]) {
     try {
-      const skillObj = userSkills.map((skill) => ({
+      const skillObj = skillList.map((skill) => ({
         userId: userId,
         skill: skill.trim(),
         createdAt: new Date(),
@@ -96,12 +95,12 @@ export class UserService {
   /**
    * 기술 스택 수정
    * @param userId
-   * @param userSkills
+   * @param skillList
    * @returns
    */
-  async updateSkills(userId: number, userSkills: string[]) {
+  async updateSkills(userId: number, skillList: string[]) {
     try {
-      const skillObj = userSkills.map((skill) => ({
+      const skillObj = skillList.map((skill) => ({
         userId: userId,
         skill: skill.trim(),
       }));
@@ -113,6 +112,29 @@ export class UserService {
           create: { userId: skill.userId, skill: skill.skill, createdAt: new Date() },
         });
       }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  /**
+   * 닉네임 중복확인
+   * @param userNickname
+   * @returns
+   */
+  async checkId(userNickname: string) {
+    try {
+      if (userNickname == '') return true;
+      const checkId = await this.prisma.users.findFirst({
+        where: {
+          userNickname: userNickname,
+        },
+        select: {
+          userNickname: true,
+        },
+      });
+      console.log('닉네임 중복 확인 : ', checkId.userNickname);
+      return checkId.userNickname;
     } catch (error) {
       console.log(error);
     }

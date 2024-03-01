@@ -45,7 +45,7 @@ export class UserDto {
 
   @ApiProperty()
   @IsString()
-  skills: string[]; // 기술
+  skillList: string[]; // 기술
 
   @ApiProperty()
   @IsString()

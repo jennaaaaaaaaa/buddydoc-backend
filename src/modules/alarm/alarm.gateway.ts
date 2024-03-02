@@ -24,6 +24,6 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('alarm')
   sendNotification(@MessageBody() message: string, userId : number) {
     console.log('Received message:', message);
-    this.server.to(String(userId)).emit('alarmMessage', { message });
+    this.server.emit('alarmMessage', { message });
   }
 }

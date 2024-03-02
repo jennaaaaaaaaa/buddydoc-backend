@@ -472,21 +472,33 @@ export class PostService {
    * @param postId
    * @returns
    */
-  async toggleBookmark(userId: number, postId: number) {
+  async toggleBookmark(userId: number, postId: string) {
+    // postId와 userId가 유효한지 확인
+    const post = await this.prisma.posts.findUnique({ where: { postId: +postId } });
+    const user = await this.prisma.users.findUnique({ where: { userId: userId } });
+    if (!post) {
+      throw new Error('Post not found(존재하지 않는 게시글 입니다)');
+    }
+    if (!user) {
+      throw new Error('User not found(존재하지 않는 유저 입니다)');
+    }
+
     const bookmark = await this.prisma.bookmarks.findUnique({
       where: {
         userId_postId: {
-          userId: +userId,
+          userId: userId,
           postId: +postId,
         },
       },
     });
 
+    console.log('bookmark 값이 null 이면 북마크 데이터에 추가됨', bookmark);
+
     if (bookmark) {
       const deleteBookmark = this.prisma.bookmarks.delete({
         where: {
           userId_postId: {
-            userId: +userId,
+            userId: userId,
             postId: +postId,
           },
         },
@@ -501,15 +513,9 @@ export class PostService {
 
       return { preference: updatedPost.preference, bookmarked: false }; // 변경된 preference 값 반환
     } else {
-      // const user = await this.prisma.users.findUnique({
-      //   where: { userId: userId },
-      // });
-      // if (!user) {
-      //   throw new Error('User not found');
-      // }
       const createBookmark = this.prisma.bookmarks.create({
         data: {
-          userId: +userId,
+          userId: userId,
           postId: +postId,
           createdAt: new Date(),
         },

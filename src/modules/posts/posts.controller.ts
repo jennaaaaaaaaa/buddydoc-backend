@@ -115,8 +115,8 @@ export class PostController {
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
     try {
-      // const userId = req.user ? req.user['id'] : null;
-      const userId = 27;
+      const userId = req.user ? req.user['id'] : null;
+      // const userId = 27;
       const post = await this.postService.getOnePost(postId, userId);
       return res.status(200).json({ message: '게시글 조회에 성공하였습니다', post });
     } catch (error) {

@@ -115,8 +115,8 @@ export class PostController {
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
     try {
-      const userId = req.user ? req.user['id'] : null;
-      // const userId = 23;
+      // const userId = req.user ? req.user['id'] : null;
+      const userId = 27;
       const post = await this.postService.getOnePost(postId, userId);
       return res.status(200).json({ message: '게시글 조회에 성공하였습니다', post });
     } catch (error) {
@@ -365,15 +365,15 @@ export class PostController {
    * @param postId
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '북마크 추가/제거 API',
   })
   @Post(':postId/bookmarks')
   async toggleBookmark(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
     try {
-      const userId = req.user['id'];
-      // const userId = 23;
+      // const userId = req.user['id'];
+      const userId = 27;
       // const result = await this.postService.toggleBookmark(userId, postId);
       await this.postService.toggleBookmark(userId, postId);
       return res.status(200).json({ message: '북마크가 성공적으로 처리되었습니다' });

@@ -430,7 +430,7 @@ export class PostService {
 
     // elasticsearch 사용시 주석 풀어야함
     // Elasticsearch에 인덱싱된 데이터 업데이트
-    await this.searchService.updateDocument(postId, post);
+    // await this.searchService.updateDocument(postId, post);
 
     // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {
@@ -460,7 +460,7 @@ export class PostService {
     const delPost = await this.prisma.posts.update({ where: { postId: +postId }, data: { deletedAt: new Date() } });
 
     // Elasticsearch 인덱스에서 해당 문서 삭제
-    const deleteResult = await this.searchService.deleteDoc(postId);
+    // const deleteResult = await this.searchService.deleteDoc(postId);
     // console.log('deleteResult ====>>>>', deleteResult);
 
     return delPost;

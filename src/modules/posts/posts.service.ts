@@ -119,6 +119,18 @@ export class PostService {
     // let rawPosts: PostWithBookmark[];
 
     let limit = 10; //10개씩 게시물 조회
+    // const rawPosts: PostWithBookmark[] = await this.prisma.$queryRaw`
+    //   SELECT posts.*,
+    //   CASE WHEN bookmarks.postId IS NOT NULL THEN TRUE ELSE FALSE END AS is_bookmarked
+    //   FROM posts
+    //   LEFT JOIN bookmarks ON posts.postId = bookmarks.postId AND bookmarks.userId = ${userId}
+    //   WHERE posts.deletedAt IS NULL
+    //   ${postType ? Prisma.sql`AND posts.postType = ${postType}` : Prisma.empty}
+    //   ${lastPostId ? Prisma.sql`AND posts.postId < ${lastPostId}` : Prisma.empty}
+    //   ORDER BY posts.createdAt DESC
+    //   LIMIT ${limit}
+    // `;
+
     const rawPosts: PostWithBookmark[] = await this.prisma.$queryRaw`
       SELECT posts.*, 
       CASE WHEN bookmarks.postId IS NOT NULL THEN TRUE ELSE FALSE END AS is_bookmarked
@@ -181,8 +193,8 @@ export class PostService {
         throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
       }
 
-      console.log('post.post_userId', post.post_userId);
-      console.log('userId', userId);
+      console.log('post.post_userId: 게시글 작성자', post.post_userId);
+      console.log('userId: 로그인 한 사람, null이면 로그인 안되어있음', userId);
       if (post.post_userId !== userId) {
         await this.prisma.posts.update({ where: { postId: +postId }, data: { views: post.views + 1 } });
         post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });
@@ -350,7 +362,7 @@ export class PostService {
 
     // elasticsearch 사용시 주석 풀어야함
     // Elasticsearch에 인덱싱
-    await this.searchService.addDocument([post]);
+    // await this.searchService.addDocument([post]);
 
     // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {
@@ -449,7 +461,7 @@ export class PostService {
 
     // Elasticsearch 인덱스에서 해당 문서 삭제
     const deleteResult = await this.searchService.deleteDoc(postId);
-    console.log('deleteResult ====>>>>', deleteResult);
+    // console.log('deleteResult ====>>>>', deleteResult);
 
     return delPost;
   }

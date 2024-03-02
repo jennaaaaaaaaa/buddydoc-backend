@@ -354,7 +354,7 @@ export class PostController {
   async deletePost(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
     try {
       // const userId = req.user['id'];
-      const userId = 23;
+      const userId = 27;
       await this.postService.deletePost(postId, userId);
       return res.status(200).json({ message: '삭제되었습니다' });
     } catch (error) {

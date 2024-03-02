@@ -52,7 +52,7 @@ export class PostController {
   @ApiOperation({
     summary: '게시글목록 API',
   })
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   @Get()
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
@@ -110,13 +110,11 @@ export class PostController {
   @ApiResponse({ status: 200, description: '게시글 조회에 성공하였습니다.' })
   @ApiResponse({ status: 400, description: '잘못된 요청입니다.' })
   @Get(':postId')
-  // @UseGuards(JwtAuthGuard)
   @UseGuards(OptionalJwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
     try {
-      
       const userId = req.user ? req.user['id'] : null;
       // const userId = 27;
       const post = await this.postService.getOnePost(postId, userId);

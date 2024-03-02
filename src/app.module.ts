@@ -11,6 +11,7 @@ import { S3Service } from './providers/aws/s3/s3.service';
 import { S3Module } from './providers/aws/s3/s3.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { NotiModule } from './modules/notifications/noti.module';
+import { AlarmModule } from './modules/alarm/alarm.module';
 
 @Module({
   imports: [

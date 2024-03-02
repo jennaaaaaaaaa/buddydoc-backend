@@ -365,7 +365,7 @@ export class PostController {
    * @param postId
    * @returns
    */
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '북마크 추가/제거 API',
   })

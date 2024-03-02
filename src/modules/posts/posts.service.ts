@@ -193,25 +193,45 @@ export class PostService {
         throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
       }
 
-      console.log('post.post_userId: 게시글 작성자', post.post_userId);
-      console.log('userId: 로그인 한 사람, null이면 로그인 안되어있음', userId);
+      console.log('post.post_userId: 게시글 작성자:', post.post_userId);
+      console.log('userId: 로그인 한 사람, null값 이면 로그인 안되어있는 상태::', userId);
       if (post.post_userId !== userId) {
         await this.prisma.posts.update({ where: { postId: +postId }, data: { views: post.views + 1 } });
         post = await this.prisma.posts.findUnique({ where: { postId: +postId }, include: { users: true } });
       }
 
       //views는 작성자본인이 조회 할 땐 증가하지 않음
-      console.log('post =>>>', post);
 
-      const bookmarked = await this.prisma.bookmarks.findUnique({
-        where: { userId_postId: { postId: +postId, userId: +userId } },
-      });
+      if (userId) {
+        const bookmarked = await this.prisma.bookmarks.findUnique({
+          where: { userId_postId: { postId: +postId, userId: +userId } },
+        });
 
-      //bookmarked가 되어 있는걸 찾았다면 null이 아니라면 true null이면 false 반환
-      const isBookmarked = bookmarked !== null;
+        const response = {
+          postId: post.postId,
+          //게시글 작성자 정보
+          user: {
+            userId: post.users.userId,
+            userNickname: post.users.userNickname,
+            profileImage: post.users.profileImage,
+          },
+          postTitle: post.postTitle,
+          content: post.content,
+          postType: post.postType,
+          preference: post.preference,
+          views: post.views,
+          position: post.position ? post.position.split(',') : [],
+          createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
+          skillList: post.skillList ? post.skillList.split(',') : [],
+          deadLine: post.deadLine,
+          startDate: post.startDate,
+          memberCount: post.memberCount,
+          period: post.period,
+        };
 
-      //북마크 되어 있으면 true 안되어 있으면 false 확인
-      console.log('bookmarked ===>>>>>', isBookmarked);
+        return { ...response, isBookmarked: Boolean(bookmarked) };
+      }
 
       const response = {
         postId: post.postId,
@@ -236,7 +256,7 @@ export class PostService {
         period: post.period,
       };
 
-      return { response, isBookmarked };
+      return { ...response, isBookmarked: false };
     } catch (error) {
       console.error(error);
     }

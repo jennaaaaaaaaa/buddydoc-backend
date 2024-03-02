@@ -146,6 +146,7 @@ model applications {
   note_userId                      Int?
   postId                           Int?
   noti_userId                      Int?
+  alarmMessage                     String                    @db.Text
   alarmStatus                      applications_alarmStatus? @default(unread)
   createdAt                        DateTime?                 @db.Timestamp(0)
   updatedAt                        DateTime?                 @db.DateTime(0)

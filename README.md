@@ -71,3 +71,117 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+```
+buddydoc-backend
+├─ .github
+│  └─ workflows
+│     └─ main.yml
+├─ .gitignore
+├─ .prettierrc
+├─ nest-cli.json
+├─ package-lock.json
+├─ package.json
+├─ README.md
+├─ src
+│  ├─ app.controller.spec.ts
+│  ├─ app.controller.ts
+│  ├─ app.module.ts
+│  ├─ app.service.ts
+│  ├─ auth
+│  │  ├─ auth.controller.ts
+│  │  ├─ auth.module.ts
+│  │  ├─ auth.service.ts
+│  │  ├─ jwt
+│  │  │  └─ jwt-strategy.ts
+│  │  └─ oauth
+│  │     ├─ auth.guard.ts
+│  │     ├─ google
+│  │     │  └─ google-strategy.ts
+│  │     ├─ kakao
+│  │     │  └─ kakao-strategy.ts
+│  │     └─ naver
+│  │        └─ naver-strategy.ts
+│  ├─ common
+│  │  └─ http-exception.filter.ts
+│  ├─ config
+│  ├─ database
+│  │  └─ prisma
+│  │     ├─ migrations
+│  │     │  ├─ 20240228034559_migration
+│  │     │  └─ migration_lock.toml
+│  │     ├─ prisma.module.ts
+│  │     ├─ prisma.service.spec.ts
+│  │     ├─ prisma.service.ts
+│  │     └─ schema.prisma
+│  ├─ main.ts
+│  ├─ middlewares
+│  │  └─ logger.middleware.ts
+│  ├─ modules
+│  │  ├─ alarm
+│  │  │  ├─ alarm.controller.ts
+│  │  │  ├─ alarm.gateway.ts
+│  │  │  ├─ alarm.module.ts
+│  │  │  ├─ alarm.service.ts
+│  │  │  └─ dto
+│  │  ├─ chat
+│  │  │  ├─ chat.controller.ts
+│  │  │  ├─ chat.gateway.ts
+│  │  │  ├─ chat.module.ts
+│  │  │  ├─ chat.service.ts
+│  │  │  └─ dto
+│  │  │     └─ message.dto.ts
+│  │  ├─ myinfo
+│  │  │  ├─ dto
+│  │  │  │  └─ info.dto.ts
+│  │  │  ├─ entities
+│  │  │  ├─ info.controller.ts
+│  │  │  ├─ info.module.ts
+│  │  │  └─ info.service.ts
+│  │  ├─ notifications
+│  │  │  ├─ dto
+│  │  │  │  └─ noti.dto.ts
+│  │  │  ├─ entities
+│  │  │  ├─ noti.controller.ts
+│  │  │  ├─ noti.module.ts
+│  │  │  └─ noti.service.ts
+│  │  ├─ posts
+│  │  │  ├─ dto
+│  │  │  │  ├─ create-post.dto.ts
+│  │  │  │  ├─ paging-post.dto.ts
+│  │  │  │  └─ update-post.dto.ts
+│  │  │  ├─ entities
+│  │  │  │  └─ post.entity.ts
+│  │  │  ├─ posts.controller.ts
+│  │  │  ├─ posts.module.ts
+│  │  │  ├─ posts.service.spec.ts
+│  │  │  ├─ posts.service.ts
+│  │  │  └─ search
+│  │  │     ├─ search.module.ts
+│  │  │     └─ search.service.ts
+│  │  └─ user
+│  │     ├─ dto
+│  │     │  └─ user.dto.ts
+│  │     ├─ entities
+│  │     │  └─ user.entity.ts
+│  │     ├─ user.controller.ts
+│  │     ├─ user.module.ts
+│  │     └─ user.service.ts
+│  ├─ providers
+│  │  └─ aws
+│  │     └─ s3
+│  │        ├─ s3.module.ts
+│  │        └─ s3.service.ts
+│  ├─ test
+│  │  └─ test
+│  └─ utils
+│     ├─ bcrypt
+│     │  └─ bcrypt.service.ts
+│     ├─ joi
+│     ├─ swagger
+│     │  └─ swagger.ts
+│     └─ utils.module.ts
+├─ tsconfig.build.json
+└─ tsconfig.json
+
+```

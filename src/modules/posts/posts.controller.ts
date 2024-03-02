@@ -29,7 +29,7 @@ import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express
 import { ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
-import { JwtAuthGuard } from 'src/auth/oauth/auth.guard';
+import { JwtAuthGuard, OptionalJwtAuthGuard } from 'src/auth/oauth/auth.guard';
 
 //elastic 사용시 주석해제
 import { SearchService } from './search/search.service';
@@ -111,10 +111,12 @@ export class PostController {
   @ApiResponse({ status: 400, description: '잘못된 요청입니다.' })
   @Get(':postId')
   // @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
   async getOnePost(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
     try {
+      
       const userId = req.user ? req.user['id'] : null;
       // const userId = 27;
       const post = await this.postService.getOnePost(postId, userId);

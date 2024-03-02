@@ -25,12 +25,15 @@ import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/oauth/auth.guard';
 import { NotiService } from './noti.service';
 import { NotiDto } from './dto/noti.dto';
+import { AlarmGateway } from '../alarm/alarm.gateway';
 
 ApiConsumes('notifications');
 @Controller('post')
 export class NotiContoller {
-  constructor(private readonly notiService: NotiService) {}
-
+  constructor(
+    private readonly notiService: NotiService,
+    private readonly alarmGateway: AlarmGateway
+  ) {}
   @UseGuards(JwtAuthGuard)
   @Post(':post/noti')
   async createNotification(@Body() notiDto: NotiDto, @Res() res: Response, @Req() req: Request) {
@@ -38,13 +41,17 @@ export class NotiContoller {
       const postId = Number(req.params['post']);
       console.log(req.user['id']);
       notiDto.noti_userId = req.user['id'];
-      notiDto.postId=postId
+      notiDto.postId = postId;
       notiDto.userId = await this.notiService.getUserIdatPost(postId);
       console.log(notiDto);
-      await this.notiService.sendNotification(notiDto);
+      //신청 보내기
+      //await this.notiService.sendNotification(notiDto);
+
+      //알림 보내기
+      this.alarmGateway.sendNotification(notiDto.noti_message , notiDto.userId);
       return res.status(200).json({ message: '신청완료' });
     } catch (error) {
-      throw new BadRequestException('신청에러')
+      throw new BadRequestException('신청에러');
     }
   }
 }

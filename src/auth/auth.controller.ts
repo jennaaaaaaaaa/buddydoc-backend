@@ -55,7 +55,7 @@ export class AuthController {
       res.setHeader('Access-Control-Allow-origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
       res.setHeader('Access-Control-Allow-Credentials', 'true');
-
+      console.log(`토큰 안뜨니? ` , accessToken)
       res.redirect(process.env.REDIRECT_URL + accessToken);
     } catch (error) {
       console.log(error);

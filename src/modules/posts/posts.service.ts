@@ -362,7 +362,7 @@ export class PostService {
 
     // elasticsearch 사용시 주석 풀어야함
     // Elasticsearch에 인덱싱
-    await this.searchService.addDocument([post]);
+    // await this.searchService.addDocument([post]);
 
     // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {
@@ -461,7 +461,7 @@ export class PostService {
 
     // Elasticsearch 인덱스에서 해당 문서 삭제
     const deleteResult = await this.searchService.deleteDoc(postId);
-    console.log('deleteResult ====>>>>', deleteResult);
+    // console.log('deleteResult ====>>>>', deleteResult);
 
     return delPost;
   }

@@ -71,7 +71,6 @@ export class SearchService {
     };
 
     // 페이지 커서가 있다면 search_after에 추가
-
     if (pageCursor) {
       const pageCursorValues = pageCursor.split(',');
 
@@ -95,23 +94,19 @@ export class SearchService {
 
     // console.log('options', options.map((option) => ));
 
-    // options.forEach((option) => {
-    //   console.log(option._source.postId);
-    // });
-
     // 다음 페이지 커서 생성
     let lastPageCursor;
     if (options.length > 0) {
-      // options를 createdAt으로 내림차순 정렬
-      // options.sort((a, b) => {
-      //   return new Date(b._source.createdAt).getTime() - new Date(a._source.createdAt).getTime();
-      // });
       const lastOption = options[options.length - 1];
       // console.log('lastOption._source.postIdlastOption._source.postId ===>>>>', lastOption._source);
       lastPageCursor = [lastOption._source.postId]; // 현재 마지막 문서의 'createdAt'과 'postId'
     }
 
     let isLastPage = options.length < body.size;
+
+    if (options.length === 0) {
+      return { message: '검색 결과가 없습니다.', options: [] };
+    }
 
     return { options, lastPageCursor, isLastPage };
   }
@@ -254,9 +249,9 @@ export class SearchService {
           doc: {
             title: post.postTitle,
             content: post.content,
-            suggest: {
-              input: [...post.postTitle.split(' '), ...post.content.split(' ')],
-            },
+            // suggest: {
+            //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
+            // },
           },
         },
       });
@@ -268,9 +263,9 @@ export class SearchService {
         body: {
           title: post.postTitle,
           content: post.content,
-          suggest: {
-            input: [...post.postTitle.split(' '), ...post.content.split(' ')],
-          },
+          // suggest: {
+          //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
+          // },
         },
       });
     }

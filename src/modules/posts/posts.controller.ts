@@ -370,7 +370,7 @@ export class PostController {
     summary: '북마크 추가/제거 API',
   })
   @Post(':postId/bookmarks')
-  async toggleBookmark(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
+  async toggleBookmark(@Param('postId') postId: string, @Res() res: Response, @Req() req: Request) {
     try {
       const userId = req.user['id'];
       // const userId = 27;

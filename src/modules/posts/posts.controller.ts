@@ -372,8 +372,8 @@ export class PostController {
   @Post(':postId/bookmarks')
   async toggleBookmark(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
     try {
-      // const userId = req.user['id'];
-      const userId = 27;
+      const userId = req.user['id'];
+      // const userId = 27;
       // const result = await this.postService.toggleBookmark(userId, postId);
       await this.postService.toggleBookmark(userId, postId);
       return res.status(200).json({ message: '북마크가 성공적으로 처리되었습니다' });

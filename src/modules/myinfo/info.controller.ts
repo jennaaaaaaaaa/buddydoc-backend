@@ -90,6 +90,10 @@ export class InfoController {
    * @param req
    * @returns
    */
+  @ApiOperation({
+    summary: '회원정보 수정 API',
+    description: '회원정보 수정 API 입니다.',
+  })
   @UseGuards(JwtAuthGuard)
   @Put('/my-info')
   async updateUserInfo(@Body() userDto: UserDto, @Req() req: Request, @Res() res: Response) {

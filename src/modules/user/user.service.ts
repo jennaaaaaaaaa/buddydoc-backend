@@ -54,7 +54,7 @@ export class UserService {
   async updateUser(userDto: UserDto) {
     try {
       console.log('회원수정 ', userDto);
-      const { userId, userNickname, position, gitURL, userStatus, introduction, career,skillList } = userDto;
+      const { userId, userNickname, position, profileImage, userStatus, introduction, career,skillList } = userDto;
       console.log(userId, userNickname, position, career,skillList);
       //const updateResult = await this.prisma.$queryRaw`
       //update users set userNickname=${userNickname},position=${position},
@@ -144,6 +144,19 @@ export class UserService {
       });
       console.log('닉네임 중복 확인 : ', checkId.userNickname);
       return checkId.userNickname;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async deleteNickname(userId: number){
+    try {
+      
+      const checkId = await this.prisma.$queryRaw`
+      update users set userNickName=null where userId =${userId}`
+      
+      return checkId
+      
     } catch (error) {
       console.log(error);
     }

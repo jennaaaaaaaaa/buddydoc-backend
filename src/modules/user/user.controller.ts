@@ -44,20 +44,30 @@ export class UserController {
       console.log('userDto 확인', userDto);
 
       //닉네임 중복확인
-      const checkId = await this.userService.checkId(userDto.userNickname)
-      console.log('controller 중복확인 ',checkId)
-      if(checkId) return res.status(400).json({message: '아이디 중복'})
+      const checkId = await this.userService.checkId(userDto.userNickname);
+      console.log('controller 중복확인 ', checkId);
+      if (checkId) return res.status(400).json({ message: '아이디 중복' });
       //회원가입
       const user = await this.userService.updateUser(userDto);
       console.log('회원가입 성공 ', user);
       //회원생성 실패시 에러처리 필요
-      
+
       // skills에 skill 추가
       await this.userService.insertSkills(user.userId, userDto.skillList);
 
       return res.status(201).json({ message: '회원가입 완료' });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Post('/delete')
+  async delete(@Body() userDto: UserDto, @Res() res: Response, @Req() req: Request) {
+    try {
+      this.userService.deleteNickname(Number(userDto.userId))
+      return res.status(200).json({message:userDto.userId+'삭제'})
+    } catch (error) {
+      console.log(error)
     }
   }
 }

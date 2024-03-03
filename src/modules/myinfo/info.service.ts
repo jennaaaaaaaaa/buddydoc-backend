@@ -75,7 +75,7 @@ export class InfoService {
   async getStudylists(infoDto: InfoDto) {
     console.log(`스터디 , 프로젝트`);
     const user = await this.prisma.$queryRaw`
-    select postId, postType , memberCount ,startDate from posts
+    select postId, postTitle, postType , memberCount ,startDate from posts
     where post_userId = ${Number(infoDto.userId)}`;
 
     return user;

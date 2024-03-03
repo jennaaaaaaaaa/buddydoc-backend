@@ -1,27 +1,30 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { AppController } from './app.controller';
-import { postModule } from './modules/posts/posts.module';
+import { PostModule } from './modules/posts/posts.module';
 import { AppService } from './app.service';
-import { userModule } from './modules/user/user.module';
+import { UserModule } from './modules/user/user.module';
 import { ConfigModule } from '@nestjs/config';
-import { infoModule } from './modules/myinfo/info.module';
-import { authModule } from './auth/auth.module';
+import { InfoModule } from './modules/myinfo/info.module';
+import { AuthModule } from './auth/auth.module';
 import { S3Service } from './providers/aws/s3/s3.service';
 import { S3Module } from './providers/aws/s3/s3.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { NotiModule } from './modules/notifications/noti.module';
+import { AlarmModule } from './modules/alarm/alarm.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    userModule,
-    infoModule,
-    authModule,
-    postModule,
+    UserModule,
+    InfoModule,
+    AuthModule,
+    PostModule,
     S3Module,
     ChatModule,
+    NotiModule,
   ],
   controllers: [AppController],
   providers: [AppService, S3Service],

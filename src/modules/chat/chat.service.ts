@@ -1,3 +1,5 @@
+챗서비스;
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
@@ -30,8 +32,8 @@ export class ChatService {
 
     const chat = await this.prisma.chats.create({
       data: {
-        postId: Number(messageDto.postId),
-        userId: Number(messageDto.userId),
+        postId: +messageDto.postId,
+        userId: +messageDto.userId,
         chat_message: messageDto.chat_message,
         createdAt: new Date(),
       },
@@ -62,13 +64,13 @@ export class ChatService {
   //   return messages;
   // }
   async getMessagesByPostId(postId: number, lastMessageId?: number) {
-    let whereCondition: Prisma.chatsWhereInput = { postId: postId };
+    let whereCondition: Prisma.chatsWhereInput = { postId: +postId };
 
     if (lastMessageId) {
       whereCondition = {
         ...whereCondition,
         chatId: {
-          lt: lastMessageId,
+          lt: +lastMessageId,
         },
       };
     }
@@ -76,7 +78,7 @@ export class ChatService {
     const messages = await this.prisma.chats.findMany({
       where: whereCondition,
       orderBy: {
-        createdAt: 'asc',
+        createdAt: 'desc',
       },
       take: 10,
       select: {
@@ -102,8 +104,9 @@ export class ChatService {
 
   //임시로 유저 조회, 찾아본 바로는 원래는 클라이언트에서 토큰을 받아서?? 인증을 해야한다고함
   async getUserInfo(userId: number) {
+    console.log('userId ===>>>>>>: ', userId);
     const chat = await this.prisma.users.findUnique({
-      where: { userId },
+      where: { userId: +userId },
       select: { userId: true, userName: true, userNickname: true },
     });
     return chat;

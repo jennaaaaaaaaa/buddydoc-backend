@@ -24,9 +24,9 @@ import { posts, users } from '@prisma/client';
 import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { PagingPostsDto } from './dto/paging-post.dto';
-import { Response, Request } from 'express';
+import { Response, Request, response } from 'express';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
-import { ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
 import { JwtAuthGuard, OptionalJwtAuthGuard } from 'src/auth/oauth/auth.guard';
@@ -49,23 +49,31 @@ export class PostController {
    * @param pagingPostsDto
    * @returns
    */
-  @ApiOperation({
-    summary: '게시글목록 API',
-  })
+
+  @ApiTags('posts')
+  @ApiOperation({ summary: '게시글목록 API' })
+  @ApiQuery({ name: 'orderBy', required: false })
+  @ApiQuery({ name: 'lastPostId', required: false })
+  @ApiQuery({ name: 'postType', required: false })
+  @ApiQuery({ name: 'isEnd', required: false })
+  @ApiResponse({ status: 200, description: '게시글 목록 조회 성공' })
   @UseGuards(OptionalJwtAuthGuard)
-  @Get()
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async getAllPosts(@Query() pagingPostsDto: PagingPostsDto, @Req() req: Request) {
+  @Get()
+  async getAllPosts(@Req() req: Request, @Res() res: Response, @Query() pagingPostsDto: PagingPostsDto) {
     try {
-      // const userId = 24; //임시값
+      // const userId = 27; //임시값
       const userId = req.user ? req.user['id'] : null;
-
+      let orderField: 'createdAt' | 'preference' = 'createdAt'; //기본값 최신순
+      if (pagingPostsDto.orderBy === 'preference') {
+        orderField = 'preference';
+      }
       const lastPostId = Number(pagingPostsDto.lastPostId);
-      const isEnd = pagingPostsDto.isEnd;
       const postType = pagingPostsDto.postType;
-      const posts = await this.postService.getAllPosts(userId, isEnd, postType, lastPostId); //orderField
-      return posts;
+      const isEnd = pagingPostsDto.isEnd;
+      const posts = await this.postService.getAllPosts(orderField, userId, isEnd, postType, lastPostId);
+      return res.status(200).json({ posts });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -118,7 +126,10 @@ export class PostController {
       const userId = req.user ? req.user['id'] : null;
       // const userId = 27;
       const post = await this.postService.getOnePost(postId, userId);
-      return res.status(200).json({ message: '게시글 조회에 성공하였습니다', post });
+      if (!post) {
+        return res.status(404).json({ message: '게시글이 존재하지 않습니다' });
+      }
+      return res.status(200).json({ post });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -155,7 +166,7 @@ export class PostController {
   // const userId = req.user['id']
 
   /**
-   *
+   * 게시글 생성
    * @param postTitle
    * @param content
    * @param postType
@@ -169,6 +180,9 @@ export class PostController {
    */
   @ApiTags('posts')
   @ApiOperation({ summary: '게시글 생성 API' })
+  // @ApiBody({type: CreatePostsDto})
+  @ApiResponse({ status: 200, description: '게시글 생성에 성공하였습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청입니다.' })
   @Post()
   @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
@@ -225,6 +239,7 @@ export class PostController {
   @ApiOperation({
     summary: '게시글 수정 API',
   })
+  @ApiParam({ name: 'postId', description: '수정할 게시글의 ID' })
   @Put(':postId')
   @UseFilters(HttpExceptionFilter)
   @UseGuards(JwtAuthGuard)
@@ -342,10 +357,12 @@ export class PostController {
    * @param postId
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
+  @ApiTags('posts')
   @ApiOperation({
     summary: '게시글 삭제 API',
   })
+  @ApiParam({ name: 'postId', description: '삭제할 게시글의 ID' })
+  @UseGuards(JwtAuthGuard)
   @Delete(':postId')
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
@@ -365,6 +382,11 @@ export class PostController {
    * @param postId
    * @returns
    */
+  @ApiTags('posts')
+  @ApiOperation({
+    summary: '게시글 북마크 API',
+  })
+  @ApiParam({ name: 'postId', description: '북마크할 게시글의 ID' })
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: '북마크 추가/제거 API',

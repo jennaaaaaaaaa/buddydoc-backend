@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { SearchInterfaces } from './search.interfaces';
-// import { SearchResponse } from './search.interfaces';
+
 @Injectable()
 export class SearchService {
   private readonly indexName = 'title_content';
@@ -11,6 +11,10 @@ export class SearchService {
     private prisma: PrismaService,
     private elasticsearchService: ElasticsearchService // 주입합니다.
   ) {}
+
+  // async onModuleInit() {
+  //   await this.init();
+  // }
 
   async deleteIndex() {
     return this.elasticsearchService.indices.delete({
@@ -21,6 +25,12 @@ export class SearchService {
   async initIndex() {
     return this.elasticsearchService.indices.create({
       index: this.indexName,
+      body: {
+        settings: {
+          number_of_shards: 1, // 샤드의 수를 지정합니다. 필요에 따라 값을 조정할 수 있습니다.
+          number_of_replicas: 0, // 복제본의 수를 0으로 지정
+        },
+      },
     });
   }
 
@@ -37,9 +47,9 @@ export class SearchService {
         properties: {
           postTitle: { type: 'text' },
           content: { type: 'text' },
-          createdAt: { type: 'date' }, // 추가
-          postId: { type: 'integer' }, // 추가
-          deletedAt: { type: 'date' }, // 추가
+          createdAt: { type: 'date' },
+          postId: { type: 'integer' },
+          deletedAt: { type: 'date' },
         },
       },
     });
@@ -53,7 +63,7 @@ export class SearchService {
     let body: any = {
       query: {
         bool: {
-          should: [{ match: { title: search } }, { match: { content: search } }],
+          should: [{ match: { postTitle: search } }, { match: { content: search } }],
           filter: {
             bool: {
               must_not: {
@@ -77,18 +87,10 @@ export class SearchService {
       body.search_after = pageCursorValues;
     }
 
-    // console.log('pageCursor', pageCursor);
-    // console.log('pageCursorValues', pageCursorValues);
-
-    // console.log('body.search_after', body.search_after);
-
     const result = (await this.elasticsearchService.search({
       index: this.indexName,
       body,
     })) as unknown as SearchInterfaces;
-
-    // console.log('body', body);
-    // console.log('result.hits', result.hits);
 
     let options = result.hits.hits;
 
@@ -98,7 +100,7 @@ export class SearchService {
     let lastPageCursor;
     if (options.length > 0) {
       const lastOption = options[options.length - 1];
-      // console.log('lastOption._source.postIdlastOption._source.postId ===>>>>', lastOption._source);
+
       lastPageCursor = [lastOption._source.postId]; // 현재 마지막 문서의 'createdAt'과 'postId'
     }
 
@@ -107,7 +109,6 @@ export class SearchService {
     if (options.length === 0) {
       return { message: '검색 결과가 없습니다.', options: [] };
     }
-
     return { options, lastPageCursor, isLastPage };
   }
 
@@ -125,36 +126,42 @@ export class SearchService {
     await this.addDocument(posts);
   }
 
-  async checkExistence(postTitle: string, content: string) {
+  async checkExistence(postId: number) {
     try {
-      if (!postTitle || !content) {
-        console.error('Title or content is missing');
+      if (!postId) {
+        console.error('postId is missing');
         return false;
       }
 
-      const result = (await this.elasticsearchService.search({
+      // const result = (await this.elasticsearchService.search({
+      //   index: this.indexName,
+      //   body: {
+      //     query: {
+      //       bool: {
+      //         must: [{ match: { postTitle: postTitle } }, { match: { content: content } }],
+      //       },
+      //     },
+      //   },
+      // })) as any;
+
+      const result = await this.elasticsearchService.exists({
         index: this.indexName,
-        body: {
-          query: {
-            bool: {
-              must: [{ match: { postTitle: postTitle } }, { match: { content: content } }],
-            },
-          },
-        },
-      })) as any;
+        id: postId.toString(),
+      });
 
-      if (
-        !result.body ||
-        !result.body.hits ||
-        (!result.body.hits.total && !result.body.suggest.docsuggest[0].options.length)
-      ) {
-        // console.log(`No search results for title: ${postTitle}, content: ${content}`);
-        return false;
-      }
+      // if (
+      //   !result.body ||
+      //   !result.body.hits ||
+      //   (!result.body.hits.total && !result.body.suggest.docsuggest[0].options.length)
+      // ) {
+      // console.log(`No search results for title: ${postTitle}, content: ${content}`);
+      //   return false;
+      // }
 
-      return result.body.hits.total.value > 0;
+      // return result.body.hits.total.value > 0;
+      return result;
     } catch (error) {
-      console.error(`Error occurred in Elasticsearch query for title: ${postTitle}, content: ${content}`, error);
+      console.error(`Error occurred in Elasticsearch query for postId: ${postId}`, error);
       return false;
     }
   }
@@ -171,16 +178,16 @@ export class SearchService {
         const userNickname = user ? user.userNickname : 'Unknown';
 
         let response;
-        const exists = await this.checkExistence(post.postTitle, post.content);
+        const exists = await this.checkExistence(post.postId);
 
         if (!exists) {
           try {
             response = await this.elasticsearchService.index({
               index: this.indexName,
-              id: post.postId,
+              id: post.postId.toString(),
               body: {
                 postId: post.postId,
-                title: post.postTitle,
+                postTitle: post.postTitle,
                 content: post.content,
                 position: post.position ? post.position.split(',') : [],
                 postType: post.postType,
@@ -194,11 +201,15 @@ export class SearchService {
                 startDate: post.startDate,
                 memberCount: post.memberCount,
                 period: post.period,
-                userNickname: userNickname,
-                profileImage: user.profileImage,
-                suggest: {
-                  input: [...post.postTitle.split(' '), ...post.content.split(' ')],
+                users: {
+                  userNickname: userNickname,
+                  profileImage: user.profileImage,
                 },
+
+                //자동완성기능을 위한 키워드
+                // suggest: {
+                //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
+                // },
               },
             });
             // console.log(`Document added successfully for title: ${post.postTitle}, content: ${post.content}`);
@@ -216,29 +227,15 @@ export class SearchService {
     );
   }
 
-  // async updateDocument(id: number, post: any) {
-  //   console.log('id, post ===>>>>', id, post);
-  //   return this.elasticsearchService.update({
-  //     index: this.indexName,
-  //     id: String(id),
-  //     body: {
-  //       doc: {
-  //         title: post.postTitle,
-  //         content: post.content,
-  //         suggest: {
-  //           input: [...post.postTitle.split(' '), ...post.content.split(' ')],
-  //         },
-  //       },
-  //     },
-  //   });
-  // }
-
   async updateDocument(id: number, post: any) {
     // 문서가 존재하는지 확인
     const isExists = await this.elasticsearchService.exists({
       index: this.indexName,
       id: String(id),
     });
+
+    const user = await this.prisma.users.findUnique({ where: { userId: +post.post_userId } });
+    const userNickname = user ? user.userNickname : 'Unknown';
 
     if (isExists) {
       // 문서가 존재하면 업데이트
@@ -247,8 +244,25 @@ export class SearchService {
         id: String(id),
         body: {
           doc: {
-            title: post.postTitle,
+            postId: post.postId,
+            postTitle: post.postTitle,
             content: post.content,
+            position: post.position ? post.position.split(',') : [],
+            postType: post.postType,
+            skillList: post.skillList ? post.skillList.split(',') : [],
+            preference: post.preference,
+            views: post.views,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+            deletedAt: post.deletedAt,
+            deadLine: post.deadLine,
+            startDate: post.startDate,
+            memberCount: post.memberCount,
+            period: post.period,
+            users: {
+              userNickname: userNickname,
+              profileImage: user.profileImage,
+            },
             // suggest: {
             //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
             // },
@@ -261,8 +275,25 @@ export class SearchService {
         index: this.indexName,
         id: String(id),
         body: {
-          title: post.postTitle,
+          postId: post.postId,
+          postTitle: post.postTitle,
           content: post.content,
+          position: post.position ? post.position.split(',') : [],
+          postType: post.postType,
+          skillList: post.skillList ? post.skillList.split(',') : [],
+          preference: post.preference,
+          views: post.views,
+          createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
+          deletedAt: post.deletedAt,
+          deadLine: post.deadLine,
+          startDate: post.startDate,
+          memberCount: post.memberCount,
+          period: post.period,
+          users: {
+            userNickname: userNickname,
+            profileImage: user.profileImage,
+          },
           // suggest: {
           //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
           // },

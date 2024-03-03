@@ -29,12 +29,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   server: Server;
   constructor(
     private readonly chatService: ChatService
+    
     // private readonly prismaService: PrismaService
     // private readonly infoService: InfoService
   ) {}
 
   afterInit(server: Server) {
-    // this.server.setMaxListeners(20); //이벤트리스너 늘리기(너무 많다는 에러가 떠서 )
+    //this.server.setMaxListeners(100); //이벤트리스너 늘리기(너무 많다는 에러가 떠서 )
     console.log('afterInit');
   }
 

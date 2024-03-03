@@ -6,11 +6,11 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private server: Server;
 
-  private connectedUsers: Map<number, Socket> = new Map(); // userId와 Socket의 매핑을 저장하는 Map
+  private connectedUsers: Map<string, Socket> = new Map(); // userId와 Socket의 매핑을 저장하는 Map
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
-    //this.connectedUsers.set(26, client); // 테스트 구문
+    this.connectedUsers.set(client.id, client); // 테스트 구문
   }
 
   handleDisconnect(client: Socket) {
@@ -25,7 +25,7 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // 클라이언트에서 userId를 통해 웹소켓 연결을 요청할 때 호출될 메서드
-  connectWebSocketWithUserId(userId: number, client: Socket) {
+  connectWebSocketWithUserId(userId: string, client: Socket) {
     // 이미 연결된 userId가 있다면 연결을 끊고 새로운 연결을 설정
     if (this.connectedUsers.has(userId)) {
       const existingClient = this.connectedUsers.get(userId);
@@ -40,7 +40,7 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // 특정 userId에게 메시지를 보내는 메서드
-  sendMessageToUser(userId: number, message: any) {
+  sendMessageToUser(userId: string, message: any) {
     console.log(`넘겨받은 string : ${userId}, message = ${message}`)
     const client = this.connectedUsers.get(userId);
     console.log(`client >> `, client.id)

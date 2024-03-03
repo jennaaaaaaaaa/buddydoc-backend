@@ -1,16 +1,21 @@
-import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  SubscribeMessage,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway()
 export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private server: Server;
-
   private connectedUsers: Map<string, Socket> = new Map(); // userId와 Socket의 매핑을 저장하는 Map
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
-    this.connectedUsers.set(client.id, client); // 테스트 구문
+    //this.connectedUsers.set(client.id, client); // 테스트 구문
   }
 
   handleDisconnect(client: Socket) {
@@ -25,8 +30,10 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // 클라이언트에서 userId를 통해 웹소켓 연결을 요청할 때 호출될 메서드
+  @SubscribeMessage('connect')
   connectWebSocketWithUserId(userId: string, client: Socket) {
     // 이미 연결된 userId가 있다면 연결을 끊고 새로운 연결을 설정
+    console.log(`뭐가 들어오니? `,userId)
     if (this.connectedUsers.has(userId)) {
       const existingClient = this.connectedUsers.get(userId);
       existingClient.disconnect(true); // 연결 끊기
@@ -41,9 +48,9 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // 특정 userId에게 메시지를 보내는 메서드
   sendMessageToUser(userId: string, message: any) {
-    console.log(`넘겨받은 string : ${userId}, message = ${message}`)
+    console.log(`넘겨받은 string : ${userId}, message = ${message}`);
     const client = this.connectedUsers.get(userId);
-    console.log(`client >> `, client.id)
+    console.log(`client >> `, client.id);
     if (client) {
       client.emit('message', message); // 해당 userId의 클라이언트에게 메시지 보내기
     } else {

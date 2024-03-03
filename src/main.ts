@@ -5,7 +5,7 @@ import { HttpExceptionFilter } from './common/http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { SearchService } from './modules/posts/search/search.service';
-
+import { Server } from 'socket.io';
 // elastic서버 연결부분
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,6 +13,7 @@ async function bootstrap() {
   app.enableCors({
     credentials: true,
   }); // cors 활성화;
+  Server.setMaxListeners(100)
   app.use(cookieParser());
   setupSwagger(app);
   app.useGlobalFilters(new HttpExceptionFilter());

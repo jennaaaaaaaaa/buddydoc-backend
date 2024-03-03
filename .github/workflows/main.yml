@@ -21,7 +21,8 @@ jobs:
           port: ${{ secrets.EC2_SSH_PORT }} # 접속포트번호 (보통 22)
           script: | # 실행될 스크립트
             cd ~/buddydoc/buddydoc-backend
-            git stash && git pull origin main && git stash pop
+            git fetch --all
+            git reset --hard origin/main
             npm install
             npx prisma db push --schema=./src/database/prisma/schema.prisma
             npx prisma generate --schema=./src/database/prisma/schema.prisma

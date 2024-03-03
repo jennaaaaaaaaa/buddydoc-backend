@@ -12,6 +12,7 @@ import {
   Put,
   Query,
   Req,
+  Res,
   UploadedFile,
   UploadedFiles,
   UseFilters,
@@ -23,24 +24,23 @@ import { posts, users } from '@prisma/client';
 import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { PagingPostsDto } from './dto/paging-post.dto';
-import { Response, Request } from 'express';
+import { Response, Request, response } from 'express';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
-import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import { ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
-import { JwtAuthGuard } from 'src/auth/oauth/auth.guard';
+import { JwtAuthGuard, OptionalJwtAuthGuard } from 'src/auth/oauth/auth.guard';
 
 //elastic 사용시 주석해제
-// import { SearchService } from './search/search.service';
+import { SearchService } from './search/search.service';
 
 @Controller('post')
 export class PostController {
   constructor(
     private readonly postService: PostService,
-    private readonly s3Service: S3Service
-
+    private readonly s3Service: S3Service,
     //elastic 사용시 주석해제
-    // private searchService: SearchService
+    private searchService: SearchService
   ) {}
 
   /**
@@ -52,61 +52,79 @@ export class PostController {
   @ApiOperation({
     summary: '게시글목록 API',
   })
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   @Get()
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async getAllPosts(@Query() pagingPostsDto: PagingPostsDto, @Req() req: Request) {
+  async getAllPosts(@Req() req: Request, @Res() res: Response, @Query() pagingPostsDto: PagingPostsDto) {
     try {
-      // const userId = 24; //임시값
+      // const userId = 27; //임시값
       const userId = req.user ? req.user['id'] : null;
-
+      let orderField: 'createdAt' | 'preference' = 'createdAt'; //기본값 최신순
+      if (pagingPostsDto.orderBy === 'preference') {
+        orderField = 'preference';
+      }
       const lastPostId = Number(pagingPostsDto.lastPostId);
       const postType = pagingPostsDto.postType;
-      const posts = await this.postService.getAllPosts(userId, postType, lastPostId); //orderField
-      return posts;
+      const isEnd = pagingPostsDto.isEnd;
+      const posts = await this.postService.getAllPosts(orderField, userId, isEnd, postType, lastPostId);
+      return res.status(200).json({ posts });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
-  //elasticsearch 사용시 주석해제 or 주석처리
-  // /**
-  //  * 게시글 검색
-  //  * @param search
-  //  * @returns
-  //  */
-  // @UseFilters(HttpExceptionFilter)
-  // @HttpCode(200)
-  // @Get('/search')
-  // async postSearch(@Query('search') search: string) {
-  //   try {
-  //     console.log('postController =>>>> search:', search);
-  //     const result = await this.searchService.postSearch(search);
-  //     return result;
-  //   } catch (error) {
-  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-  //   }
-  // }
+  // elasticsearch 사용시 주석해제 or 주석처리
+  /**
+   * 게시글 검색
+   * @param search
+   * @returns
+   */
+  @ApiTags('posts')
+  @ApiOperation({ summary: '게시글 검색' })
+  @ApiQuery({ name: 'search', required: true })
+  @ApiQuery({ name: 'pageCursor', required: false })
+  @ApiResponse({ status: 200, description: '게시글 검색 성공' })
+  @UseFilters(HttpExceptionFilter)
+  @HttpCode(200)
+  @Get('/search')
+  async postSearch(@Res() res: Response, @Query('search') search: string, @Query('pageCursor') pageCursor?: string) {
+    try {
+      // const cursor = pageCursor ? parseInt(pageCursor) : undefined;
+      // console.log('검색한 키워드 postController =>>>> search:', search);
+      // console.log('검색한 키워드 postController =>>>> pageCursor:', pageCursor);
+      const result = await this.searchService.postSearch(search, pageCursor);
+      return res.status(200).json({ message: '게시글 검색에 성공하였습니다', result });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 
   /**
    * 게시글 상세조회
    * @param postId
    * @returns
    */
+  @ApiTags('posts')
   @ApiOperation({
     summary: '게시글 상세조회 API',
   })
+  @ApiParam({ name: 'postId', description: '조회할 게시글의 ID' })
+  @ApiResponse({ status: 200, description: '게시글 조회에 성공하였습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청입니다.' })
   @Get(':postId')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async getOnePost(@Param('postId') postId: number, @Req() req: Request) {
+  async getOnePost(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
     try {
       const userId = req.user ? req.user['id'] : null;
-      // const userId = 23;
+      // const userId = 27;
       const post = await this.postService.getOnePost(postId, userId);
-      return post;
+      if (!post) {
+        return res.status(404).json({ message: '게시글이 존재하지 않습니다' });
+      }
+      return res.status(200).json({ post });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -117,19 +135,23 @@ export class PostController {
    * @param postId
    * @returns
    */
+  @ApiTags('posts')
   @ApiOperation({
-    summary: '게시글 참가 유저 프로필 조회 API',
+    summary: '게시글 참가 유저들 프로필 조회 API',
   })
+  @ApiParam({ name: 'postId', description: '조회할 게시글의 ID' })
+  @ApiResponse({ status: 200, description: '게시글에 참가한 유저 프로필이 조회되었습니다.' })
   @Get(':postId/participants')
   // @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async getParticipantsInPost(@Param('postId') postId: number) {
+  async getParticipantsInPost(@Param('postId') postId: number, @Res() res: Response) {
     try {
       // const userId = req.user['id']
       // const userId = 2
       // const users = await this.postService.getParticipantsInPost(postId, userId);
-      return await this.postService.getParticipantsInPost(postId);
+      const user = await this.postService.getParticipantsInPost(postId);
+      return res.status(200).json({ message: '게시글에 참가한 유저 프로필이 조회되었습니다', user });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -151,6 +173,7 @@ export class PostController {
    * @param period
    * @returns
    */
+  @ApiTags('posts')
   @ApiOperation({ summary: '게시글 생성 API' })
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -166,6 +189,7 @@ export class PostController {
     @Body('startDate') startDate: Date,
     @Body('memberCount') memberCount: number,
     @Body('period') period: string,
+    @Res() res: Response,
     @Req() req: Request
   ) {
     try {
@@ -183,7 +207,7 @@ export class PostController {
         period,
         userId
       );
-      return { message: '게시글이 작성되었습니다' };
+      return res.status(200).json({ message: '게시글이 작성되었습니다' });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -203,6 +227,7 @@ export class PostController {
    * @param period
    * @returns
    */
+  @ApiTags('posts')
   @ApiOperation({
     summary: '게시글 수정 API',
   })
@@ -221,6 +246,7 @@ export class PostController {
     @Body('startDate') startDate: Date,
     @Body('memberCount') memberCount: number,
     @Body('period') period: string,
+    @Res() res: Response,
     @Req() req: Request
   ) {
     try {
@@ -239,7 +265,7 @@ export class PostController {
         period,
         userId
       );
-      return { message: '수정되었습니다' };
+      return res.status(200).json({ message: '수정되었습니다' });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -288,6 +314,7 @@ export class PostController {
    * @param image
    * @returns
    */
+  @ApiTags('posts')
   @Post('upload-image')
   @UseInterceptors(FileInterceptor('image'))
   async uploadImage(@UploadedFile() image: Express.Multer.File) {
@@ -303,6 +330,7 @@ export class PostController {
    * @param file
    * @returns
    */
+  @ApiTags('posts')
   @Post('upload-file')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
@@ -327,12 +355,12 @@ export class PostController {
   @Delete(':postId')
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async deletePost(@Param('postId') postId: number, @Req() req: Request) {
+  async deletePost(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
     try {
       const userId = req.user['id'];
       // const userId = 23;
       await this.postService.deletePost(postId, userId);
-      return { message: '삭제되었습니다' };
+      return res.status(200).json({ message: '삭제되었습니다' });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -348,12 +376,13 @@ export class PostController {
     summary: '북마크 추가/제거 API',
   })
   @Post(':postId/bookmarks')
-  async toggleBookmark(@Param('postId') postId: number, @Req() req: Request) {
+  async toggleBookmark(@Param('postId') postId: string, @Res() res: Response, @Req() req: Request) {
     try {
       const userId = req.user['id'];
-      // const userId = 23;
-      const result = await this.postService.toggleBookmark(userId, postId);
-      return result;
+      // const userId = 27;
+      // const result = await this.postService.toggleBookmark(userId, postId);
+      await this.postService.toggleBookmark(userId, postId);
+      return res.status(200).json({ message: '북마크가 성공적으로 처리되었습니다' });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

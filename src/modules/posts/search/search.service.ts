@@ -122,36 +122,42 @@ export class SearchService {
     await this.addDocument(posts);
   }
 
-  async checkExistence(postTitle: string, content: string) {
+  async checkExistence(postId: number) {
     try {
-      if (!postTitle || !content) {
-        console.error('Title or content is missing');
+      if (!postId) {
+        console.error('postId is missing');
         return false;
       }
 
-      const result = (await this.elasticsearchService.search({
+      // const result = (await this.elasticsearchService.search({
+      //   index: this.indexName,
+      //   body: {
+      //     query: {
+      //       bool: {
+      //         must: [{ match: { postTitle: postTitle } }, { match: { content: content } }],
+      //       },
+      //     },
+      //   },
+      // })) as any;
+
+      const result = await this.elasticsearchService.exists({
         index: this.indexName,
-        body: {
-          query: {
-            bool: {
-              must: [{ match: { postTitle: postTitle } }, { match: { content: content } }],
-            },
-          },
-        },
-      })) as any;
+        id: postId.toString(),
+      });
 
-      if (
-        !result.body ||
-        !result.body.hits ||
-        (!result.body.hits.total && !result.body.suggest.docsuggest[0].options.length)
-      ) {
-        // console.log(`No search results for title: ${postTitle}, content: ${content}`);
-        return false;
-      }
+      // if (
+      //   !result.body ||
+      //   !result.body.hits ||
+      //   (!result.body.hits.total && !result.body.suggest.docsuggest[0].options.length)
+      // ) {
+      // console.log(`No search results for title: ${postTitle}, content: ${content}`);
+      //   return false;
+      // }
 
-      return result.body.hits.total.value > 0;
+      // return result.body.hits.total.value > 0;
+      return result;
     } catch (error) {
-      console.error(`Error occurred in Elasticsearch query for title: ${postTitle}, content: ${content}`, error);
+      console.error(`Error occurred in Elasticsearch query for postId: ${postId}`, error);
       return false;
     }
   }
@@ -168,13 +174,13 @@ export class SearchService {
         const userNickname = user ? user.userNickname : 'Unknown';
 
         let response;
-        const exists = await this.checkExistence(post.postTitle, post.content);
+        const exists = await this.checkExistence(post.postId);
 
         if (!exists) {
           try {
             response = await this.elasticsearchService.index({
               index: this.indexName,
-              id: post.postId,
+              id: post.postId.toString(),
               body: {
                 postId: post.postId,
                 postTitle: post.postTitle,

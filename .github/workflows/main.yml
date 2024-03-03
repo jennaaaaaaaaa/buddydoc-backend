@@ -11,7 +11,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-    
+        with:
+          path: our-source
+      - run: git log --pretty=oneline
+
       - name: excuting remote ssh commands
         uses: appleboy/ssh-action@master # ssh 접속하는 오픈소스
         with:

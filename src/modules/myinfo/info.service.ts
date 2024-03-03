@@ -19,9 +19,10 @@ export class InfoService {
       },
       select: {
         userId: true,
-        userName: true,
         userNickname: true,
+        profileImage: true,
         position: true,
+        career: true,
         skills: {
           select: {
             skill: true,
@@ -32,10 +33,11 @@ export class InfoService {
 
     const result = {
       userId: user.userId,
-      userName: user.userName,
       userNickname: user.userNickname,
+      profileImage: user.profileImage,
       position: user.position,
-      skills: user.skills.map((skill) => skill.skill),
+      career: user.career,
+      skillList: user.skills.map((skill) => skill.skill),
     };
 
     return result;
@@ -71,21 +73,48 @@ export class InfoService {
    */
   async getStudylists(infoDto: InfoDto) {
     console.log(`스터디`);
-    const user = await this.prisma.$queryRaw`select b.postId,b.postTitle,b.postType,
-    b.post_userId,a.userId,c.userNickName
-    from
-    studylists a
-    join
-    posts b 
-    on a.postId = b.postId
-    join 
-    users c 
-    on b.post_userId = c.userId
-    where a.userId = ${Number(infoDto.userId)}`;
+    const user = await this.prisma.$queryRaw`
+    select postId, postType , memberCount ,startDate from posts
+    where post_userId = ${Number(infoDto.userId)}`;
+    // const user = await this.prisma.$queryRaw`select b.postId,b.postTitle,b.postType,
+    // b.post_userId,a.userId,c.userNickName
+    // from
+    // studylists a
+    // join
+    // posts b
+    // on a.postId = b.postId
+    // join
+    // users c
+    // on b.post_userId = c.userId
+    // where a.userId = ${Number(infoDto.userId)}`;
 
     return user;
   }
 
+  /**
+   * 내 신청현황 조회
+   * @param userDto
+   * @returns 게시글번호,게시글제목,게시글타입,게시글작성자
+   */
+  async getNotifications(infoDto: InfoDto) {
+    console.log(`프로젝트`);
+    const user = await this.prisma.$queryRaw`
+    select postId, postType , memberCount ,startDate from posts
+    where post_userId = ${Number(infoDto.userId)} and postType='프로젝트`;
+    // const user = await this.prisma.$queryRaw`select b.postId,b.postTitle,b.postType,
+    // b.post_userId,a.userId,c.userNickName
+    // from
+    // studylists a
+    // join
+    // posts b
+    // on a.postId = b.postId
+    // join
+    // users c
+    // on b.post_userId = c.userId
+    // where a.userId = ${Number(infoDto.userId)}`;
+
+    return user;
+  }
   /**
    * 내 작성 게시물 조회
    * @param userDto

@@ -54,4 +54,8 @@ export class UserDto {
   @ApiProperty()
   @IsString()
   platform: string; // 플랫폼
+
+  @ApiProperty()
+  @IsString()
+  profileImage : string; //프로필이미지
 }

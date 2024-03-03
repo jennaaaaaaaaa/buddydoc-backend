@@ -91,7 +91,7 @@ export class InfoService {
     const user = await this.prisma.$queryRaw`
     select
     b.postType,b.postTitle,b.memberCount,
-    a.notiStatus,b.postId,b.startDate
+    a.notiStatus,b.postId,b.startDate,a.createdAt
     from notifications a 
     join posts b 
     on a.postId = b.postId

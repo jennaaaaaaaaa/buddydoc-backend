@@ -13,11 +13,11 @@ async function bootstrap() {
   app.enableCors({
     credentials: true,
   }); // cors 활성화;
-  Server.setMaxListeners(100)
+  Server.setMaxListeners(100);
   app.use(cookieParser());
   setupSwagger(app);
   app.useGlobalFilters(new HttpExceptionFilter());
-
+  
   // ElasticsearchService 인스턴스를 가져옵니다.
   const elasticsearchService = app.get(SearchService);
   // Elasticsearch를 초기화합니다.
@@ -26,17 +26,3 @@ async function bootstrap() {
   await app.listen(3000);
 }
 bootstrap();
-
-// async function bootstrap() {
-//   const app = await NestFactory.create(AppModule);
-
-//   app.enableCors({
-//     credentials: true,
-//   }); // cors 활성화;
-//   app.use(cookieParser());
-//   setupSwagger(app);
-//   app.useGlobalFilters(new HttpExceptionFilter());
-
-//   await app.listen(3000);
-// }
-// bootstrap();

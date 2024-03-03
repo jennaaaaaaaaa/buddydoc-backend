@@ -4,10 +4,19 @@ import {
   SubscribeMessage,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  ConnectedSocket,
+  MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  namespace: 'alarm',
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+})
 export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private server: Server;
@@ -30,10 +39,10 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // 클라이언트에서 userId를 통해 웹소켓 연결을 요청할 때 호출될 메서드
-  @SubscribeMessage('connect')
-  connectWebSocketWithUserId(userId: string, client: Socket) {
+  @SubscribeMessage('buddydocConnect')
+  connectWebSocketWithUserId(client: Socket, userId: any,message: any) {
     // 이미 연결된 userId가 있다면 연결을 끊고 새로운 연결을 설정
-    console.log(`뭐가 들어오니? `,userId)
+    console.log(`뭐가 들어오니? `,userId["userId"]);
     if (this.connectedUsers.has(userId)) {
       const existingClient = this.connectedUsers.get(userId);
       existingClient.disconnect(true); // 연결 끊기

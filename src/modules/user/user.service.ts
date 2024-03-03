@@ -27,7 +27,7 @@ export class UserService {
           gitURL,
           userStatus: userStatus,
           introduction,
-          career: Number(career),
+          career: career,
           createdAt: new Date(),
           password,
           platform,

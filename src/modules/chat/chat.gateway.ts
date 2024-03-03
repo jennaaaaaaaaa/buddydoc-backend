@@ -28,8 +28,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer()
   server: Server;
   constructor(
-    private readonly chatService: ChatService,
-    private prismaService: PrismaService
+    private readonly chatService: ChatService
+    // private readonly prismaService: PrismaService
     // private readonly infoService: InfoService
   ) {}
 
@@ -87,8 +87,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const message = await this.chatService.createMessage(messageDto); //Number(data.postId), Number(data.userId)
       this.server
         .to(`postRoom-${message.postId}`)
-        .emit('send-message', { message: message.chat_message, userNickname: user.userNickname });
-      console.log(`메시지 '${message.chat_message}'가 ${user.userNickname}에 의해 ${message.postId} 방에 전송됨`);
+        .emit('send-message', { message: message.chat_message, userName: user.userName });
+      console.log(`메시지 '${message.chat_message}'가 ${user.userName}에 의해 ${message.postId} 방에 전송됨`);
     } catch (error) {
       console.log('error', error);
     }
@@ -99,6 +99,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleGetMessages(client: Socket, payload: { postId: number; lastMessageId?: number }) {
     const { postId, lastMessageId } = payload;
     const result = await this.chatService.getMessagesByPostId(postId, lastMessageId);
+    console.log('resultresultresult=>>>', result);
     client.emit('read-Messages', result); //getMessages=> 클라이언트에서 발생시키는 이벤트
   }
 
@@ -106,8 +107,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   handleJoinRoom(
     @ConnectedSocket()
     client: Socket,
-    @MessageBody() data: { userId: number; postId: string }
+    @MessageBody() data: { userId: number; postId: string } //랜덤채팅방 같으면 userId가 아닌 userNickname을 받으면 될 듯 채팅방들어오기전에 userNickname입력하게끔
   ) {
+    //해당 게시글에 참여하고 있는 유저인지
+
+    console.log('join-room');
     client.join(`postRoom-${data.postId}`);
     //유저를 찾는 로직을 user service에서 가져와야함
     // const user = await this.prismaService.users.findUnique({

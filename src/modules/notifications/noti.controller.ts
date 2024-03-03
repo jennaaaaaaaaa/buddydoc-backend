@@ -47,9 +47,9 @@ export class NotiContoller {
       console.log(notiDto);
       //신청 보내기
       //await this.notiService.sendNotification(notiDto);
-      
+      //console.log(`${req.body.client} , ${notiDto.noti_message}`)
       //실시간 알림 보내기
-      this.alarmGateway.sendMessageToUser(notiDto.userId,notiDto.noti_message);
+      this.alarmGateway.sendMessageToUser(String(notiDto.userId),notiDto.noti_message);
       return res.status(200).json({ message: '신청완료' });
     } catch (error) {
       throw new BadRequestException('신청에러');

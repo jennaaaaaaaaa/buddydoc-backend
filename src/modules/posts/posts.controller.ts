@@ -24,7 +24,7 @@ import { posts, users } from '@prisma/client';
 import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { PagingPostsDto } from './dto/paging-post.dto';
-import { Response, Request } from 'express';
+import { Response, Request, response } from 'express';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HttpExceptionFilter } from 'src/common/http-exception.filter';
@@ -56,15 +56,18 @@ export class PostController {
   @Get()
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async getAllPosts(@Query() pagingPostsDto: PagingPostsDto, @Req() req: Request) {
+  async getAllPosts(@Req() req: Request, @Res() res: Response, @Query() pagingPostsDto: PagingPostsDto) {
     try {
-      // const userId = 24; //임시값
+      // const userId = 27; //임시값
       const userId = req.user ? req.user['id'] : null;
-
+      let orderField: 'createdAt' | 'preference' = 'createdAt'; //기본값 최신순
+      if (pagingPostsDto.orderBy === 'preference') {
+        orderField = 'preference';
+      }
       const lastPostId = Number(pagingPostsDto.lastPostId);
-      const isEnd = pagingPostsDto.isEnd;
       const postType = pagingPostsDto.postType;
-      const posts = await this.postService.getAllPosts(userId, isEnd, postType, lastPostId); //orderField
+      const isEnd = pagingPostsDto.isEnd;
+      const posts = await this.postService.getAllPosts(orderField, userId, isEnd, postType, lastPostId);
       return posts;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

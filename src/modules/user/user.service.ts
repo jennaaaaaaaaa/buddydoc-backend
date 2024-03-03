@@ -148,7 +148,7 @@ export class UserService {
       console.log(error);
     }
   }
-
+  //임시 닉네임 삭제
   async deleteNickname(userId: number){
     try {
       

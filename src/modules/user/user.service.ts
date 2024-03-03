@@ -13,7 +13,6 @@ export class UserService {
    */
   async createUser(userDto: UserDto) {
     try {
-      console.log('회원가입 ', userDto);
       const {
         email,
         userNickname,
@@ -26,6 +25,7 @@ export class UserService {
         platform,
         profileImage,
       } = userDto;
+      console.log('회원가입 ', userDto);
       const user = await this.prisma.users.create({
         data: {
           email,

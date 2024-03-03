@@ -54,7 +54,7 @@ export class UserService {
   async updateUser(userDto: UserDto) {
     try {
       console.log('회원수정 ', userDto);
-      const { userId, userNickname, position, gitURL, userStatus, introduction, career,skillList } = userDto;
+      const { userId, userNickname, position, profileImage, userStatus, introduction, career,skillList } = userDto;
       console.log(userId, userNickname, position, career,skillList);
       //const updateResult = await this.prisma.$queryRaw`
       //update users set userNickname=${userNickname},position=${position},

@@ -110,10 +110,10 @@ model notifications {
   noti_userId  Int
   noti_message String?                   @db.VarChar(255)
   notiStatus   notifications_notiStatus? @default(pending)
-  position     String?                   @db.VarChar(30)
   createdAt    DateTime?                 @db.Timestamp(0)
   updatedAt    DateTime?                 @db.DateTime(0)
   deletedAt    DateTime?                 @db.DateTime(0)
+  position     String?                   @db.VarChar(30)
   applications applications[]
   posts        posts                     @relation(fields: [postId], references: [postId], onDelete: NoAction, onUpdate: NoAction, map: "notifications_ibfk_1")
   users        users                     @relation(fields: [noti_userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "notifications_ibfk_2")
@@ -147,11 +147,11 @@ model applications {
   note_userId                      Int?
   postId                           Int?
   noti_userId                      Int?
-  alarmMessage                     String                    @db.Text
   alarmStatus                      applications_alarmStatus? @default(unread)
   createdAt                        DateTime?                 @db.Timestamp(0)
   updatedAt                        DateTime?                 @db.DateTime(0)
   deletedAt                        DateTime?                 @db.DateTime(0)
+  alarmMessage                     String                    @db.Text
   users                            users?                    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_1")
   notes_applications_noteIdTonotes notes?                    @relation("applications_noteIdTonotes", fields: [noteId], references: [noteId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_2")
   notifications                    notifications?            @relation(fields: [postId, noti_userId], references: [postId, noti_userId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_4")

@@ -17,7 +17,7 @@ export class PostService {
   async getAllPosts(
     orderField: 'createdAt' | 'preference',
     userId: number,
-    isEnd: number,
+    isEnd: 0 | 1,
     postType?: '스터디' | '프로젝트',
     lastPostId?: number
   ) {
@@ -42,7 +42,7 @@ export class PostService {
 
     const currentDate = new Date();
 
-    if (isEnd === 0) {
+    if (Number(isEnd) === 0) {
       whereCondition = {
         ...whereCondition,
         deadLine: {
@@ -84,6 +84,7 @@ export class PostService {
     const postsWithBookmark = await Promise.all(
       posts.map(async (post) => {
         let bookmark = false;
+        let isEnd = '모집완료'; // 기본값 설정
 
         if (userId) {
           const userBookmark = await this.prisma.bookmarks.findUnique({
@@ -97,9 +98,15 @@ export class PostService {
           bookmark = !!userBookmark;
         }
 
+        // post.deadLine이 현재 날짜보다 미래라면 '모집중'으로 설정
+        if (post.deadLine > currentDate) {
+          isEnd = '모집중';
+        }
+
         return {
           ...post,
           bookmark,
+          isEnd,
           position: post.position ? post.position.split(',') : [],
           skillList: post.skillList ? post.skillList.split(',') : [],
         };

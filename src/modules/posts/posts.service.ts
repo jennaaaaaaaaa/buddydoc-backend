@@ -13,7 +13,16 @@ export class PostService {
     private prisma: PrismaService,
     private searchService: SearchService
   ) {}
-  //스터디랑 사이드프로젝트 게시물 나눠서 보여주기 postType이 스터디면 스터디만, ...
+
+  /**
+   *
+   * @param orderField
+   * @param userId
+   * @param isEnd
+   * @param postType
+   * @param lastPostId
+   * @returns
+   */
   async getAllPosts(
     orderField: 'createdAt' | 'preference',
     userId: number,
@@ -119,12 +128,9 @@ export class PostService {
   }
 
   /**
-   * * 게시글 상세조회(views +1, preference는 버튼 누를 때 올라가는 거라 프론트에서 해줘야되는지?)
-   * 로그인 안되있으면 북마크 기본 false값
-   * 조회수 본인은 view 안 올라감
-   * 유저 이미지 추가
-   *
+   * 게시글 상세조회
    * @param postId
+   * @param userId
    * @returns
    */
   async getOnePost(postId: number, userId: number) {
@@ -202,33 +208,6 @@ export class PostService {
     } catch (error) {
       console.error(error);
     }
-
-    //로그인하지 않은 사용자가 게시글을 조회할 때 bookmarked 프로퍼티가 false로 설정
-
-    // // return updatePost;
-    // const response = {
-    //   postId: updatePost.postId,
-    //   user: {
-    //     userId: updatePost.users.userId,
-    //     nickname: updatePost.users.userNickname,
-    //     profileImage: updatePost.users.profileImage,
-    //   },
-    //   title: updatePost.postTitle,
-    //   content: updatePost.content,
-    //   postType: updatePost.postType,
-    //   preference: updatePost.preference,
-    //   views: updatePost.views,
-    //   position: updatePost.position ? updatePost.position.split(',') : [],
-    //   createdAt: updatePost.createdAt,
-    //   updatedAt: updatePost.updatedAt,
-    //   skillList: updatePost.skillList ? updatePost.skillList.split(',') : [],
-    //   deadLine: updatePost.deadLine,
-    //   startDate: updatePost.startDate,
-    //   memberCount: updatePost.memberCount,
-    //   period: updatePost.period,
-    //   bookmarked: !!bookmark,
-    // };
-    // return { data: [response] };
   }
 
   /**
@@ -324,7 +303,7 @@ export class PostService {
 
     // elasticsearch 사용시 주석 풀어야함
     // Elasticsearch에 인덱싱
-    // await this.searchService.addDocument([post]);
+    await this.searchService.addDocument([post]);
 
     // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {
@@ -392,7 +371,7 @@ export class PostService {
 
     // elasticsearch 사용시 주석 풀어야함
     // Elasticsearch에 인덱싱된 데이터 업데이트
-    // await this.searchService.updateDocument(postId, post);
+    await this.searchService.updateDocument(postId, post);
 
     // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {
@@ -422,7 +401,7 @@ export class PostService {
     const delPost = await this.prisma.posts.update({ where: { postId: +postId }, data: { deletedAt: new Date() } });
 
     // Elasticsearch 인덱스에서 해당 문서 삭제
-    // const deleteResult = await this.searchService.deleteDoc(postId);
+    const deleteResult = await this.searchService.deleteDoc(postId);
     // console.log('deleteResult ====>>>>', deleteResult);
 
     return delPost;

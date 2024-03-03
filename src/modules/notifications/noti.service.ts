@@ -13,7 +13,7 @@ export class NotiService {
    */
   async sendNotification(notiDto: NotiDto) {
     try {
-      const { userId, postId, noti_userId, noti_message, notiStatus } = notiDto;
+      const { userId, postId, noti_userId, noti_message, notiStatus,position } = notiDto;
       const result = await this.prisma.notifications.create({
         data: {
           userId: userId,
@@ -21,6 +21,7 @@ export class NotiService {
           noti_userId: noti_userId,
           noti_message: noti_message,
           notiStatus: notiStatus,
+          position:position,
           createdAt: new Date(),
         },
       });

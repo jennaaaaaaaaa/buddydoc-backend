@@ -22,4 +22,8 @@ export class NotiDto {
   @ApiProperty()
   @IsEnum(notifications_notiStatus)
   notiStatus: notifications_notiStatus;
+
+  @ApiProperty()
+  @IsString()
+  position : string;
 }

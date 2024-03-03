@@ -43,13 +43,13 @@ export class NotiContoller {
       notiDto.noti_userId = req.user['id'];
       notiDto.postId = postId;
       //게시글 작성자 확인
-      //notiDto.userId = await this.notiService.getUserIdatPost(postId);
-      console.log(notiDto);
+      notiDto.userId = await this.notiService.getUserIdatPost(postId);
+      // console.log(notiDto);
       //신청 보내기
-      //await this.notiService.sendNotification(notiDto);
+      await this.notiService.sendNotification(notiDto);
       //console.log(`${req.body.client} , ${notiDto.noti_message}`)
       //실시간 알림 보내기
-      this.alarmGateway.sendMessageToUser(String(notiDto.userId),notiDto.noti_message);
+      // this.alarmGateway.sendMessageToUser(String(notiDto.userId),notiDto.noti_message);
       return res.status(200).json({ message: '신청완료' });
     } catch (error) {
       console.log(error)

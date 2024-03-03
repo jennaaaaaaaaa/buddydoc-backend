@@ -21,6 +21,12 @@ export class SearchService {
   async initIndex() {
     return this.elasticsearchService.indices.create({
       index: this.indexName,
+      body: {
+        settings: {
+          number_of_shards: 1, // 샤드의 수를 지정합니다. 필요에 따라 값을 조정할 수 있습니다.
+          number_of_replicas: 0, // 복제본의 수를 0으로 지정
+        },
+      },
     });
   }
 

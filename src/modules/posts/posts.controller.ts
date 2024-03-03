@@ -52,19 +52,21 @@ export class PostController {
   @ApiOperation({
     summary: '게시글목록 API',
   })
-  // @UseGuards(JwtAuthGuard)
   @Get()
   @UseFilters(HttpExceptionFilter)
   @HttpCode(200)
-  async getAllPosts(@Query() pagingPostsDto: PagingPostsDto, @Req() req: Request) {
+  async getAllPosts(@Query() pagingPostsDto: PagingPostsDto) {
     try {
-      const userId = 24; //임시값
+      const userId = 27; //임시값
       // const userId = req.user['id'];
-
+      let orderField: 'createdAt' | 'preference' = 'createdAt'; //기본값 최신순
+      if (pagingPostsDto.orderBy === 'preference') {
+        orderField = 'preference';
+      }
       const lastPostId = Number(pagingPostsDto.lastPostId);
-      const isEnd = pagingPostsDto.isEnd;
       const postType = pagingPostsDto.postType;
-      const posts = await this.postService.getAllPosts(userId, isEnd, postType, lastPostId); //orderField
+      const isEnd = pagingPostsDto.isEnd;
+      const posts = await this.postService.getAllPosts(orderField, userId, isEnd, postType, lastPostId);
       return posts;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

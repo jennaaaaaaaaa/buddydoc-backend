@@ -10,8 +10,9 @@ export class PagingPostsDto {
 
   @IsOptional()
   @IsString()
-  postType?: 'study' | 'project';
+  postType?: '스터디' | '프로젝트';
 
+  @IsOptional()
   @IsInt()
-  isEnd: 0 | 1;
+  isEnd?: 0 | 1;
 }

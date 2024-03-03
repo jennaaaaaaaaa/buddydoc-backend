@@ -14,16 +14,26 @@ export class UserService {
   async createUser(userDto: UserDto) {
     try {
       console.log('회원가입 ', userDto);
-      const { email, userNickname, position, gitURL, userStatus, introduction, career, password, platform } = userDto;
+      const {
+        email,
+        userNickname,
+        position,
+        gitURL,
+        userStatus,
+        introduction,
+        career,
+        password,
+        platform,
+        profileImage,
+      } = userDto;
       const user = await this.prisma.users.create({
         data: {
           email,
           userNickname,
           position,
-          gitURL,
+          profileImage,
           userStatus: userStatus,
-          introduction,
-          career: career,
+          career,
           createdAt: new Date(),
           password,
           platform,
@@ -44,7 +54,7 @@ export class UserService {
   async updateUser(userDto: UserDto) {
     try {
       console.log('회원수정 ', userDto);
-      const { userId, userNickname, position, gitURL, userStatus, introduction, career } = userDto;
+      const { userId, userNickname, position, userStatus, career, profileImage } = userDto;
       console.log(userId, userNickname, position, career);
       //const updateResult = await this.prisma.$queryRaw`
       //update users set userNickname=${userNickname},position=${position},
@@ -56,9 +66,8 @@ export class UserService {
         data: {
           userNickname: userNickname,
           position: position,
-          gitURL: gitURL,
+          profileImage: profileImage,
           userStatus: userStatus,
-          introduction: introduction,
           career: career,
           createdAt: new Date(),
         },

@@ -19,9 +19,10 @@ export class InfoService {
       },
       select: {
         userId: true,
-        userName: true,
         userNickname: true,
+        profileImage:true,
         position: true,
+        career:true,
         skills: {
           select: {
             skill: true,
@@ -32,10 +33,11 @@ export class InfoService {
 
     const result = {
       userId: user.userId,
-      userName: user.userName,
       userNickname: user.userNickname,
+      profileImage: user.profileImage,
       position: user.position,
-      skills: user.skills.map((skill) => skill.skill),
+      career:user.career,
+      skillList: user.skills.map((skill) => skill.skill),
     };
 
     return result;

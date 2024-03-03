@@ -97,7 +97,7 @@ export class InfoService {
    * @returns 게시글번호,게시글제목,게시글타입,게시글작성자
    */
   async getNotifications(infoDto: InfoDto) {
-    console.log(`프로젝트`);
+    console.log(`신청현황`);
     const user = await this.prisma.$queryRaw`
     select postId, postType , memberCount ,startDate from posts
     where post_userId = ${Number(infoDto.userId)} and postType='프로젝트`;

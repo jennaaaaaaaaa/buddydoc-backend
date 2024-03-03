@@ -148,4 +148,17 @@ export class UserService {
       console.log(error);
     }
   }
+  //임시 닉네임 삭제
+  async deleteNickname(userId: number){
+    try {
+      
+      const checkId = await this.prisma.$queryRaw`
+      update users set userNickName=null where userId =${userId}`
+      
+      return checkId
+      
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }

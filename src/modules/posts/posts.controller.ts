@@ -68,7 +68,7 @@ export class PostController {
       const postType = pagingPostsDto.postType;
       const isEnd = pagingPostsDto.isEnd;
       const posts = await this.postService.getAllPosts(orderField, userId, isEnd, postType, lastPostId);
-      return posts;
+      return res.status(200).json({ posts });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -121,7 +121,10 @@ export class PostController {
       const userId = req.user ? req.user['id'] : null;
       // const userId = 27;
       const post = await this.postService.getOnePost(postId, userId);
-      return res.status(200).json({ message: '게시글 조회에 성공하였습니다', post });
+      if (!post) {
+        return res.status(404).json({ message: '게시글이 존재하지 않습니다' });
+      }
+      return res.status(200).json({ post });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

@@ -59,7 +59,7 @@ export class SearchService {
     let body: any = {
       query: {
         bool: {
-          should: [{ match: { title: search } }, { match: { content: search } }],
+          should: [{ match: { postTitle: search } }, { match: { content: search } }],
           filter: {
             bool: {
               must_not: {
@@ -83,18 +83,10 @@ export class SearchService {
       body.search_after = pageCursorValues;
     }
 
-    // console.log('pageCursor', pageCursor);
-    // console.log('pageCursorValues', pageCursorValues);
-
-    // console.log('body.search_after', body.search_after);
-
     const result = (await this.elasticsearchService.search({
       index: this.indexName,
       body,
     })) as unknown as SearchInterfaces;
-
-    // console.log('body', body);
-    // console.log('result.hits', result.hits);
 
     let options = result.hits.hits;
 
@@ -113,7 +105,6 @@ export class SearchService {
     if (options.length === 0) {
       return { message: '검색 결과가 없습니다.', options: [] };
     }
-
     return { options, lastPageCursor, isLastPage };
   }
 
@@ -186,7 +177,7 @@ export class SearchService {
               id: post.postId,
               body: {
                 postId: post.postId,
-                title: post.postTitle,
+                postTitle: post.postTitle,
                 content: post.content,
                 position: post.position ? post.position.split(',') : [],
                 postType: post.postType,
@@ -202,9 +193,9 @@ export class SearchService {
                 period: post.period,
                 userNickname: userNickname,
                 profileImage: user.profileImage,
-                suggest: {
-                  input: [...post.postTitle.split(' '), ...post.content.split(' ')],
-                },
+                // suggest: {
+                //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
+                // },
               },
             });
             // console.log(`Document added successfully for title: ${post.postTitle}, content: ${post.content}`);
@@ -246,6 +237,9 @@ export class SearchService {
       id: String(id),
     });
 
+    const user = await this.prisma.users.findUnique({ where: { userId: +post.post_userId } });
+    const userNickname = user ? user.userNickname : 'Unknown';
+
     if (isExists) {
       // 문서가 존재하면 업데이트
       return this.elasticsearchService.update({
@@ -253,8 +247,23 @@ export class SearchService {
         id: String(id),
         body: {
           doc: {
-            title: post.postTitle,
+            postId: post.postId,
+            postTitle: post.postTitle,
             content: post.content,
+            position: post.position ? post.position.split(',') : [],
+            postType: post.postType,
+            skillList: post.skillList ? post.skillList.split(',') : [],
+            preference: post.preference,
+            views: post.views,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+            deletedAt: post.deletedAt,
+            deadLine: post.deadLine,
+            startDate: post.startDate,
+            memberCount: post.memberCount,
+            period: post.period,
+            userNickname: userNickname,
+            profileImage: user.profileImage,
             // suggest: {
             //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
             // },
@@ -267,8 +276,23 @@ export class SearchService {
         index: this.indexName,
         id: String(id),
         body: {
-          title: post.postTitle,
+          postId: post.postId,
+          postTitle: post.postTitle,
           content: post.content,
+          position: post.position ? post.position.split(',') : [],
+          postType: post.postType,
+          skillList: post.skillList ? post.skillList.split(',') : [],
+          preference: post.preference,
+          views: post.views,
+          createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
+          deletedAt: post.deletedAt,
+          deadLine: post.deadLine,
+          startDate: post.startDate,
+          memberCount: post.memberCount,
+          period: post.period,
+          userNickname: userNickname,
+          profileImage: user.profileImage,
           // suggest: {
           //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
           // },

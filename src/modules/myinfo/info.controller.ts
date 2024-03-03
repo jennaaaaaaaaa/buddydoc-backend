@@ -50,6 +50,7 @@ export class InfoController {
       const methodMap = {
         bookmarks: 'getBookmarks',
         studylists: 'getStudylists',
+        project : 'getProjects',
         posts: 'getPosts',
       };
 

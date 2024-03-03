@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { SearchInterfaces } from './search.interfaces';
-// import { SearchResponse } from './search.interfaces';
+
 @Injectable()
 export class SearchService {
   private readonly indexName = 'title_content';
@@ -47,9 +47,9 @@ export class SearchService {
         properties: {
           postTitle: { type: 'text' },
           content: { type: 'text' },
-          createdAt: { type: 'date' }, // 추가
-          postId: { type: 'integer' }, // 추가
-          deletedAt: { type: 'date' }, // 추가
+          createdAt: { type: 'date' },
+          postId: { type: 'integer' },
+          deletedAt: { type: 'date' },
         },
       },
     });
@@ -100,7 +100,7 @@ export class SearchService {
     let lastPageCursor;
     if (options.length > 0) {
       const lastOption = options[options.length - 1];
-      // console.log('lastOption._source.postIdlastOption._source.postId ===>>>>', lastOption._source);
+
       lastPageCursor = [lastOption._source.postId]; // 현재 마지막 문서의 'createdAt'과 'postId'
     }
 
@@ -201,8 +201,11 @@ export class SearchService {
                 startDate: post.startDate,
                 memberCount: post.memberCount,
                 period: post.period,
-                userNickname: userNickname,
-                profileImage: user.profileImage,
+                users: {
+                  userNickname: userNickname,
+                  profileImage: user.profileImage,
+                },
+
                 // suggest: {
                 //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
                 // },

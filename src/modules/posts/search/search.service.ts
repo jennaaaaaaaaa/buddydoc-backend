@@ -206,6 +206,7 @@ export class SearchService {
                   profileImage: user.profileImage,
                 },
 
+                //자동완성기능을 위한 키워드
                 // suggest: {
                 //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
                 // },
@@ -225,23 +226,6 @@ export class SearchService {
       })
     );
   }
-
-  // async updateDocument(id: number, post: any) {
-  //   console.log('id, post ===>>>>', id, post);
-  //   return this.elasticsearchService.update({
-  //     index: this.indexName,
-  //     id: String(id),
-  //     body: {
-  //       doc: {
-  //         title: post.postTitle,
-  //         content: post.content,
-  //         suggest: {
-  //           input: [...post.postTitle.split(' '), ...post.content.split(' ')],
-  //         },
-  //       },
-  //     },
-  //   });
-  // }
 
   async updateDocument(id: number, post: any) {
     // 문서가 존재하는지 확인
@@ -275,8 +259,10 @@ export class SearchService {
             startDate: post.startDate,
             memberCount: post.memberCount,
             period: post.period,
-            userNickname: userNickname,
-            profileImage: user.profileImage,
+            users: {
+              userNickname: userNickname,
+              profileImage: user.profileImage,
+            },
             // suggest: {
             //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
             // },
@@ -304,8 +290,10 @@ export class SearchService {
           startDate: post.startDate,
           memberCount: post.memberCount,
           period: post.period,
-          userNickname: userNickname,
-          profileImage: user.profileImage,
+          users: {
+            userNickname: userNickname,
+            profileImage: user.profileImage,
+          },
           // suggest: {
           //   input: [...post.postTitle.split(' '), ...post.content.split(' ')],
           // },

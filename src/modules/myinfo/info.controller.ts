@@ -40,7 +40,7 @@ export class InfoController {
   })
   @UseGuards(JwtAuthGuard)
   @Get('/my-:table')
-  async getUserInfo(@Body() infoDto: InfoDto, @Req() req: Request) {
+  async getUserInfo(@Body() infoDto: InfoDto, @Res() res: Response, @Req() req: Request) {
     try {
       infoDto.userId = req.user['id'];
       infoDto.name = String(req.params['table']);
@@ -51,14 +51,34 @@ export class InfoController {
         bookmarks: 'getBookmarks',
         studylists: 'getStudylists',
         posts: 'getPosts',
-        noti: 'getNotifications'
+        noti: 'getNotifications',
       };
 
       const methodName = methodMap[infoDto.name] || 'getUserInfo';
       console.log(methodName);
       const result = await this.InfoService[methodName](infoDto);
 
-      return result;
+      return res.status(200).json({ result });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+  /**
+   * 내 게시물 신청자 관리
+   * @param userDto
+   * @returns
+   */
+  @ApiOperation({
+    summary: '내 작성게시물 신청자 관리 API',
+    description: '내가 작성한 게시물의 신청자를 조회하는 API입니다.',
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/my-posts/:postId')
+  async getApplicants(@Res() res: Response, @Req() req: Request) {
+    try {
+      const result = await this.InfoService.getApplicants(Number(req.params['postId']));
+
+      return res.status(200).json({ result });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

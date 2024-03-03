@@ -62,7 +62,8 @@ export class InfoService {
     join 
     users c 
     on b.post_userId = c.userId
-    where a.userId = ${Number(infoDto.userId)}`;
+    where a.userId = ${Number(infoDto.userId)}
+    order by a.createdAt desc`;
 
     return user;
   }
@@ -76,7 +77,8 @@ export class InfoService {
     console.log(`스터디 , 프로젝트`);
     const user = await this.prisma.$queryRaw`
     select postId, postTitle, postType , memberCount ,startDate from posts
-    where post_userId = ${Number(infoDto.userId)}`;
+    where post_userId = ${Number(infoDto.userId)}
+    order by createdAt desc`;
 
     return user;
   }
@@ -95,7 +97,8 @@ export class InfoService {
     from notifications a 
     join posts b 
     on a.postId = b.postId
-    where noti_userId = ${Number(infoDto.userId)}`;
+    where noti_userId = ${Number(infoDto.userId)}
+    order by a.createdAt desc`;
 
     return user;
   }
@@ -114,11 +117,31 @@ export class InfoService {
         postId: true,
         postTitle: true,
         postType: true,
+        createdAt: true,
+        deadLine: true,
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+
+    return user;
+  }
+
+  /**
+   * 신청자 관리
+   * @param postId 
+   * @returns 
+   */
+  async getApplicants(postId: Number) {
+    console.log(`신청자`);
+    const user = await this.prisma.$queryRaw`
+    select a.noti_userId,b.userNickname,a.noti_message,a.position
+    from notifications a 
+    join users b 
+    on a.noti_userId=b.userId
+    where a.postId=${postId}
+    order by a.createdAt `;
 
     return user;
   }

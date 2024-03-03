@@ -44,9 +44,9 @@ export class UserController {
       console.log('userDto 확인', userDto);
 
       //닉네임 중복확인
-      const checkId = await this.userService.checkId(userDto.userNickname);
-      console.log('controller 중복확인 ', checkId);
-      if (checkId) return res.status(400).json({ message: '아이디 중복' });
+      //const checkId = await this.userService.checkId(userDto.userNickname);
+      //console.log('controller 중복확인 ', checkId);
+      //if (checkId) return res.status(400).json({ message: '아이디 중복' });
       //회원가입
       const user = await this.userService.updateUser(userDto);
       console.log('회원가입 성공 ', user);

@@ -11,11 +11,13 @@ import {
 import { ChatService } from './chat.service';
 import { Server, Socket } from 'socket.io';
 import { MessageDto } from './dto/message.dto';
-// import { InfoService } from '../myinfo/info.service';
-// import { InfoDto } from '../myinfo/dto/info.dto';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/database/prisma/prisma.service';
-// import { ChatDto } from './dto/chat.dto';
+import { PostService } from '../posts/posts.service';
 
+interface ExtendedSocket extends Socket {
+  userId: string; // Socket 타입을 확장하여 userId 속성을 추가합니다.
+}
 @WebSocketGateway({
   namespace: 'chat', //namespace로 채널?분리, chat이랑 alram이랑 나눌수 있음
   cors: {
@@ -28,10 +30,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer()
   server: Server;
   constructor(
-    private readonly chatService: ChatService
-    
-    // private readonly prismaService: PrismaService
-    // private readonly infoService: InfoService
+    private readonly chatService: ChatService,
+    private jwtService: JwtService,
+    private postService: PostService
   ) {}
 
   afterInit(server: Server) {
@@ -40,35 +41,58 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   //연결 상태에 대한 모니터링
-  public handleConnection(@ConnectedSocket() client: Socket) {
-    console.log(`${client.id} 소켓 연결`);
-    // // 클라이언트의 요청 헤더에서 JWT를 추출합니다.
-    // const token = client.handshake.headers['authorization']?.split(' ')[1];
+  public handleConnection(@ConnectedSocket() client: ExtendedSocket) {
+    // 소켓 컨텍스트에서는 HTTP 요청 객체에 직접 접근할 수 없다 (req.user 사용 못함)
+    // JWT를 확인하여 사용자를 인증합니다.
+    try {
+      console.log(`${client.id} 소켓 연결`);
+      // // 클라이언트의 요청 헤더에서 JWT를 추출합니다.
+      // const token = client.handshake.headers['authorization']?.split(' ')[1];
 
-    // if (!token) {
-    //   console.log('No token provided');
-    //   client.disconnect();
-    //   return;
-    // }
-
-    // // JWT를 확인하여 사용자를 인증합니다.
-    // try {
-    //   const decodedToken = this.jwtService.verify(token);
-    //   const userId = decodedToken.userId;
-
-    //   // 클라이언트 객체에 userId를 저장하여, 후속 요청에서 사용자 인증을 수행하도록 합니다.
-    //   client.userId = userId;
-    // } catch (error) {
-    //   console.log('Invalid token');
-    //   client.disconnect();
-    // }
+      // if (!token) {
+      //   console.log('No token provided');
+      //   client.disconnect();
+      //   return;
+      // }
+      // const decodedToken = this.jwtService.verify(token);
+      // const userId = decodedToken.userId;
+      // client.userId = userId;
+      // 클라이언트 객체에 userId를 저장하여, 후속 요청에서 사용자 인증을 수행하도록 합니다.
+    } catch (error) {
+      console.log('Error during socket connection:', error);
+      client.disconnect();
+    }
   }
 
   public handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`${client.id} 소켓 연결 해제`);
   }
 
-  //메세지 보내기
+  // //메세지 보내기
+  // @SubscribeMessage('send-message')
+  // async handleSendMessage(
+  //   @ConnectedSocket() client: ExtendedSocket, // Socket 타입 대신 확장한 ExtendedSocket 타입을 사용합니다.
+  //   @MessageBody() messageDto: MessageDto
+  // ) {
+  //   console.log('messageDto', messageDto);
+  //   console.log('client.userId', client.userId); // client.userId를 출력하여 확인합니다.
+
+  //   try {
+  //     const user = await this.chatService.getUserInfo(Number(client.userId)); // messageDto.userId 대신 client.userId를 사용합니다.
+  //     console.log('user:', user);
+
+  //     const message = await this.chatService.createMessage(messageDto);
+  //     this.server
+  //       .to(`postRoom-${message.postId}`)
+  //       .emit('send-message', { message: message.chat_message, userName: user.userName });
+
+  //     console.log(`메시지 '${message.chat_message}'가 ${user.userName}에 의해 ${message.postId} 방에 전송됨`);
+  //   } catch (error) {
+  //     console.log('error', error);
+  //   }
+  // }
+
+  //메세지 보내기<유저jwt에서 안 가져온 버전>
   @SubscribeMessage('send-message')
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
@@ -100,15 +124,49 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleGetMessages(client: Socket, payload: { postId: number; lastMessageId?: number }) {
     const { postId, lastMessageId } = payload;
     const result = await this.chatService.getMessagesByPostId(postId, lastMessageId);
+    console.log('resultresultresult=>>>', result);
     client.emit('read-Messages', result); //getMessages=> 클라이언트에서 발생시키는 이벤트
   }
 
+  // @SubscribeMessage('join-room')
+  // async handleJoinRoom(
+  //   @ConnectedSocket()
+  //   client: ExtendedSocket,
+  //   @MessageBody() postId: string //랜덤채팅방 같으면 userId가 아닌 userNickname을 받으면 될 듯 채팅방들어오기전에 userNickname입력하게끔
+  // ) {
+  //   //해당 게시글에 참여하고 있는 유저인지 확인 아니면 해당 게시글에 참여하고 있는 유저가 아닙니다
+
+  //   console.log('join-room');
+  //   client.join(`postRoom-${postId}`);
+  //   //유저를 찾는 로직을 user service에서 가져와야함
+  //   // const user = await this.prismaService.users.findUnique({
+  //   //   where: { userId: payload.userId },
+  //   // });
+
+  //   // const user = await this.chatService.getUserInfo(+client.userId); //user 콘솔 찍어보고 싶은데 토큰이 있어야함
+  //   const user = await this.chatService.getUserInfo(27);
+  //   console.log('useruseruseruseruser🎈🎈🎈', user);
+
+  //   //게시글에 참여한 사람인지 확인 해야함
+  //   const checkParticipated = await this.postService.getParticipantsInPost(+postId);
+  //   console.log(checkParticipated); //콘솔로 값이 어떻게 나오는지 알아보고 checkParticipated안에 들어 있는 user
+  //   // if()
+  //   console.log(`소켓 id: ${client.id}, ${postId} 방에 입장함`);
+  //   this.server.to(`post-${postId}`).emit('join-room', {
+  //     content: `User ${client.userId}가 들어왔습니다.`, //${user.userName}
+  //     // users: user, //유저정보를 나타내는건데 위에서 유저 이름만 잘 표기해주면 없어도 되지 않는지
+  //   });
+  // }
+  //유저 jwt 안가여온 버전
   @SubscribeMessage('join-room')
   handleJoinRoom(
     @ConnectedSocket()
     client: Socket,
-    @MessageBody() data: { userId: number; postId: string }
+    @MessageBody() data: { userId: number; postId: string } //랜덤채팅방 같으면 userId가 아닌 userNickname을 받으면 될 듯 채팅방들어오기전에 userNickname입력하게끔
   ) {
+    //해당 게시글에 참여하고 있는 유저인지 확인 아니면 해당 게시글에 참여하고 있는 유저가 아닙니다
+
+    console.log('join-room');
     client.join(`postRoom-${data.postId}`);
     //유저를 찾는 로직을 user service에서 가져와야함
     // const user = await this.prismaService.users.findUnique({

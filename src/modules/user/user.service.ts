@@ -13,22 +13,14 @@ export class UserService {
    */
   async createUser(userDto: UserDto) {
     try {
-      const {
-        email,
-        userNickname,
-        position,
-        career,
-        password,
-        platform,
-        profileImage,
-      } = userDto;
+      const { email, userNickname, position, career, password, platform, profileImage } = userDto;
       console.log('회원가입 ', userDto);
       const user = await this.prisma.users.create({
         data: {
           email,
           userNickname,
           position,
-          profileImage:profileImage,
+          profileImage: profileImage,
           career,
           createdAt: new Date(),
           password,
@@ -50,8 +42,8 @@ export class UserService {
   async updateUser(userDto: UserDto) {
     try {
       console.log('회원수정 ', userDto);
-      const { userId, userNickname, position, profileImage, userStatus, introduction, career,skillList } = userDto;
-      console.log(userId, userNickname, position, career,skillList);
+      const { userId, userNickname, position, profileImage, userStatus, introduction, career, skillList } = userDto;
+      console.log(userId, userNickname, position, career, skillList);
       //const updateResult = await this.prisma.$queryRaw`
       //update users set userNickname=${userNickname},position=${position},
       //career=${career} where userId=${userId}`
@@ -145,14 +137,12 @@ export class UserService {
     }
   }
   //임시 닉네임 삭제
-  async deleteNickname(userId: number){
+  async deleteNickname(userId: number) {
     try {
-      
       const checkId = await this.prisma.$queryRaw`
-      update users set userNickName=null where userId =${userId}`
-      
-      return checkId
-      
+      update users set userNickName=null where userId =${userId}`;
+
+      return checkId;
     } catch (error) {
       console.log(error);
     }

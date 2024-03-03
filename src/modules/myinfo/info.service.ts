@@ -51,8 +51,9 @@ export class InfoService {
   async getBookmarks(infoDto: InfoDto) {
     console.log(`북마크`);
 
-    const user = await this.prisma.$queryRaw`select b.postId,b.postTitle,b.post_userId,
-    a.userId, c.userNickName
+    const user = await this.prisma.$queryRaw`
+    select b.postId,b.postTitle,b.postType
+    ,b.deadLine,b.memberCount
     from 
     bookmarks a
     join
@@ -67,26 +68,15 @@ export class InfoService {
   }
 
   /**
-   * 내 참여 스터디 조회
+   * 내 참여목록 조회
    * @param userDto
    * @returns 게시글번호,게시글제목,게시글타입,게시글작성자
    */
   async getStudylists(infoDto: InfoDto) {
-    console.log(`스터디`);
+    console.log(`스터디 , 프로젝트`);
     const user = await this.prisma.$queryRaw`
     select postId, postType , memberCount ,startDate from posts
     where post_userId = ${Number(infoDto.userId)}`;
-    // const user = await this.prisma.$queryRaw`select b.postId,b.postTitle,b.postType,
-    // b.post_userId,a.userId,c.userNickName
-    // from
-    // studylists a
-    // join
-    // posts b
-    // on a.postId = b.postId
-    // join
-    // users c
-    // on b.post_userId = c.userId
-    // where a.userId = ${Number(infoDto.userId)}`;
 
     return user;
   }
@@ -99,19 +89,13 @@ export class InfoService {
   async getNotifications(infoDto: InfoDto) {
     console.log(`신청현황`);
     const user = await this.prisma.$queryRaw`
-    select postId, postType , memberCount ,startDate from posts
-    where post_userId = ${Number(infoDto.userId)} and postType='프로젝트`;
-    // const user = await this.prisma.$queryRaw`select b.postId,b.postTitle,b.postType,
-    // b.post_userId,a.userId,c.userNickName
-    // from
-    // studylists a
-    // join
-    // posts b
-    // on a.postId = b.postId
-    // join
-    // users c
-    // on b.post_userId = c.userId
-    // where a.userId = ${Number(infoDto.userId)}`;
+    select
+    b.postType,b.postTitle,b.memberCount,
+    a.notiStatus,b.postId,b.startDate
+    from notifications a 
+    join posts b 
+    on a.postId = b.postId
+    where noti_userId = ${Number(infoDto.userId)}`;
 
     return user;
   }

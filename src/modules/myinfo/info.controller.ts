@@ -50,8 +50,8 @@ export class InfoController {
       const methodMap = {
         bookmarks: 'getBookmarks',
         studylists: 'getStudylists',
-        project : 'getProjects',
         posts: 'getPosts',
+        noti: 'getNotifications'
       };
 
       const methodName = methodMap[infoDto.name] || 'getUserInfo';

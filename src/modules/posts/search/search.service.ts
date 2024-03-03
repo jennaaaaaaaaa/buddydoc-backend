@@ -12,6 +12,10 @@ export class SearchService {
     private elasticsearchService: ElasticsearchService // 주입합니다.
   ) {}
 
+  // async onModuleInit() {
+  //   await this.init();
+  // }
+
   async deleteIndex() {
     return this.elasticsearchService.indices.delete({
       index: this.indexName,

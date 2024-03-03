@@ -40,9 +40,9 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // 클라이언트에서 userId를 통해 웹소켓 연결을 요청할 때 호출될 메서드
   @SubscribeMessage('buddydocConnect')
-  connectWebSocketWithUserId(client: Socket, userId: any,message: any) {
+  connectWebSocketWithUserId(client: Socket, userId: any) {
     // 이미 연결된 userId가 있다면 연결을 끊고 새로운 연결을 설정
-    console.log(`뭐가 들어오니? `,userId["userId"]);
+    console.log(`뭐가 들어오니? `,userId);
     if (this.connectedUsers.has(userId)) {
       const existingClient = this.connectedUsers.get(userId);
       existingClient.disconnect(true); // 연결 끊기
@@ -51,7 +51,7 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // userId와 클라이언트 소켓을 매핑에 추가
     this.connectedUsers.set(userId, client);
-
+    
     console.log(`WebSocket connected with userId: ${userId}`);
   }
 
@@ -61,7 +61,7 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const client = this.connectedUsers.get(userId);
     console.log(`client >> `, client.id);
     if (client) {
-      client.emit('message', message); // 해당 userId의 클라이언트에게 메시지 보내기
+      client.emit('alarmMessage', message); // 해당 userId의 클라이언트에게 메시지 보내기
     } else {
       console.log(`사용자가 로그인중이지 않습니다. : ${userId}`);
     }

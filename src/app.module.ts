@@ -1,7 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { AppController } from './app.controller';
-import { postModule } from './modules/posts/posts.module';
+import { PostModule } from './modules/posts/posts.module';
 import { AppService } from './app.service';
 import { UserModule } from './modules/user/user.module';
 import { ConfigModule } from '@nestjs/config';
@@ -21,7 +21,7 @@ import { AlarmModule } from './modules/alarm/alarm.module';
     UserModule,
     InfoModule,
     AuthModule,
-    postModule,
+    PostModule,
     S3Module,
     ChatModule,
     NotiModule,

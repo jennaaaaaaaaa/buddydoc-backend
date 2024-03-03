@@ -10,5 +10,6 @@ import { SearchModule } from './search/search.module';
   controllers: [PostController],
   providers: [PostService],
   imports: [PrismaModule, S3Module, SearchModule],
+  exports: [PostService],
 })
-export class postModule {}
+export class PostModule {}

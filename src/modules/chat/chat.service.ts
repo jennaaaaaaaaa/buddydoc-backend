@@ -1,3 +1,5 @@
+챗서비스;
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
@@ -62,13 +64,13 @@ export class ChatService {
   //   return messages;
   // }
   async getMessagesByPostId(postId: number, lastMessageId?: number) {
-    let whereCondition: Prisma.chatsWhereInput = { postId: postId };
+    let whereCondition: Prisma.chatsWhereInput = { postId: +postId };
 
     if (lastMessageId) {
       whereCondition = {
         ...whereCondition,
         chatId: {
-          lt: lastMessageId,
+          lt: +lastMessageId,
         },
       };
     }
@@ -76,7 +78,7 @@ export class ChatService {
     const messages = await this.prisma.chats.findMany({
       where: whereCondition,
       orderBy: {
-        createdAt: 'asc',
+        createdAt: 'desc',
       },
       take: 10,
       select: {

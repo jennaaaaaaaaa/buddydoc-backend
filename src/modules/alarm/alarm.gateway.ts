@@ -5,7 +5,6 @@ import { Server, Socket } from 'socket.io';
 export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private server: Server;
-
   private connectedUsers: Map<string, Socket> = new Map(); // userId와 Socket의 매핑을 저장하는 Map
 
   handleConnection(client: Socket) {

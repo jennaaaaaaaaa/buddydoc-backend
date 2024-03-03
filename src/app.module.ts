@@ -25,6 +25,7 @@ import { AlarmModule } from './modules/alarm/alarm.module';
     S3Module,
     ChatModule,
     NotiModule,
+    AlarmModule
   ],
   controllers: [AppController],
   providers: [AppService, S3Service],

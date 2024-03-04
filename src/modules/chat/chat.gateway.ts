@@ -48,22 +48,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       console.log(`${client.id} 소켓 연결`);
       // // 클라이언트의 요청 헤더에서 JWT를 추출합니다.
-      // const token = client.handshake.headers['authorization']?.split(' ')[1];
-      // const token = client.handshake.headers['authorization'];
-      // const bearerToken = client.handshake.headers['authorization'];
-
-      // console.log(' handleConnection token🎈🎈🎈', bearerToken);
-      // console.log(' handleConnection token split🎈🎈🎈', bearerToken.split(' '));
-      // console.log(' handleConnection token split[1]🎈🎈🎈', bearerToken.split(' ')[1]);
-
-      // const token = bearerToken.split(' ')[1];
 
       const token = client.handshake.auth.token;
       console.log(' token🎈🎈🎈', token);
-
-      // const token = client.handshake.headers['Authorization'];
-      // // const token = (client.handshake.headers['Authorization'] as string).split(' ')[1];
-      // console.log(' handleConnection token🎈🎈🎈', token);
 
       if (!token) {
         console.log('No token provided');
@@ -100,7 +87,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // console.log('client', client);
 
     try {
-      // const user = await this.chatService.getUserInfo(Number(client.userId)); // messageDto.userId 대신 client.userId를 사용합니다.
+      const user = await this.chatService.getUserInfo(Number(client.userId)); // messageDto.userId 대신 client.userId를 사용합니다.
       // console.log('send-message_______user', user);
       // console.log('jwt에서 가져온 nickname', client.nickname);
 
@@ -111,7 +98,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.server
         .to(`postRoom-${message.postId}`)
         .emit('send-message', { message: message.chat_message, userNickname: client.nickname });
-
+      this.server.emit('receive-message', {
+        userId: message.userId,
+        chatId: message.chatId,
+        chat_message: message.chat_message,
+        createdAt: message.createdAt,
+        users: {
+          userNickname: user.userNickname,
+          profileImage: user.profileImage,
+        },
+      });
       // console.log(`메시지 '${message.chat_message}'가 ${user.userNickname}에 의해 ${message.postId} 방에 전송됨`);
       console.log(`메시지 '${message.chat_message}'가 ${client.nickname}에 의해 ${message.postId} 방에 전송됨`);
     } catch (error) {

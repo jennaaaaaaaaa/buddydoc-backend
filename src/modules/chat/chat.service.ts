@@ -81,10 +81,10 @@ export class ChatService {
 
   //임시로 유저 조회, 찾아본 바로는 원래는 클라이언트에서 토큰을 받아서?? 인증을 해야한다고함
   async getUserInfo(userId: number) {
-    console.log('userId ===>>>>>>: ', userId);
+    // console.log('userId ===>>>>>>: ', userId);
     const chat = await this.prisma.users.findUnique({
       where: { userId: +userId },
-      select: { userId: true, userNickname: true },
+      select: { userId: true, userNickname: true, profileImage: true },
     });
     return chat;
   }

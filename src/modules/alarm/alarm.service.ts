@@ -1,12 +1,10 @@
 import { ForbiddenException, Injectable, NotFoundException, UploadedFile } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma/prisma.service';
-import { AlarmDto } from './dto/alarm.dto';
 import { NotiDto } from '../notifications/dto/noti.dto';
 
 @Injectable()
 export class AlarmService {
-  constructor(private prisma: PrismaService,
-    private alarmDto : AlarmDto) {}
+  constructor(private prisma: PrismaService) {}
 
   /**
    * 알림 보내기

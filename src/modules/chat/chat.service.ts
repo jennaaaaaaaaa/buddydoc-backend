@@ -39,28 +39,6 @@ export class ChatService {
     return chat;
   }
 
-  // async getMessages(postId: number, page: number, pageSize: number) {
-  //   const messages = await this.prisma.chats.findMany({
-  //     where: { postId: postId },
-  //     skip: (page - 1) * pageSize,
-  //     take: pageSize,
-  //     orderBy: {
-  //       createdAt: 'desc',
-  //     },
-  //     select: {
-  //       postId: true,
-  //       userId: true,
-  //       chat_message: true,
-  //       createdAt: true,
-  //     },
-  //   });
-
-  //   if (!messages || messages.length === 0) {
-  //     throw new NotFoundException({ errorMessage: '메시지가 존재하지 않습니다.' });
-  //   }
-
-  //   return messages;
-  // }
   async getMessagesByPostId(postId: number, lastMessageId?: number) {
     let whereCondition: Prisma.chatsWhereInput = { postId: +postId };
 
@@ -111,6 +89,7 @@ export class ChatService {
     return chat;
   }
 
+  //되는거 확인
   async getUserCheckInPostId(postId: number) {
     console.log('서비스', postId);
     const post = await this.prisma.notifications.findMany({
@@ -120,5 +99,13 @@ export class ChatService {
     console.log('서비스', post);
 
     return post;
+  }
+
+  //되는거 확인
+  async checkExistAuthor(postId: number) {
+    console.log('checkAboutPost_users');
+    const author = await this.prisma.posts.findUnique({ where: { postId: +postId }, select: { post_userId: true } });
+    console.log('서비스 author', author);
+    return author;
   }
 }

@@ -20,27 +20,27 @@ import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  /**
-   * 채팅메세지 create
-   * @param postId
-   * @param messageDto
-   * @returns
-   */
-  @Post(':postId')
-  @UseFilters(HttpExceptionFilter)
-  async createMessage(@Param('postId') postId: number, @Body() messageDto: MessageDto) {
-    // //사용자 인증jwt에 들어있는 userName사용??...
-    try {
-      const userId = 1;
-      const chat = await this.chatService.createMessage(messageDto);
-      return chat;
-    } catch (error) {
-      console.log(error);
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
+  // /**
+  //  * 채팅메세지 create
+  //  * @param postId
+  //  * @param messageDto
+  //  * @returns
+  //  */
+  // @Post(':postId')
+  // @UseFilters(HttpExceptionFilter)
+  // async createMessage(@Param('postId') postId: number, @Body() messageDto: MessageDto) {
+  //   // //사용자 인증jwt에 들어있는 userName사용??...
+  //   try {
+  //     // const userId = 1;
+  //     const chat = await this.chatService.createMessage(messageDto);
+  //     return chat;
+  //   } catch (error) {
+  //     console.log(error);
+  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
 
-  //메세지 조회//아닌거 같은데
+  //메세지 조회
   @Get(':postId')
   async getMessagesByPostId(@Param('postId') postId: number, @Query('lastMessageId') lastMessageId?: number) {
     console.log('lastMessageId', lastMessageId); // 로그 출력

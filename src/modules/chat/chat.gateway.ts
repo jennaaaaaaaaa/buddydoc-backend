@@ -137,11 +137,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleJoinRoom(
     @ConnectedSocket()
     client: ExtendedSocket,
-    @MessageBody() postId: string //랜덤채팅방 같으면 userId가 아닌 userNickname을 받으면 될 듯 채팅방들어오기전에 userNickname입력하게끔
+    @MessageBody() postId: number //랜덤채팅방 같으면 userId가 아닌 userNickname을 받으면 될 듯 채팅방들어오기전에 userNickname입력하게끔
   ) {
     //해당 게시글에 참여하고 있는 유저인지 확인 아니면 해당 게시글에 참여하고 있는 유저가 아닙니다
 
-    console.log('🎈join-room🎈');
+    console.log('🎈join-room🎈', postId);
     client.join(`postRoom-${postId}`);
     //유저를 찾는 로직을 user service에서 가져와야함
     // const user = await this.prismaService.users.findUnique({
@@ -153,8 +153,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log('useruseruseruseruser🎈🎈🎈', user);
 
     //게시글에 참여한 사람인지 확인 해야함
-    const checkParticipated = await this.postService.getParticipantsInPost(+postId);
-    console.log(checkParticipated); //콘솔로 값이 어떻게 나오는지 알아보고 checkParticipated안에 들어 있는 user
+    const checkParticipated = await this.postService.getParticipantsInPost(postId);
+    console.log('chatgateway🎈checkParticipated🎈', checkParticipated); //콘솔로 값이 어떻게 나오는지 알아보고 checkParticipated안에 들어 있는 user
     // if()
     console.log(`소켓 id: ${client.id}, ${postId} 방에 입장함`);
     this.server.to(`post-${postId}`).emit('join-room', {

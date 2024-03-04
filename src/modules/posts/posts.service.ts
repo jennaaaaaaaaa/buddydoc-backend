@@ -216,6 +216,9 @@ export class PostService {
    * @returns
    */
   async getParticipantsInPost(postId: number) {
+    // console.log('getParticipantsInPost ************postId:', postId);
+    // console.log('postId type:', typeof postId);
+
     try {
       const participatingUsers = await this.prisma.notifications.findMany({
         where: {

@@ -87,6 +87,7 @@ export class ChatService {
         users: {
           select: {
             userNickname: true,
+            profileImage: true,
           },
         },
       },

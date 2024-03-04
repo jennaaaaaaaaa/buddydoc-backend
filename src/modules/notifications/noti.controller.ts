@@ -26,12 +26,14 @@ import { JwtAuthGuard } from 'src/auth/oauth/auth.guard';
 import { NotiService } from './noti.service';
 import { NotiDto } from './dto/noti.dto';
 import { AlarmGateway } from '../alarm/alarm.gateway';
+import { AlarmService } from '../alarm/alarm.service';
 
 @ApiTags('notifications')
 @Controller('post')
 export class NotiContoller {
   constructor(
     private readonly notiService: NotiService,
+    private readonly alarmService : AlarmService,
     private readonly alarmGateway: AlarmGateway
   ) {}
 
@@ -61,7 +63,8 @@ export class NotiContoller {
       await this.notiService.sendNotification(notiDto);
       //console.log(`${req.body.client} , ${notiDto.noti_message}`)
       //실시간 알림 보내기
-      // this.alarmGateway.sendMessageToUser(String(notiDto.userId),notiDto.noti_message);
+      this.alarmGateway.sendMessageToUser(String(notiDto.userId),notiDto.noti_message);
+      await this.alarmService.sendAlarm(notiDto)
       return res.status(200).json({ message: '신청완료' });
     } catch (error) {
       console.log(error);

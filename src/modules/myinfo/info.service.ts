@@ -77,7 +77,7 @@ export class InfoService {
     console.log(`스터디 , 프로젝트`);
     const user = await this.prisma.$queryRaw`
     select postId, postTitle, postType , memberCount ,startDate from posts
-    where post_userId = ${Number(infoDto.userId)}
+    where post_userId = ${Number(infoDto.userId)} and deletedAt is null
     order by createdAt desc`;
 
     return user;
@@ -112,6 +112,7 @@ export class InfoService {
     const user = await this.prisma.posts.findMany({
       where: {
         post_userId: Number(infoDto.userId),
+        deletedAt: null
       },
       select: {
         postId: true,

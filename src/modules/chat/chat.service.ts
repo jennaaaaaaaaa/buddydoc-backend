@@ -111,6 +111,13 @@ export class ChatService {
     return chat;
   }
 
+  // async getUserCheck(postId: number) {
+  //   //, userId: number)
+  //   console.log('서비스', postId);
+  //   const post = await this.prisma.notifications.findMany({ where: { postId: +postId } });
+  //   console.log('서비스', post);
+  // }
+
   // async existPost(postId: number) {
   //   const post = await this.prisma.posts.findUnique({ where: { postId }, include: { users: true } });
   //   if (!post || post.deletedAt !== null) {

@@ -48,19 +48,19 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       console.log(`${client.id} 소켓 연결`);
       // // 클라이언트의 요청 헤더에서 JWT를 추출합니다.
       // const token = client.handshake.headers['authorization']?.split(' ')[1];
-      // const token = client.handshake.headers['authorization'];
-      // console.log(' handleConnection token🎈🎈🎈', token);
+      const token = client.handshake.headers['authorization'];
+      console.log(' handleConnection token🎈🎈🎈', token);
 
-      // if (!token) {
-      //   console.log('No token provided');
-      //   client.disconnect();
-      //   return { message: '로그인을 해주세요!' };
-      // }
-      // const decodedToken = this.jwtService.verify(token);
+      if (!token) {
+        console.log('No token provided');
+        client.disconnect();
+        return { message: '로그인을 해주세요!' };
+      }
+      const decodedToken = this.jwtService.verify(token);
 
-      // console.log(' handleConnection decodedToken🎈🎈🎈', decodedToken);
-      // const userId = decodedToken.userId;
-      // client.userId = userId;
+      console.log(' handleConnection decodedToken🎈🎈🎈', decodedToken);
+      const userId = decodedToken.id;
+      client.userId = userId;
       // 클라이언트 객체에 userId를 저장하여, 후속 요청에서 사용자 인증을 수행하도록 합니다.
     } catch (error) {
       console.log('Error during socket connection:', error);
@@ -72,118 +72,132 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(`${client.id} 소켓 연결 해제`);
   }
 
-  // //메세지 보내기
+  //메세지 보내기<토큰버전>
+  @SubscribeMessage('send-message')
+  async handleSendMessage(
+    @ConnectedSocket() client: ExtendedSocket, // Socket 타입 대신 확장한 ExtendedSocket 타입을 사용합니다.
+    @MessageBody() messageDto: MessageDto
+  ) {
+    console.log('messageDto', messageDto);
+    console.log('client.userId', client.userId); // client.userId를 출력하여 확인합니다.
+    // console.log('client', client);
+
+    try {
+      const user = await this.chatService.getUserInfo(Number(client.userId)); // messageDto.userId 대신 client.userId를 사용합니다.
+      console.log('send-message_______user', user);
+
+      const message = await this.chatService.createMessage(messageDto);
+      this.server
+        .to(`postRoom-${message.postId}`)
+        .emit('send-message', { message: message.chat_message, userNickname: user.userNickname });
+
+      console.log(`메시지 '${message.chat_message}'가 ${user.userNickname}에 의해 ${message.postId} 방에 전송됨`);
+    } catch (error) {
+      console.log('error', error);
+    }
+  }
+
+  // //메세지 보내기<유저jwt에서 안 가져온 버전>
   // @SubscribeMessage('send-message')
   // async handleSendMessage(
-  //   @ConnectedSocket() client: ExtendedSocket, // Socket 타입 대신 확장한 ExtendedSocket 타입을 사용합니다.
+  //   @ConnectedSocket() client: Socket,
   //   @MessageBody() messageDto: MessageDto
+  //   // postId: string;
+  //   // token: string;
+  //   // userId: number;
   // ) {
   //   console.log('messageDto', messageDto);
-  //   console.log('client.userId', client.userId); // client.userId를 출력하여 확인합니다.
-
+  //   console.log('messageDto.userId', messageDto.userId);
+  //   // console.log('client', client);
   //   try {
-  //     const user = await this.chatService.getUserInfo(Number(client.userId)); // messageDto.userId 대신 client.userId를 사용합니다.
-  //     console.log('user:', user);
-
-  //     const message = await this.chatService.createMessage(messageDto);
+  //     //user는 나중에...jwt 검증 후 client.userId = userId;로 client userId 가져오기
+  //     // console.log(client userId ) //출력해서 값 확인해보기
+  //     const user = await this.chatService.getUserInfo(messageDto.userId); //client.userId
+  //     console.log('send-message user 🎈', user);
+  //     const message = await this.chatService.createMessage(messageDto); //Number(data.postId), Number(data.userId)
   //     this.server
   //       .to(`postRoom-${message.postId}`)
   //       .emit('send-message', { message: message.chat_message, userName: user.userName });
-
   //     console.log(`메시지 '${message.chat_message}'가 ${user.userName}에 의해 ${message.postId} 방에 전송됨`);
   //   } catch (error) {
   //     console.log('error', error);
   //   }
   // }
 
-  //메세지 보내기<유저jwt에서 안 가져온 버전>
-  @SubscribeMessage('send-message')
-  async handleSendMessage(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() messageDto: MessageDto
-    // postId: string;
-    // token: string;
-    // userId: number;
-  ) {
-    console.log('messageDto', messageDto);
-    console.log('messageDto.userId', messageDto.userId);
-    // console.log('client', client);
-    try {
-      //user는 나중에...jwt 검증 후 client.userId = userId;로 client userId 가져오기
-      // console.log(client userId ) //출력해서 값 확인해보기
-      const user = await this.chatService.getUserInfo(messageDto.userId); //client.userId
-      console.log('send-message user 🎈', user);
-      const message = await this.chatService.createMessage(messageDto); //Number(data.postId), Number(data.userId)
-      this.server
-        .to(`postRoom-${message.postId}`)
-        .emit('send-message', { message: message.chat_message, userName: user.userName });
-      console.log(`메시지 '${message.chat_message}'가 ${user.userName}에 의해 ${message.postId} 방에 전송됨`);
-    } catch (error) {
-      console.log('error', error);
-    }
-  }
-
   //postId를 받아와서 특정 postId의 메세지들을 조회
   @SubscribeMessage('read-Messages')
-  async handleGetMessages(client: Socket, payload: { postId: number; lastMessageId?: number }) {
+  async handleGetMessages(client: ExtendedSocket, payload: { postId: number; lastMessageId?: number }) {
+    const user = await this.chatService.getUserInfo(Number(client.userId));
+    console.log('read-Messages_____user: ', user);
     const { postId, lastMessageId } = payload;
     const result = await this.chatService.getMessagesByPostId(postId, lastMessageId);
     console.log('read-Messages 🎈 result=>>>', result);
     client.emit('read-Messages', result); //getMessages=> 클라이언트에서 발생시키는 이벤트
   }
 
-  // //<토큰 버전>
-  // @SubscribeMessage('join-room')
-  // async handleJoinRoom(
-  //   @ConnectedSocket()
-  //   client: ExtendedSocket,
-  //   @MessageBody() postId: number //랜덤채팅방 같으면 userId가 아닌 userNickname을 받으면 될 듯 채팅방들어오기전에 userNickname입력하게끔
-  // ) {
-  //   //해당 게시글에 참여하고 있는 유저인지 확인 아니면 해당 게시글에 참여하고 있는 유저가 아닙니다
-
-  //   console.log('🎈join-room🎈', postId);
-  //   client.join(`postRoom-${postId}`);
-  //   //유저를 찾는 로직을 user service에서 가져와야함
-  //   // const user = await this.prismaService.users.findUnique({
-  //   //   where: { userId: payload.userId },
-  //   // });
-
-  //   // const user = await this.chatService.getUserInfo(+client.userId); //user 콘솔 찍어보고 싶은데 토큰이 있어야함
-  //   const user = await this.chatService.getUserInfo(27);
-  //   console.log('useruseruseruseruser🎈🎈🎈', user);
-
-  //   //게시글에 참여한 사람인지 확인 해야함
-  //   const checkParticipated = await this.postService.getParticipantsInPost(postId);
-  //   console.log('chatgateway🎈checkParticipated🎈', checkParticipated); //콘솔로 값이 어떻게 나오는지 알아보고 checkParticipated안에 들어 있는 user
-  //   // if()
-  //   console.log(`소켓 id: ${client.id}, ${postId} 방에 입장함`);
-  //   this.server.to(`post-${postId}`).emit('join-room', {
-  //     content: `User ${client.userId}가 들어왔습니다.`, //${user.userName}
-  //     // users: user, //유저정보를 나타내는건데 위에서 유저 이름만 잘 표기해주면 없어도 되지 않는지
-  //   });
-  // }
-
-  //유저 jwt 안가여온 버전
+  //<토큰 버전>
   @SubscribeMessage('join-room')
-  handleJoinRoom(
+  async handleJoinRoom(
     @ConnectedSocket()
-    client: Socket,
-    @MessageBody() data: { userId: number; postId: string } //랜덤채팅방 같으면 userId가 아닌 userNickname을 받으면 될 듯 채팅방들어오기전에 userNickname입력하게끔
+    client: ExtendedSocket,
+    // payload: { postId: number }
+    // postId: number
+    @MessageBody() payload: { postId: number } //랜덤채팅방 같으면 userId가 아닌 userNickname을 받으면 될 듯 채팅방들어오기전에 userNickname입력하게끔
   ) {
     //해당 게시글에 참여하고 있는 유저인지 확인 아니면 해당 게시글에 참여하고 있는 유저가 아닙니다
 
-    console.log('join-room');
-    client.join(`postRoom-${data.postId}`);
+    console.log('🎈join-room🎈', payload.postId);
+    client.join(`postRoom-${payload.postId}`);
     //유저를 찾는 로직을 user service에서 가져와야함
     // const user = await this.prismaService.users.findUnique({
     //   where: { userId: payload.userId },
     // });
-    console.log(`소켓 id: ${client.id}, ${data.postId} 방에 입장함`);
-    this.server.to(`post-${data.postId}`).emit('join-room', {
-      content: `User ${data.userId}가 들어왔습니다.`, //${user.userName}
+
+    // const user = await this.chatService.getUserInfo(+client.userId); //user 콘솔 찍어보고 싶은데 토큰이 있어야함
+    const user = await this.chatService.getUserInfo(+client.userId);
+    console.log('useruseruseruseruser🎈🎈🎈', user);
+
+    //게시글에 참여한 사람인지 확인 해야함
+    // const checkParticipated = await this.postService.getParticipantsInPost(payload.postId);
+    const checkParticipated = await this.chatService.getUserCheckInPostId(payload.postId);
+
+    console.log('chatgateway🎈checkParticipated🎈', checkParticipated); //콘솔로 값이 어떻게 나오는지 알아보고 checkParticipated안에 들어 있는 user
+    const isUserParticipated = checkParticipated.some((user) => user.noti_userId === +client.userId);
+    console.log('isUserParticipated', isUserParticipated);
+
+    if (!isUserParticipated) {
+      console.log(`사용자 ${client.userId}는 참여하고 있지 않습니다.`);
+      // this.server.to(client.id).emit('error', '이 방에 참여하고 있는 사용자가 아닙니다.');
+      return;
+    }
+    console.log(`소켓 id: ${client.userId}, ${payload.postId} 방에 입장함`);
+    this.server.to(`post-${payload.postId}`).emit('join-room', {
+      content: `User ${client.userId}가 들어왔습니다.`, //${user.userName}
       // users: user, //유저정보를 나타내는건데 위에서 유저 이름만 잘 표기해주면 없어도 되지 않는지
     });
   }
+
+  // //유저 jwt 안가여온 버전
+  // @SubscribeMessage('join-room')
+  // handleJoinRoom(
+  //   @ConnectedSocket()
+  //   client: Socket,
+  //   @MessageBody() data: { userId: number; postId: string } //랜덤채팅방 같으면 userId가 아닌 userNickname을 받으면 될 듯 채팅방들어오기전에 userNickname입력하게끔
+  // ) {
+  //   //해당 게시글에 참여하고 있는 유저인지 확인 아니면 해당 게시글에 참여하고 있는 유저가 아닙니다
+
+  //   console.log('join-room');
+  //   client.join(`postRoom-${data.postId}`);
+  //   //유저를 찾는 로직을 user service에서 가져와야함
+  //   // const user = await this.prismaService.users.findUnique({
+  //   //   where: { userId: payload.userId },
+  //   // });
+  //   console.log(`소켓 id: ${client.id}, ${data.postId} 방에 입장함`);
+  //   this.server.to(`post-${data.postId}`).emit('join-room', {
+  //     content: `User ${data.userId}가 들어왔습니다.`, //${user.userName}
+  //     // users: user, //유저정보를 나타내는건데 위에서 유저 이름만 잘 표기해주면 없어도 되지 않는지
+  //   });
+  // }
 
   @SubscribeMessage('leave-room')
   handleLeaveRoom(

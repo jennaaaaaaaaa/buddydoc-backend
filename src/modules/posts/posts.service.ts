@@ -108,7 +108,7 @@ export class PostService {
         }
 
         // post.deadLine이 현재 날짜보다 미래라면 '모집중'으로 설정
-        if (post.deadLine > currentDate) {
+        if (post.deadLine >= currentDate) {
           isEnd = '모집중';
         }
 
@@ -306,7 +306,8 @@ export class PostService {
 
     // elasticsearch 사용시 주석 풀어야함
     // Elasticsearch에 인덱싱
-    await this.searchService.addDocument([post]);
+    const es = await this.searchService.addDocument([post]);
+    // console.log('es🤗🤗🤗🤗🤗🤗🤗🤗', es);
 
     // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {

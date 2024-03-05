@@ -59,7 +59,7 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
   sendMessageToUser(userId: string, message: any) {
     console.log(`넘겨받은 string : ${userId}, message = ${message}`);
     const client = this.connectedUsers.get(userId);
-    console.log(`client >> `, client.id);
+    //console.log(`client >> `, client.id);
     if (client) {
       client.emit('alarmMessage', message); // 해당 userId의 클라이언트에게 메시지 보내기
     } else {

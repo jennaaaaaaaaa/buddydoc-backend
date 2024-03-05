@@ -12,25 +12,24 @@ export class AlarmService {
    */
   async sendAlarm(notiDto: NotiDto) {
     try {
-        
-    //   this.alarmDto.userId=notiDto.userId
-    //   this.alarmDto.postId=notiDto.postId
-    //   this.alarmDto.noti_userid=notiDto.noti_userId
-    //   this.alarmDto.alarmMessage=notiDto.noti_message
+      //   this.alarmDto.userId=notiDto.userId
+      //   this.alarmDto.postId=notiDto.postId
+      //   this.alarmDto.noti_userid=notiDto.noti_userId
+      //   this.alarmDto.alarmMessage=notiDto.noti_message
 
       const result = await this.prisma.applications.create({
         data: {
-            postId:notiDto.postId,
-            userId:notiDto.userId,
-            noti_userId:notiDto.noti_userId,
-            alarmMessage:notiDto.noti_message,
-            createdAt:new Date,
+          postId: notiDto.postId,
+          userId: notiDto.userId,
+          noti_userId: notiDto.noti_userId,
+          alarmMessage: notiDto.noti_message,
+          createdAt: new Date(),
         },
       });
 
-      return result
+      return result;
     } catch (error) {
-      throw { message : error}  
+      throw { message: error };
     }
   }
 
@@ -51,6 +50,21 @@ export class AlarmService {
       });
 
       return post_userId.post_userId;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  /**
+   * 내 알림조회
+   * @returns alarm
+   */
+  async getAlarm() {
+    try {
+      const alarm = await this.prisma.$queryRaw`
+      
+      `;
+      return alarm
     } catch (error) {
       console.log(error);
     }

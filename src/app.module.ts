@@ -1,7 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { AppController } from './app.controller';
-import { postModule } from './modules/posts/posts.module';
+import { PostModule } from './modules/posts/posts.module';
 import { AppService } from './app.service';
 import { UserModule } from './modules/user/user.module';
 import { ConfigModule } from '@nestjs/config';
@@ -13,6 +13,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { NotiModule } from './modules/notifications/noti.module';
 import { AlarmModule } from './modules/alarm/alarm.module';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,10 +22,11 @@ import { AlarmModule } from './modules/alarm/alarm.module';
     UserModule,
     InfoModule,
     AuthModule,
-    postModule,
+    PostModule,
     S3Module,
     ChatModule,
     NotiModule,
+    AlarmModule
   ],
   controllers: [AppController],
   providers: [AppService, S3Service],

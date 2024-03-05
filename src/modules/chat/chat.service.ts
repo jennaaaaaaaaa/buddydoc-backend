@@ -39,36 +39,14 @@ export class ChatService {
     return chat;
   }
 
-  // async getMessages(postId: number, page: number, pageSize: number) {
-  //   const messages = await this.prisma.chats.findMany({
-  //     where: { postId: postId },
-  //     skip: (page - 1) * pageSize,
-  //     take: pageSize,
-  //     orderBy: {
-  //       createdAt: 'desc',
-  //     },
-  //     select: {
-  //       postId: true,
-  //       userId: true,
-  //       chat_message: true,
-  //       createdAt: true,
-  //     },
-  //   });
-
-  //   if (!messages || messages.length === 0) {
-  //     throw new NotFoundException({ errorMessage: '메시지가 존재하지 않습니다.' });
-  //   }
-
-  //   return messages;
-  // }
   async getMessagesByPostId(postId: number, lastMessageId?: number) {
-    let whereCondition: Prisma.chatsWhereInput = { postId: postId };
+    let whereCondition: Prisma.chatsWhereInput = { postId: +postId };
 
     if (lastMessageId) {
       whereCondition = {
         ...whereCondition,
         chatId: {
-          lt: lastMessageId,
+          lt: +lastMessageId,
         },
       };
     }
@@ -76,7 +54,7 @@ export class ChatService {
     const messages = await this.prisma.chats.findMany({
       where: whereCondition,
       orderBy: {
-        createdAt: 'asc',
+        createdAt: 'desc',
       },
       take: 10,
       select: {
@@ -87,6 +65,7 @@ export class ChatService {
         users: {
           select: {
             userNickname: true,
+            profileImage: true,
           },
         },
       },
@@ -102,63 +81,31 @@ export class ChatService {
 
   //임시로 유저 조회, 찾아본 바로는 원래는 클라이언트에서 토큰을 받아서?? 인증을 해야한다고함
   async getUserInfo(userId: number) {
-    console.log('userId ===>>>>>>: ', userId);
+    // console.log('userId ===>>>>>>: ', userId);
     const chat = await this.prisma.users.findUnique({
       where: { userId: +userId },
-      select: { userId: true, userName: true, userNickname: true },
+      select: { userId: true, userNickname: true, profileImage: true },
     });
     return chat;
   }
 
-  // async existPost(postId: number) {
-  //   const post = await this.prisma.posts.findUnique({ where: { postId }, include: { users: true } });
-  //   if (!post || post.deletedAt !== null) {
-  //     throw new NotFoundException({ errorMessage: '게시글이 존재하지 않습니다.' });
-  //   }
-  //   return post;
-  // }
+  //되는거 확인
+  async getUserCheckInPostId(postId: number) {
+    console.log('서비스', postId);
+    const post = await this.prisma.notifications.findMany({
+      where: { postId: +postId, notiStatus: 'accept' },
+      select: { noti_userId: true },
+    });
+    console.log('서비스', post);
 
-  // async findUser(userId: number) {
-  //   const user = await this.prisma.users.findUnique({ where: { userId } });
-  //   if (!user || user.deletedAt !== null) {
-  //     throw new NotFoundException({ errorMessage: '존재하지 않는 유저입니다' });
-  //   }
-  //   return user;
-  // }
+    return post;
+  }
 
-  // async getChat(postId: number) {
-  //   const chat = await this.prisma.chats.findFirst({
-  //     where: { postId },
-  //     select: {
-  //       chatId: true,
-  //       postId: true,
-  //       createdAt: true,
-  //       userId: true,
-  //       users: true,
-  //       posts_chats_postIdToposts: true,
-  //       chat_message: true,
-  //     },
-  //   });
-  //   return chat;
-  // }
-
-  // async getRoom(userId: number) {
-  //   const chatRoom = await this.prisma.chats.findFirst({
-  //     where: { userId },
-  //     select: {
-  //       postId: true,
-  //       users: {
-  //         select: {
-  //           userId: true,
-  //           userNickname: true,
-  //           userName: true,
-  //           position: true,
-  //           gitURL: true,
-  //           career: true,
-  //         },
-  //       },
-  //     },
-  //   });
-  //   return chatRoom;
-  // }
+  //되는거 확인
+  async checkExistAuthor(postId: number) {
+    console.log('checkAboutPost_users');
+    const author = await this.prisma.posts.findUnique({ where: { postId: +postId }, select: { post_userId: true } });
+    console.log('서비스 author', author);
+    return author;
+  }
 }

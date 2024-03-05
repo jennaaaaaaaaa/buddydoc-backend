@@ -29,6 +29,7 @@ export class AuthService {
         select: {
           userId: true,
           userNickname: true,
+          profileImage:true,
           password: true,
         },
       });
@@ -68,7 +69,7 @@ export class AuthService {
 
   async checkToken() {}
   async login(user: any) {
-    const payloadUser = { id: user.userId, nickname: user.userNickname };
+    const payloadUser = { id: user.userId, nickname: user.userNickname , profileImage: user.profileImage };
 
     const payload = this.jwtService.sign(payloadUser);
     console.log(payload);

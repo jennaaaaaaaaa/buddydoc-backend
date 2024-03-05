@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException, UploadedFile } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { NotiDto } from './dto/noti.dto';
-import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 @Injectable()
 export class NotiService {
@@ -13,7 +12,7 @@ export class NotiService {
    */
   async sendNotification(notiDto: NotiDto) {
     try {
-      const { userId, postId, noti_userId, noti_message, notiStatus } = notiDto;
+      const { userId, postId, noti_userId, noti_message, notiStatus, position } = notiDto;
       const result = await this.prisma.notifications.create({
         data: {
           userId: userId,
@@ -21,13 +20,14 @@ export class NotiService {
           noti_userId: noti_userId,
           noti_message: noti_message,
           notiStatus: notiStatus,
+          position: position,
           createdAt: new Date(),
         },
       });
 
-      return result
+      return result;
     } catch (error) {
-      throw { message : error}  
+      console.log(error);
     }
   }
 

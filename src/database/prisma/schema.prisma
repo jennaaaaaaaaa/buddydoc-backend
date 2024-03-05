@@ -105,6 +105,7 @@ model chats {
 }
 
 model notifications {
+  notiId       Int                       @id @default(autoincrement())
   userId       Int?
   postId       Int
   noti_userId  Int
@@ -113,12 +114,12 @@ model notifications {
   createdAt    DateTime?                 @db.Timestamp(0)
   updatedAt    DateTime?                 @db.DateTime(0)
   deletedAt    DateTime?                 @db.DateTime(0)
+  position     String?                   @db.VarChar(30)
   applications applications[]
   posts        posts                     @relation(fields: [postId], references: [postId], onDelete: NoAction, onUpdate: NoAction, map: "notifications_ibfk_1")
   users        users                     @relation(fields: [noti_userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "notifications_ibfk_2")
 
-  @@id([noti_userId, postId])
-  @@index([postId], map: "postId")
+  @@index([notiId], map: "notiId")
 }
 
 model notes {
@@ -144,20 +145,21 @@ model applications {
   userId                           Int?
   noteId                           Int?
   note_userId                      Int?
+  notiId                           Int?
   postId                           Int?
   noti_userId                      Int?
-  alarmMessage                     String                    @db.Text
   alarmStatus                      applications_alarmStatus? @default(unread)
   createdAt                        DateTime?                 @db.Timestamp(0)
   updatedAt                        DateTime?                 @db.DateTime(0)
   deletedAt                        DateTime?                 @db.DateTime(0)
+  alarmMessage                     String                    @db.Text
   users                            users?                    @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_1")
   notes_applications_noteIdTonotes notes?                    @relation("applications_noteIdTonotes", fields: [noteId], references: [noteId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_2")
-  notifications                    notifications?            @relation(fields: [postId, noti_userId], references: [postId, noti_userId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_4")
+  notifications                    notifications?            @relation(fields: [notiId], references: [notiId], onDelete: NoAction, onUpdate: NoAction, map: "applications_ibfk_4")
 
   @@index([userId], map: "userId")
   @@index([noteId], map: "applications_ibfk_2")
-  @@index([postId, noti_userId], map: "applications_ibfk_4")
+  @@index([notiId], map: "applications_ibfk_4")
 }
 
 enum users_userStatus {
@@ -166,6 +168,7 @@ enum users_userStatus {
 }
 
 enum notifications_notiStatus {
+  reject
   pending
   accept
 }

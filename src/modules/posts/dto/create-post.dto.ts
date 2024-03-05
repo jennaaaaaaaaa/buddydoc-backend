@@ -29,9 +29,6 @@ export class CreatePostsDto {
   @IsString()
   skillList: string;
 
-  // preference
-  // views
-
   @ApiProperty()
   @IsDate()
   deadLine: Date;

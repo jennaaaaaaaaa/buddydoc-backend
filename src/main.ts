@@ -24,10 +24,7 @@ async function bootstrap() {
   // Elasticsearch를 초기화합니다.
   await elasticsearchService.init();
 
-  await app.listen((PORT), function() {
-    process.send('ready')
-    console.log(`application is listening on port ${PORT}`)
-  });
+  await app.listen(PORT)
   
 }
 bootstrap();

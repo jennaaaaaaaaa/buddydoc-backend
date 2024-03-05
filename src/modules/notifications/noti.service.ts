@@ -52,4 +52,22 @@ export class NotiService {
       console.log(error);
     }
   }
+
+  async checkNoti(notiDto : NotiDto){
+    try {
+      const noti = await this.prisma.notifications.findFirst({
+        where:{
+          postId:notiDto.postId,
+          noti_userId:notiDto.noti_userId
+        },
+        select:{
+          notiId:true
+        }
+      })
+
+      return noti
+    } catch (error) {
+      console.log(error)
+    }
+  }
 }

@@ -6,8 +6,6 @@ module.exports = {
       instances: 'max', // 클러스터 인스턴스 수 (max: CPU 코어 수)
       exec_mode: 'cluster', // 클러스터 모드
       autorestart: true,
-      watch: true,
-      ignore_watch: ['node_modules']
     },
-  ]
+  ],
 };

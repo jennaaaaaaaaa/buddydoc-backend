@@ -52,6 +52,7 @@ export class NotiContoller {
   @Post(':post/noti')
   async createNotification(@Body() notiDto: NotiDto, @Res() res: Response, @Req() req: Request) {
     try {
+      console.log('신청이 안되나?')
       const postId = Number(req.params['post']);
       console.log('유저 > ', req.user['id']);
       notiDto.noti_userId = req.user['id'];

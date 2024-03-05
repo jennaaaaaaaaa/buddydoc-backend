@@ -12,35 +12,39 @@ export class InfoService {
    * @returns users skills 조회
    */
   async getUserInfo(infoDto: InfoDto) {
-    console.log('getUserInfo >>> ', infoDto.userId);
-    const user = await this.prisma.users.findUnique({
-      where: {
-        userId: Number(infoDto.userId),
-      },
-      select: {
-        userId: true,
-        userNickname: true,
-        profileImage: true,
-        position: true,
-        career: true,
-        skills: {
-          select: {
-            skill: true,
+    try {
+      console.log('getUserInfo >>> ', infoDto.userId);
+      const user = await this.prisma.users.findUnique({
+        where: {
+          userId: Number(infoDto.userId),
+        },
+        select: {
+          userId: true,
+          userNickname: true,
+          profileImage: true,
+          position: true,
+          career: true,
+          skills: {
+            select: {
+              skill: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    const result = {
-      userId: user.userId,
-      userNickname: user.userNickname,
-      profileImage: user.profileImage,
-      position: user.position,
-      career: user.career,
-      skillList: user.skills.map((skill) => skill.skill),
-    };
+      const result = {
+        userId: user.userId,
+        userNickname: user.userNickname,
+        profileImage: user.profileImage,
+        position: user.position,
+        career: user.career,
+        skillList: user.skills.map((skill) => skill.skill),
+      };
 
-    return result;
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   /**
@@ -49,9 +53,10 @@ export class InfoService {
    * @returns 게시글번호,게시물제목,게시글작성자
    */
   async getBookmarks(infoDto: InfoDto) {
-    console.log(`북마크`);
+    try {
+      console.log(`북마크`);
 
-    const user = await this.prisma.$queryRaw`
+      const user = await this.prisma.$queryRaw`
     select b.postId,b.postTitle,b.postType
     ,b.deadLine,b.memberCount
     from 
@@ -65,7 +70,10 @@ export class InfoService {
     where a.userId = ${Number(infoDto.userId)}
     order by a.createdAt desc`;
 
-    return user;
+      return user;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   /**
@@ -74,13 +82,17 @@ export class InfoService {
    * @returns 게시글번호,게시글제목,게시글타입,게시글작성자
    */
   async getStudylists(infoDto: InfoDto) {
-    console.log(`스터디 , 프로젝트`);
-    const user = await this.prisma.$queryRaw`
+    try {
+      console.log(`스터디 , 프로젝트`);
+      const user = await this.prisma.$queryRaw`
     select postId, postTitle, postType , memberCount ,startDate from posts
     where post_userId = ${Number(infoDto.userId)} and deletedAt is null
     order by createdAt desc`;
 
-    return user;
+      return user;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   /**
@@ -89,8 +101,9 @@ export class InfoService {
    * @returns 게시글번호,게시글제목,게시글타입,게시글작성자
    */
   async getNotifications(infoDto: InfoDto) {
-    console.log(`신청현황`);
-    const user = await this.prisma.$queryRaw`
+    try {
+      console.log(`신청현황`);
+      const user = await this.prisma.$queryRaw`
     select
     b.postType,b.postTitle,b.memberCount,
     a.notiStatus,b.postId,b.startDate,a.createdAt
@@ -100,7 +113,10 @@ export class InfoService {
     where noti_userId = ${Number(infoDto.userId)}
     order by a.createdAt desc`;
 
-    return user;
+      return user;
+    } catch (error) {
+      console.log(error);
+    }
   }
   /**
    * 내 작성 게시물 조회
@@ -108,35 +124,40 @@ export class InfoService {
    * @returns 게시글번호,게시글제목,게시글타입 orderby 글 작성 최신순
    */
   async getPosts(infoDto: InfoDto) {
-    console.log(`게시물`);
-    const user = await this.prisma.posts.findMany({
-      where: {
-        post_userId: Number(infoDto.userId),
-        deletedAt: null
-      },
-      select: {
-        postId: true,
-        postTitle: true,
-        postType: true,
-        createdAt: true,
-        deadLine: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    try {
+      console.log(`게시물`);
+      const user = await this.prisma.posts.findMany({
+        where: {
+          post_userId: Number(infoDto.userId),
+          deletedAt: null,
+        },
+        select: {
+          postId: true,
+          postTitle: true,
+          postType: true,
+          createdAt: true,
+          deadLine: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
 
-    return user;
+      return user;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   /**
    * 신청자 관리
-   * @param postId 
-   * @returns 
+   * @param postId
+   * @returns
    */
   async getApplicants(postId: Number) {
-    console.log(`신청자`);
-    const user = await this.prisma.$queryRaw`
+    try {
+      console.log(`신청자`);
+      const user = await this.prisma.$queryRaw`
     select a.noti_userId,b.userNickname,a.noti_message,a.position
     from notifications a 
     join users b 
@@ -144,6 +165,9 @@ export class InfoService {
     where a.postId=${postId}
     order by a.createdAt `;
 
-    return user;
+      return user;
+    } catch (error) {
+      console.log(error);
+    }
   }
 }

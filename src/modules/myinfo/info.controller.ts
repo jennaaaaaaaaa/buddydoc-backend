@@ -20,13 +20,15 @@ import { InfoDto } from '../myinfo/dto/info.dto';
 import { JwtAuthGuard } from 'src/auth/oauth/auth.guard';
 import { UserDto } from '../user/dto/user.dto';
 import { UserService } from '../user/user.service';
+import { NotiService } from '../notifications/noti.service';
 
 @ApiTags('user/my-info')
 @Controller('user')
 export class InfoController {
   constructor(
     private readonly InfoService: InfoService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly notiService : NotiService
   ) {}
 
   /**
@@ -77,7 +79,21 @@ export class InfoController {
   async getApplicants(@Res() res: Response, @Req() req: Request) {
     try {
       const result = await this.InfoService.getApplicants(Number(req.params['postId']));
-      console.log('신청자 관리  ',result)
+      console.log('신청자 관리  ', result);
+      return res.status(200).json({ result });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/my-posts/:postId')
+  async myinfoNoti(@Res() res: Response, @Req() req: Request) {
+    try {
+      const postId = Number(req.params['postId'])
+      console.log(req.body ,postId )
+      const result = await this.notiService.updateNoti(req.body,postId);
+      console.log('신청상태 변경  ', result);
       return res.status(200).json({ result });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

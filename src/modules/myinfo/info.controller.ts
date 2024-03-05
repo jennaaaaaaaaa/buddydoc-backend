@@ -77,7 +77,7 @@ export class InfoController {
   async getApplicants(@Res() res: Response, @Req() req: Request) {
     try {
       const result = await this.InfoService.getApplicants(Number(req.params['postId']));
-
+      console.log('신청자 관리  ',result)
       return res.status(200).json({ result });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

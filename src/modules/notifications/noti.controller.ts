@@ -62,7 +62,7 @@ export class NotiContoller {
       console.log(' 신청 내역 확인 ',notiDto);
       //신청여부 확인
       const checkNoti = await this.notiService.checkNoti(notiDto)
-      if(checkNoti) throw new BadRequestException('이미 신청됨');
+      if(checkNoti) throw {message : '신청중복'}
       //신청 보내기
       await this.notiService.sendNotification(notiDto);
       //console.log(`${req.body.client} , ${notiDto.noti_message}`)

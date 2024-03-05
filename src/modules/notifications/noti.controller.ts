@@ -58,7 +58,7 @@ export class NotiContoller {
       notiDto.postId = postId;
       //게시글 작성자 확인
       notiDto.userId = await this.notiService.getUserIdatPost(postId);
-      // console.log(notiDto);
+      console.log(' 신청 내역 확인 ',notiDto);
       //신청 보내기
       await this.notiService.sendNotification(notiDto);
       //console.log(`${req.body.client} , ${notiDto.noti_message}`)

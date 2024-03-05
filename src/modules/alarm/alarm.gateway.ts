@@ -42,7 +42,7 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('buddydocConnect')
   connectWebSocketWithUserId(client: Socket, userId: any) {
     // 이미 연결된 userId가 있다면 연결을 끊고 새로운 연결을 설정
-    console.log(`뭐가 들어오니? `,userId);
+    console.log(`뭐가 들어오니? `, userId);
     if (this.connectedUsers.has(userId)) {
       const existingClient = this.connectedUsers.get(userId);
       existingClient.disconnect(true); // 연결 끊기
@@ -51,19 +51,23 @@ export class AlarmGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // userId와 클라이언트 소켓을 매핑에 추가
     this.connectedUsers.set(userId, client);
-    
+
     console.log(`WebSocket connected with userId: ${userId}`);
   }
 
   // 특정 userId에게 메시지를 보내는 메서드
   sendMessageToUser(userId: string, message: any) {
-    console.log(`넘겨받은 string : ${userId}, message = ${message}`);
-    const client = this.connectedUsers.get(userId);
-    console.log(`client >> `, client.id);
-    if (client) {
-      client.emit('alarmMessage', message); // 해당 userId의 클라이언트에게 메시지 보내기
-    } else {
-      console.log(`사용자가 로그인중이지 않습니다. : ${userId}`);
+    try {
+      console.log(`넘겨받은 string : ${userId}, message = ${message}`);
+      const client = this.connectedUsers.get(userId);
+      //console.log(`client >> `, client.id);
+      if (client) {
+        client.emit('alarmMessage', message); // 해당 userId의 클라이언트에게 메시지 보내기
+      } else {
+        console.log(`사용자가 로그인중이지 않습니다. : ${userId}`);
+      }
+    } catch (error) {
+      console.log(error, ' 통신 실패');
     }
   }
 }

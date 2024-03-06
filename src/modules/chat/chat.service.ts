@@ -111,8 +111,8 @@ export class ChatService {
 
   //채팅방목록
   async getRoom(userId: number) {
-    const rooms = await this.prisma.notifications.findMany({
-      where: { OR: [{ noti_userId: userId }, { userId: userId }], notiStatus: 'accept' },
+    const notiRooms = await this.prisma.notifications.findMany({
+      where: { noti_userId: userId, notiStatus: 'accept' },
       select: {
         postId: true,
         posts: {
@@ -124,7 +124,20 @@ export class ChatService {
         },
       },
     });
-
+    const postUserId = await this.prisma.notifications.findMany({
+      where: { userId: +userId },
+      select: {
+        postId: true,
+        posts: {
+          select: {
+            postTitle: true,
+            postType: true,
+            memberCount: true,
+          },
+        },
+      },
+    });
+    const rooms = { notiRooms, postUserId };
     return rooms;
   }
 }

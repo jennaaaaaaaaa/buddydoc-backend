@@ -108,4 +108,22 @@ export class ChatService {
     console.log('서비스 author', author);
     return author;
   }
+
+  //채팅방목록
+  async getRoom(userId: number) {
+    const rooms = await this.prisma.notifications.findMany({
+      where: { noti_userId: userId, notiStatus: 'accept' },
+      select: {
+        postId: true,
+        posts: {
+          select: {
+            postTitle: true,
+            postType: true,
+            memberCount: true,
+          },
+        },
+      },
+    });
+    return rooms;
+  }
 }

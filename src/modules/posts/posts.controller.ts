@@ -59,7 +59,6 @@ export class PostController {
   @ApiResponse({ status: 200, description: '게시글 목록 조회 성공' })
   @UseGuards(OptionalJwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
-  @HttpCode(200)
   @Get()
   async getAllPosts(@Req() req: Request, @Res() res: Response, @Query() pagingPostsDto: PagingPostsDto) {
     try {
@@ -91,7 +90,6 @@ export class PostController {
   @ApiQuery({ name: 'pageCursor', required: false })
   @ApiResponse({ status: 200, description: '게시글 검색 성공' })
   @UseFilters(HttpExceptionFilter)
-  @HttpCode(200)
   @Get('/search')
   async postSearch(@Res() res: Response, @Query('search') search: string, @Query('pageCursor') pageCursor?: string) {
     try {
@@ -120,7 +118,6 @@ export class PostController {
   @Get(':postId')
   @UseGuards(OptionalJwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
-  @HttpCode(200)
   async getOnePost(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
     try {
       const userId = req.user ? req.user['id'] : null;
@@ -149,7 +146,6 @@ export class PostController {
   @Get(':postId/participants')
   // @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
-  @HttpCode(200)
   async getParticipantsInPost(@Param('postId') postId: number, @Res() res: Response) {
     try {
       // const userId = req.user['id']
@@ -186,7 +182,6 @@ export class PostController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
-  @HttpCode(200)
   async createPost(
     @Body('postTitle') postTitle: string,
     @Body('content') content: string,
@@ -243,7 +238,6 @@ export class PostController {
   @Put(':postId')
   @UseFilters(HttpExceptionFilter)
   @UseGuards(JwtAuthGuard)
-  @HttpCode(200)
   async updatePost(
     @Param('postId') postId: number,
     @Body('postTitle') postTitle: string,
@@ -365,7 +359,6 @@ export class PostController {
   @UseGuards(JwtAuthGuard)
   @Delete(':postId')
   @UseFilters(HttpExceptionFilter)
-  @HttpCode(200)
   async deletePost(@Param('postId') postId: number, @Res() res: Response, @Req() req: Request) {
     try {
       const userId = req.user['id'];

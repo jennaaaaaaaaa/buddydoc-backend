@@ -158,7 +158,7 @@ export class InfoService {
     try {
       console.log(`신청자`);
       const user = await this.prisma.$queryRaw`
-      select a.notiId,a.noti_userId,b.userNickname,a.noti_message,a.position
+      select a.notiId,a.notiStatus,a.noti_userId,b.userNickname,a.noti_message,a.position
       from notifications a 
       join users b 
       on a.noti_userId=b.userId

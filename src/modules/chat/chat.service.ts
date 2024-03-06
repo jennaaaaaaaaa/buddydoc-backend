@@ -14,9 +14,9 @@ export class ChatService {
    * @param postId
    * @returns
    */
-  async createMessage(messageDto: MessageDto) {
+  async createMessage(messageDto: MessageDto, userId: number) {
     //postId: number, userId: number
-    const user = await this.prisma.users.findUnique({ where: { userId: +messageDto.userId } });
+    const user = await this.prisma.users.findUnique({ where: { userId: userId } });
 
     //다시 로그인하게끔
     if (!user || user.deletedAt !== null) {
@@ -31,7 +31,7 @@ export class ChatService {
     const chat = await this.prisma.chats.create({
       data: {
         postId: +messageDto.postId,
-        userId: +messageDto.userId,
+        userId: userId,
         chat_message: messageDto.chat_message,
         createdAt: new Date(),
       },

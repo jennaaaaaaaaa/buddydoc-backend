@@ -65,6 +65,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       client.userId = userId;
       client.nickname = nickname;
 
+      // client.userId = '27';
+      // client.nickname = '닉네임';
+
       // 클라이언트 객체에 userId를 저장하여, 후속 요청에서 사용자 인증을 수행하도록 합니다.
     } catch (error) {
       console.log('Error during socket connection:', error);
@@ -79,7 +82,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   //메세지 보내기<토큰버전>
   @SubscribeMessage('send-message')
   async handleSendMessage(
-    @ConnectedSocket() client: ExtendedSocket, // Socket 타입 대신 확장한 ExtendedSocket 타입을 사용합니다.
+    @ConnectedSocket() client: ExtendedSocket,
+    server: Server, // Socket 타입 대신 확장한 ExtendedSocket 타입을 사용합니다.
     @MessageBody() messageDto: MessageDto
   ) {
     // console.log('messageDto', messageDto);
@@ -91,7 +95,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       // console.log('send-message_______user', user);
       // console.log('jwt에서 가져온 nickname', client.nickname);
 
-      const message = await this.chatService.createMessage(messageDto);
+      const message = await this.chatService.createMessage(messageDto, +client.userId);
       // this.server
       //   .to(`postRoom-${message.postId}`)
       //   .emit('send-message', { message: message.chat_message, userNickname: user.userNickname });

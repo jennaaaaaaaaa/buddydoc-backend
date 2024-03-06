@@ -6,9 +6,9 @@ export class MessageDto {
   postId: number;
   // 클라이언트에서 받아와야함
 
-  @ApiProperty()
-  @IsInt()
-  userId: number;
+  // @ApiProperty()
+  // @IsInt()
+  // userId: number;
 
   //z클라이언트에서 받아와야함
   @ApiProperty()

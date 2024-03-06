@@ -111,7 +111,8 @@ export class ChatService {
 
   //채팅방목록
   async getRoom(userId: number) {
-    const notiRooms = await this.prisma.notifications.findMany({
+    //신청자로 신청했을 때 채팅방
+    const notiUserId = await this.prisma.notifications.findMany({
       where: { noti_userId: userId, notiStatus: 'accept' },
       select: {
         postId: true,
@@ -124,6 +125,8 @@ export class ChatService {
         },
       },
     });
+
+    //게시글 작성자로써의 채팅방
     const postUserId = await this.prisma.notifications.findMany({
       where: { userId: +userId },
       select: {
@@ -137,7 +140,7 @@ export class ChatService {
         },
       },
     });
-    const rooms = { notiRooms, postUserId };
+    const rooms = notiUserId.concat(postUserId);
     return rooms;
   }
 }

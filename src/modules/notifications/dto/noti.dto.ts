@@ -5,6 +5,10 @@ import { IsString, IsInt, IsNumber, IsEnum } from 'class-validator';
 export class NotiDto {
   @ApiProperty()
   @IsNumber()
+  notiId: number;
+
+  @ApiProperty()
+  @IsNumber()
   userId: number;
 
   @ApiProperty()
@@ -25,5 +29,5 @@ export class NotiDto {
 
   @ApiProperty()
   @IsString()
-  position : string;
+  position: string;
 }

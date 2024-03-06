@@ -52,13 +52,17 @@ export class NotiContoller {
   @Post(':post/noti')
   async createNotification(@Body() notiDto: NotiDto, @Res() res: Response, @Req() req: Request) {
     try {
+
       const postId = Number(req.params['post']);
       console.log('유저 > ', req.user['id']);
       notiDto.noti_userId = req.user['id'];
       notiDto.postId = postId;
       //게시글 작성자 확인
       notiDto.userId = await this.notiService.getUserIdatPost(postId);
-      // console.log(notiDto);
+      console.log(' 신청 내역 확인 ',notiDto);
+      //신청여부 확인
+      const checkNoti = await this.notiService.checkNoti(notiDto)
+      if(checkNoti) throw {message : '신청중복'}
       //신청 보내기
       await this.notiService.sendNotification(notiDto);
       //console.log(`${req.body.client} , ${notiDto.noti_message}`)

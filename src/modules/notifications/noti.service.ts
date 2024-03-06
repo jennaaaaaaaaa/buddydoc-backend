@@ -52,4 +52,50 @@ export class NotiService {
       console.log(error);
     }
   }
+
+  /**
+   * 신청 여부 확인
+   * @param notiDto
+   * @returns 
+   */
+  async checkNoti(notiDto : NotiDto){
+    try {
+      const noti = await this.prisma.notifications.findFirst({
+        where:{
+          postId:notiDto.postId,
+          noti_userId:notiDto.noti_userId
+        },
+        select:{
+          notiId:true
+        }
+      })
+
+      return noti
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  /**
+   * 신청 수정
+   * @param body
+   * @param postId 
+   * @returns 
+   */
+  async updateNoti(body : any,postId :number){
+    try {
+      const result = await this.prisma.notifications.update({
+        where:{
+          notiId:Number(body.notiId),
+        },
+        data:{
+          notiStatus:body.notiStatus
+        }
+      })
+
+      return result
+    } catch (error) {
+      console.log(error)
+    }
+  }
 }

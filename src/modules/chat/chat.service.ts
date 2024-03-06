@@ -175,8 +175,8 @@ export class ChatService {
       },
     });
 
-    console.log('applicantRooms', applicantRooms);
-    console.log('writerRooms', writerRooms);
+    // console.log('applicantRooms', applicantRooms);
+    // console.log('writerRooms', writerRooms);
 
     // const rooms = notiUserId.concat(postUserId);
     // const rooms = [...new Set(notiUserId.concat(postUserId))];

@@ -83,7 +83,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('send-message')
   async handleSendMessage(
     @ConnectedSocket() client: ExtendedSocket,
-    server: Server, // Socket 타입 대신 확장한 ExtendedSocket 타입을 사용합니다.
+    // server: Server, // Socket 타입 대신 확장한 ExtendedSocket 타입을 사용합니다.
     @MessageBody() messageDto: MessageDto
   ) {
     // console.log('messageDto', messageDto);
@@ -99,10 +99,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       // this.server
       //   .to(`postRoom-${message.postId}`)
       //   .emit('send-message', { message: message.chat_message, userNickname: user.userNickname });
-      this.server
-        .to(`postRoom-${message.postId}`)
-        .emit('send-message', { message: message.chat_message, userNickname: client.nickname });
-      this.server.emit('receive-message', {
+      this.server.to(`postRoom-${message.postId}`).emit('receive-message', {
         userId: message.userId,
         chatId: message.chatId,
         chat_message: message.chat_message,

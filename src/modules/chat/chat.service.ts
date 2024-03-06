@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { MessageDto } from './dto/message.dto';
+import { log } from 'console';
 // import { Socket } from 'socket.io';
 
 @Injectable()
@@ -110,37 +111,78 @@ export class ChatService {
   }
 
   //채팅방목록
+  //게시글이 삭제되면
   async getRoom(userId: number) {
     //신청자로 신청했을 때 채팅방
-    const notiUserId = await this.prisma.notifications.findMany({
-      where: { noti_userId: userId, notiStatus: 'accept' },
-      select: {
-        postId: true,
-        posts: {
-          select: {
-            postTitle: true,
-            postType: true,
-            memberCount: true,
+    // const notiUserId = await this.prisma.notifications.findMany({
+    //   where: { noti_userId: userId, notiStatus: 'accept' },
+    //   select: {
+    //     postId: true,
+    //     posts: {
+    //       select: {
+    //         postTitle: true,
+    //         postType: true,
+    //         memberCount: true,
+    //       },
+    //     },
+    //   },
+    // });
+
+    // 신청자로 신청했을 때 채팅방
+    const applicantRooms = await this.prisma.notifications
+      .findMany({
+        where: { noti_userId: userId, notiStatus: 'accept' },
+        select: {
+          postId: true,
+          posts: {
+            select: {
+              postTitle: true,
+              postType: true,
+              memberCount: true,
+            },
           },
         },
+      })
+      .then((notifications) =>
+        notifications.map((notification) => ({
+          postId: notification.postId,
+          ...notification.posts,
+        }))
+      );
+
+    //게시글 작성자로써의 채팅방
+    // const postUserId = await this.prisma.notifications.findMany({
+    //   where: { userId: +userId },
+    //   select: {
+    //     postId: true,
+    //     posts: {
+    //       select: {
+    //         postTitle: true,
+    //         postType: true,
+    //         memberCount: true,
+    //       },
+    //     },
+    //   },
+    // });
+
+    const writerRooms = await this.prisma.posts.findMany({
+      where: { post_userId: userId },
+      select: {
+        postId: true,
+        postTitle: true,
+        postType: true,
+        memberCount: true,
       },
     });
 
-    //게시글 작성자로써의 채팅방
-    const postUserId = await this.prisma.notifications.findMany({
-      where: { userId: +userId },
-      select: {
-        postId: true,
-        posts: {
-          select: {
-            postTitle: true,
-            postType: true,
-            memberCount: true,
-          },
-        },
-      },
-    });
-    const rooms = notiUserId.concat(postUserId);
+    console.log('applicantRooms', applicantRooms);
+    console.log('writerRooms', writerRooms);
+
+    // const rooms = notiUserId.concat(postUserId);
+    // const rooms = [...new Set(notiUserId.concat(postUserId))];
+    // const rooms = _.uniqWith(notiUserId.concat(postUserId), _.isEqual);
+
+    const rooms = writerRooms.concat(applicantRooms);
     return rooms;
   }
 }

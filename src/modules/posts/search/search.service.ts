@@ -40,12 +40,52 @@ export class SearchService {
     });
   }
 
+  // async initMapping() {
+  //   return this.elasticsearchService.indices.putMapping({
+  //     index: this.indexName,
+  //     body: {
+  //       properties: {
+  //         postTitle: { type: 'text' },
+  //         content: { type: 'text' },
+  //         createdAt: { type: 'date' },
+  //         postId: { type: 'integer' },
+  //         deletedAt: { type: 'date' },
+  //       },
+  //     },
+  //   });
+  // }
+
   async initMapping() {
+    // 먼저 인덱스 설정을 업데이트하여 사용자 지정 분석기를 추가합니다.
+    await this.elasticsearchService.indices.close({ index: this.indexName });
+    await this.elasticsearchService.indices.putSettings({
+      index: this.indexName,
+      body: {
+        analysis: {
+          analyzer: {
+            my_custom_analyzer: {
+              type: 'custom',
+              tokenizer: 'standard',
+              filter: ['lowercase', 'my_synonym_filter'],
+            },
+          },
+          filter: {
+            my_synonym_filter: {
+              type: 'synonym',
+              synonyms: ['nest, nestjs, nest.js', '프론트, 프론트엔드', ''],
+            },
+          },
+        },
+      },
+    });
+    await this.elasticsearchService.indices.open({ index: this.indexName });
+
+    // 그런 다음 매핑을 업데이트하여 "postTitle" 필드에 사용자 지정 분석기를 적용합니다.
     return this.elasticsearchService.indices.putMapping({
       index: this.indexName,
       body: {
         properties: {
-          postTitle: { type: 'text' },
+          postTitle: { type: 'text', analyzer: 'my_custom_analyzer' },
           content: { type: 'text' },
           createdAt: { type: 'date' },
           postId: { type: 'integer' },

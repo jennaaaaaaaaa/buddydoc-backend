@@ -2,8 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { MessageDto } from './dto/message.dto';
-import { log } from 'console';
-// import { Socket } from 'socket.io';
 
 @Injectable()
 export class ChatService {
@@ -39,7 +37,6 @@ export class ChatService {
     });
     return chat;
   }
-
   async getMessagesByPostId(postId: number, lastMessageId?: number) {
     let whereCondition: Prisma.chatsWhereInput = { postId: +postId };
 
@@ -80,7 +77,7 @@ export class ChatService {
     };
   }
 
-  //임시로 유저 조회, 찾아본 바로는 원래는 클라이언트에서 토큰을 받아서?? 인증을 해야한다고함
+  //받은 토큰으로 유저 조회
   async getUserInfo(userId: number) {
     // console.log('userId ===>>>>>>: ', userId);
     const chat = await this.prisma.users.findUnique({

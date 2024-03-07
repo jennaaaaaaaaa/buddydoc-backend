@@ -62,6 +62,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       // console.log(' handleConnection decodedToken🎈🎈🎈', decodedToken);
       const userId = decodedToken.id;
       const nickname = decodedToken.nickname;
+      // console.log(decodedToken) //토큰 찍어봐서 프로필이 있는지 확인
+      // client.profileImage = profileImage
       client.userId = userId;
       client.nickname = nickname;
 
@@ -142,7 +144,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     client.join(`postRoom-${payload.postId}`);
 
     // const user = await this.chatService.getUserInfo(+client.userId); //user 콘솔 찍어보고 싶은데 토큰이 있어야함
-    const user = await this.chatService.getUserInfo(+client.userId);
+    // const user = await this.chatService.getUserInfo(+client.userId);
     // console.log('useruseruseruseruser🎈🎈🎈', user);
 
     //게시글 작성자랑 로그인한 사용자가 동일한 경우 채팅방 참여
@@ -196,119 +198,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(`소켓 id: ${client.id}, ${client.userId}가 ${payload.postId} 방에서 나감`);
     this.server.to(`post-${payload.postId}`).emit('leave-room', {
       content: `User ${client.userId}이(가) 나갔습니다.`, //${user.userName}
-      // users: user, //유저정보를 나타내는건데 위에서 유저 이름만 잘 표기해주면 없어도 되지 않는지
     });
   }
-
-  // //메세지 보내기//<토큰 없는버전>
-  // @SubscribeMessage('send-message')
-  // async handleSendMessage(
-  //   @ConnectedSocket() client: Socket,
-  //   @MessageBody() messageDto: MessageDto
-  //   // postId: string;
-  //   // token: string;
-  //   // userId: number;
-  // ) {
-  //   console.log('messageDto', messageDto);
-  //   console.log('messageDto.userId', messageDto.userId);
-  //   // console.log('client', client);
-  //   try {
-  //     //user는 나중에...jwt 검증 후 client.userId = userId;로 client userId 가져오기
-  //     // console.log(client userId ) //출력해서 값 확인해보기
-  //     const user = await this.chatService.getUserInfo(messageDto.userId); //client.userId
-  //     console.log('send-message user 🎈', user);
-  //     const message = await this.chatService.createMessage(messageDto); //Number(data.postId), Number(data.userId)
-  //     this.server
-  //       .to(`postRoom-${message.postId}`)
-  //       .emit('send-message', { message: message.chat_message, userName: user.userName });
-  //     console.log(`메시지 '${message.chat_message}'가 ${user.userName}에 의해 ${message.postId} 방에 전송됨`);
-  //   } catch (error) {
-  //     console.log('error', error);
-  //   }
-  // }
-
-  // //<토큰 없는버전>
-  // @SubscribeMessage('join-room')
-  // handleJoinRoom(
-  //   @ConnectedSocket()
-  //   client: Socket,
-  //   @MessageBody() data: { userId: number; postId: string } //랜덤채팅방 같으면 userId가 아닌 userNickname을 받으면 될 듯 채팅방들어오기전에 userNickname입력하게끔
-  // ) {
-  //   //해당 게시글에 참여하고 있는 유저인지 확인 아니면 해당 게시글에 참여하고 있는 유저가 아닙니다
-
-  //   console.log('join-room');
-  //   client.join(`postRoom-${data.postId}`);
-  //   //유저를 찾는 로직을 user service에서 가져와야함
-  //   // const user = await this.prismaService.users.findUnique({
-  //   //   where: { userId: payload.userId },
-  //   // });
-  //   console.log(`소켓 id: ${client.id}, ${data.postId} 방에 입장함`);
-  //   this.server.to(`post-${data.postId}`).emit('join-room', {
-  //     content: `User ${data.userId}가 들어왔습니다.`, //${user.userName}
-  //     // users: user, //유저정보를 나타내는건데 위에서 유저 이름만 잘 표기해주면 없어도 되지 않는지
-  //   });
-  // }
-
-  // <토큰 없는버전>
-  // @SubscribeMessage('leave-room')
-  // handleLeaveRoom(
-  //   @ConnectedSocket()
-  //   client: Socket,
-  //   @MessageBody() data: { userId: number; postId: string }
-  // ) {
-  //   client.leave(`post-${data.postId}`);
-  //   // const user = await this.prismaService.users.findUnique({
-  //   //   where: { userId: payload.userId },
-  //   // });
-  //   console.log(`소켓 id: ${client.id}, ${data.postId} 방에서 나감`);
-  //   this.server.to(`post-${data.postId}`).emit('leave-room', {
-  //     content: `User ${data.userId}이(가) 나갔습니다.`, //${user.userName}
-  //     // users: user, //유저정보를 나타내는건데 위에서 유저 이름만 잘 표기해주면 없어도 되지 않는지
-  //   });
-  // }
-
-  //__________________ 다 정리되면 지우기
-  // @SubscribeMessage('join-room')
-  // async handleJoinRoom(@ConnectedSocket() socket: Socket, @MessageBody() chatDto: ChatDto) {
-  //   const exists = createdRooms.find((createdRoom) => createdRoom === chatDto.postId.toString()); //방존재 여부
-  //   if (!exists) {
-  //     createdRooms.push(chatDto.postId.toString());
-  //   }
-  //   socket.join(chatDto.postId.toString()); //해당하는 방에 참가
-
-  //   const previousChats = await this.chatService.getChat(chatDto.postId);
-  //   socket.emit('previousChats', previousChats);
-
-  //   const user = await this.chatService.findUser(chatDto.userId);
-  //   const alertObj: ChatDto = {
-  //     postId: chatDto.postId,
-  //     userId: user.userId,
-  //     userName: user.userName,
-  //     chat_message: `${user.userName}님이 들어왔습니다.`, // userName 대신 userId 사용
-  //     createdAt: new Date(),
-  //   };
-  //   await this.chatService.addChat(alertObj, chatDto.postId);
-  //   socket.emit('alert', alertObj);
-  //   socket.broadcast.to(chatDto.postId.toString()).emit('alert', alertObj);
-  //   return { success: true, payload: chatDto.postId };
-  // }
-
-  // @SubscribeMessage('leave-room')
-  // async handleLeaveRoom(@ConnectedSocket() socket: Socket, @MessageBody() chatDto: ChatDto) {
-  //   socket.leave(chatDto.postId.toString());
-
-  //   const user = await this.chatService.findUser(chatDto.userId);
-
-  //   const alertObj: ChatDto = {
-  //     postId: chatDto.postId,
-  //     userId: user.userId,
-  //     userName: user.userName,
-  //     chat_message: `${chatDto.userName}님이 나갔습니다.`,
-  //     createdAt: new Date(),
-  //   };
-  //   await this.chatService.addChat(alertObj, chatDto.postId);
-  //   socket.emit('alert', alertObj); // 자신에게 퇴장 메시지를 보냄
-  //   socket.broadcast.to(chatDto.postId.toString()).emit('alert', alertObj); // 다른 클라이언트에게 퇴장 메시지를 보냄
-  //   return { success: true };
-  // }
 }

@@ -21,6 +21,7 @@ import { ChatService } from './chat.service';
 import { MessageDto } from './dto/message.dto';
 import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 import { JwtAuthGuard, OptionalJwtAuthGuard } from 'src/auth/oauth/auth.guard';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @Controller('chat')
 export class ChatController {
@@ -28,6 +29,9 @@ export class ChatController {
 
   //채팅방 목록
   @Get('rooms')
+  @ApiTags('chat')
+  @ApiOperation({ summary: '채팅방 목록 조회 API' })
+  @ApiResponse({ status: 200, description: '채팅방 목록 조회 성공' })
   @UseGuards(JwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   async getRoom(@Res() res: Response, @Req() req: Request) {

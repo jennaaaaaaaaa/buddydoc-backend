@@ -78,7 +78,7 @@ export class SearchService {
           filter: {
             my_synonym_filter: {
               type: 'synonym',
-              synonyms: ['nest, nestjs, nest.js', '프론트, 프론트엔드'],
+              synonyms: ['nest, nestjs, nest.js', 'node, nodejs, node.js', '프론트, 프론트엔드'],
             },
           },
         },
@@ -92,7 +92,7 @@ export class SearchService {
       body: {
         properties: {
           postTitle: { type: 'text', analyzer: 'my_custom_analyzer' },
-          content: { type: 'text' },
+          content: { type: 'text', analyzer: 'my_custom_analyzer' },
           createdAt: { type: 'date' },
           postId: { type: 'integer' },
           deletedAt: { type: 'date' },

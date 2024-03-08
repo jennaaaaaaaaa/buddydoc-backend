@@ -69,6 +69,12 @@ export class SearchService {
               filter: ['lowercase', 'my_synonym_filter'],
             },
           },
+          tokenizer: {
+            my_custom_tokenizer: {
+              type: 'pattern',
+              pattern: '[\\s.]', // 공백이나 점(.)을 기준으로 분리
+            },
+          },
           filter: {
             my_synonym_filter: {
               type: 'synonym',

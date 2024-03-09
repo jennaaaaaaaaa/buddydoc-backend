@@ -84,6 +84,7 @@ buddydoc-backend
 ├─ package.json
 ├─ README.md
 ├─ src
+│  ├─ main.ts
 │  ├─ app.controller.spec.ts
 │  ├─ app.controller.ts
 │  ├─ app.module.ts
@@ -114,7 +115,6 @@ buddydoc-backend
 │  │     ├─ prisma.service.spec.ts
 │  │     ├─ prisma.service.ts
 │  │     └─ schema.prisma
-│  ├─ main.ts
 │  ├─ middlewares
 │  │  └─ logger.middleware.ts
 │  ├─ modules

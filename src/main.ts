@@ -23,7 +23,7 @@ async function bootstrap() {
   const elasticsearchService = app.get(SearchService);
   // Elasticsearch를 초기화합니다.
   await elasticsearchService.init();
-
+  console.log(`starting server`)
   await app.listen(PORT)
   
 }

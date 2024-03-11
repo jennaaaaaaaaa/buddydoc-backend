@@ -85,7 +85,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('send-message')
   async handleSendMessage(
     @ConnectedSocket() client: ExtendedSocket,
-    // server: Server, // Socket 타입 대신 확장한 ExtendedSocket 타입을 사용합니다.
+    server: Server, // Socket 타입 대신 확장한 ExtendedSocket 타입을 사용합니다.
     @MessageBody() messageDto: MessageDto
   ) {
     // console.log('messageDto', messageDto);
@@ -98,10 +98,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       // console.log('jwt에서 가져온 nickname', client.nickname);
 
       const message = await this.chatService.createMessage(messageDto, +client.userId);
+
+      console.log('message', message.postId);
       // this.server
       //   .to(`postRoom-${message.postId}`)
       //   .emit('send-message', { message: message.chat_message, userNickname: user.userNickname });
-      this.server.to(`postRoom-${message.postId}`).emit('receive-message', {
+      //`postRoom-${message.postId}
+      this.server.emit(`receive-message-${message.postId}`, {
         userId: message.userId,
         chatId: message.chatId,
         chat_message: message.chat_message,
@@ -125,7 +128,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // console.log('read-Messages_____user: ', user);
     const { postId, lastMessageId } = payload;
     const result = await this.chatService.getMessagesByPostId(postId, lastMessageId);
-    console.log('read-Messages 🎈 result=>>>', result);
+    // console.log('read-Messages 🎈 result=>>>', result);
     client.emit('read-Messages', result); //getMessages=> 클라이언트에서 발생시키는 이벤트
   }
 

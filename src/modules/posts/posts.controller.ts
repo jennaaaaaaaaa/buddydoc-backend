@@ -32,15 +32,16 @@ import { S3Service } from 'src/providers/aws/s3/s3.service';
 import { JwtAuthGuard, OptionalJwtAuthGuard } from 'src/auth/oauth/auth.guard';
 
 //elastic 사용시 주석해제
-import { SearchService } from './search/search.service';
+// import { SearchService } from './search/search.service';
 
 @Controller('post')
 export class PostController {
   constructor(
     private readonly postService: PostService,
-    private readonly s3Service: S3Service,
+    private readonly s3Service: S3Service
+
     //elastic 사용시 주석해제
-    private searchService: SearchService
+    // private searchService: SearchService
   ) {}
 
   /**
@@ -78,10 +79,36 @@ export class PostController {
     }
   }
 
-  // elasticsearch 사용시 주석해제 or 주석처리
+  // // elasticsearch 사용시 주석해제 or 주석처리
+  // /**
+  //  * 게시글 검색
+  //  * @param search
+  //  * @returns
+  //  */
+  // @ApiTags('posts')
+  // @ApiOperation({ summary: '게시글 검색' })
+  // @ApiQuery({ name: 'search', required: true })
+  // @ApiQuery({ name: 'pageCursor', required: false })
+  // @ApiResponse({ status: 200, description: '게시글 검색 성공' })
+  // @UseFilters(HttpExceptionFilter)
+  // @Get('/search')
+  // async postSearch(@Res() res: Response, @Query('search') search: string, @Query('pageCursor') pageCursor?: string) {
+  //   try {
+  //     // const cursor = pageCursor ? parseInt(pageCursor) : undefined;
+  //     // console.log('검색한 키워드 postController =>>>> search:', search);
+  //     // console.log('검색한 키워드 postController =>>>> pageCursor:', pageCursor);
+  //     const result = await this.searchService.postSearch(search, pageCursor);
+  //     return res.status(200).json({ message: '게시글 검색에 성공하였습니다', result });
+  //   } catch (error) {
+  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
+
   /**
-   * 게시글 검색
+   * 게시글 검색 like 버전
+   * @param res
    * @param search
+   * @param pageCursor
    * @returns
    */
   @ApiTags('posts')
@@ -91,12 +118,13 @@ export class PostController {
   @ApiResponse({ status: 200, description: '게시글 검색 성공' })
   @UseFilters(HttpExceptionFilter)
   @Get('/search')
-  async postSearch(@Res() res: Response, @Query('search') search: string, @Query('pageCursor') pageCursor?: string) {
+  async postSearch(@Res() res: Response, @Query('search') search: string, @Query('pageCursor') pageCursor?: number) {
     try {
-      // const cursor = pageCursor ? parseInt(pageCursor) : undefined;
+      // const cursor = pageCursor ? parseInt(pageCursor) :undefined
       // console.log('검색한 키워드 postController =>>>> search:', search);
       // console.log('검색한 키워드 postController =>>>> pageCursor:', pageCursor);
-      const result = await this.searchService.postSearch(search, pageCursor);
+
+      const result = await this.postService.postSearch(search, pageCursor);
       return res.status(200).json({ message: '게시글 검색에 성공하였습니다', result });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

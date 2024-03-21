@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { ElasticsearchModule, ElasticsearchService } from '@nestjs/elasticsearch';
-import { SearchService } from './search.service';
-import { PrismaModule } from '../../../database/prisma/prisma.module';
-import { PrismaService } from 'src/database/prisma/prisma.service';
+// import { Module } from '@nestjs/common';
+// import { ElasticsearchModule, ElasticsearchService } from '@nestjs/elasticsearch';
+// import { SearchService } from './search.service';
+// import { PrismaModule } from '../../../database/prisma/prisma.module';
+// import { PrismaService } from 'src/database/prisma/prisma.service';
 
 // elastic cloud 만료
 // @Module({
@@ -26,20 +26,21 @@ import { PrismaService } from 'src/database/prisma/prisma.service';
 // })
 // export class SearchModule {}
 
-@Module({
-  imports: [
-    ElasticsearchModule.registerAsync({
-      useFactory: () => ({
-        node: 'http://localhost:9200',
-        maxRetries: 10,
-        requestTimeout: 60000,
-        pingTimeout: 60000,
-        sniffOnStart: true,
-      }),
-    }),
-    PrismaModule,
-  ],
-  providers: [SearchService, PrismaService],
-  exports: [SearchService],
-})
-export class SearchModule {}
+//elastic search 사용 안함으로 인해 search 모듈 주석 처리
+// @Module({
+//   imports: [
+//     ElasticsearchModule.registerAsync({
+//       useFactory: () => ({
+//         node: 'http://localhost:9200',
+//         maxRetries: 10,
+//         requestTimeout: 60000,
+//         pingTimeout: 60000,
+//         sniffOnStart: true,
+//       }),
+//     }),
+//     PrismaModule,
+//   ],
+//   providers: [SearchService, PrismaService],
+//   exports: [SearchService],
+// })
+// export class SearchModule {}

@@ -4,14 +4,14 @@ import { posts, Prisma } from '@prisma/client';
 import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
-import { SearchService } from './search/search.service';
+// import { SearchService } from './search/search.service';
 import { isLatLong } from 'class-validator';
 
 @Injectable()
 export class PostService {
   constructor(
-    private prisma: PrismaService,
-    private searchService: SearchService
+    private prisma: PrismaService
+    // private searchService: SearchService
   ) {}
 
   /**
@@ -125,6 +125,47 @@ export class PostService {
       posts: postsWithBookmark,
       isLastPage,
     };
+  }
+
+  async postSearch(search: string, pageCursor: number) {
+    const searchUpper = search.toUpperCase();
+    const posts = await this.prisma.posts.findMany({
+      where: {
+        AND: [
+          {
+            OR: [{ postTitle: { contains: searchUpper } }, { content: { contains: searchUpper } }],
+          },
+          ...(pageCursor ? [{ postId: { lt: pageCursor } }] : []),
+        ],
+      },
+      take: 3,
+      orderBy: {
+        postId: 'desc',
+      },
+      select: {
+        postId: true,
+        postTitle: true,
+        position: true,
+        postType: true,
+        preference: true,
+        views: true,
+        skillList: true,
+        deadLine: true,
+        startDate: true,
+        memberCount: true,
+        createdAt: true,
+        updatedAt: true,
+        post_userId: true,
+        users: {
+          select: {
+            userNickname: true,
+            profileImage: true,
+          },
+        },
+      },
+    });
+
+    return posts;
   }
 
   /**
@@ -306,7 +347,7 @@ export class PostService {
 
     // elasticsearch 사용시 주석 풀어야함
     // Elasticsearch에 인덱싱
-    const es = await this.searchService.addDocument([post]);
+    // const es = await this.searchService.addDocument([post]);
     // console.log('es🤗🤗🤗🤗🤗🤗🤗🤗', es);
 
     // 새로운 객체를 만들고 필요한 데이터를 복사
@@ -375,7 +416,7 @@ export class PostService {
 
     // elasticsearch 사용시 주석 풀어야함
     // Elasticsearch에 인덱싱된 데이터 업데이트
-    await this.searchService.updateDocument(postId, post);
+    // await this.searchService.updateDocument(postId, post);
 
     // 새로운 객체를 만들고 필요한 데이터를 복사
     const response = {
@@ -405,7 +446,7 @@ export class PostService {
     const delPost = await this.prisma.posts.update({ where: { postId: +postId }, data: { deletedAt: new Date() } });
 
     // Elasticsearch 인덱스에서 해당 문서 삭제
-    const deleteResult = await this.searchService.deleteDoc(postId);
+    // const deleteResult = await this.searchService.deleteDoc(postId);
     // console.log('deleteResult ====>>>>', deleteResult);
 
     return delPost;

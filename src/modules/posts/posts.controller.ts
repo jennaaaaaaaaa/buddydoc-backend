@@ -32,16 +32,17 @@ import { S3Service } from 'src/providers/aws/s3/s3.service';
 import { JwtAuthGuard, OptionalJwtAuthGuard } from 'src/auth/oauth/auth.guard';
 
 //elastic 사용시 주석해제
-// import { SearchService } from './search/search.service';
+import { SearchService } from './search/search.service';
+import { number } from 'joi';
 
 @Controller('post')
 export class PostController {
   constructor(
     private readonly postService: PostService,
-    private readonly s3Service: S3Service
+    private readonly s3Service: S3Service,
 
     //elastic 사용시 주석해제
-    // private searchService: SearchService
+    private searchService: SearchService
   ) {}
 
   /**
@@ -116,16 +117,25 @@ export class PostController {
   @ApiQuery({ name: 'search', required: true })
   @ApiQuery({ name: 'pageCursor', required: false })
   @ApiResponse({ status: 200, description: '게시글 검색 성공' })
+  @UseGuards(OptionalJwtAuthGuard)
   @UseFilters(HttpExceptionFilter)
   @Get('/search')
-  async postSearch(@Res() res: Response, @Query('search') search: string, @Query('pageCursor') pageCursor?: number) {
+  async postSearch(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query('search') search: string,
+    @Query('pageCursor') pageCursor?: number
+  ) {
+    //lastPostId
     try {
-      // const cursor = pageCursor ? parseInt(pageCursor) :undefined
+      // const cursor = pageCursor ? Number(pageCursor) : undefined;
       // console.log('검색한 키워드 postController =>>>> search:', search);
       // console.log('검색한 키워드 postController =>>>> pageCursor:', pageCursor);
 
-      const result = await this.postService.postSearch(search, pageCursor);
-      return res.status(200).json({ message: '게시글 검색에 성공하였습니다', result });
+      // const result = await this.postService.postSearch(search, (pageCursor = cursor));
+      const userId = req.user ? req.user['id'] : null;
+      const posts = await this.postService.postSearch(search, +pageCursor, +userId); //lastPostId
+      return res.status(200).json({ posts });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

@@ -4,14 +4,14 @@ import { posts, Prisma } from '@prisma/client';
 import { CreatePostsDto } from './dto/create-post.dto';
 import { UpdatePostsDto } from './dto/update-post.dto';
 import { S3Service } from 'src/providers/aws/s3/s3.service';
-// import { SearchService } from './search/search.service';
+import { SearchService } from './search/search.service';
 import { isLatLong } from 'class-validator';
 
 @Injectable()
 export class PostService {
   constructor(
-    private prisma: PrismaService
-    // private searchService: SearchService
+    private prisma: PrismaService,
+    private searchService: SearchService
   ) {}
 
   /**
@@ -127,20 +127,43 @@ export class PostService {
     };
   }
 
-  async postSearch(search: string, pageCursor: number) {
+  /**
+   *
+   * @param search
+   * @param pageCursor
+   * @returns
+   */
+  async postSearch(search: string, pageCursor: number, userId: number) {
+    //lastPostId
+    // const synonyms = {
+    //   // nest: ['nest', 'nest.js', 'nestjs'],
+    //   'nest.js': ['nest', 'nest.js', 'nestjs'],
+    //   nestjs: ['nest', 'nest.js', 'nestjs'],
+    //   // 프론트: ['프론트', '프론트엔드'],
+    //   // 프론트엔드: ['프론트', '프론트엔드'],
+    //   백: ['백', '백엔드'],
+    //   백엔드: ['백', '백엔드'],
+    // };
+
     const searchUpper = search.toUpperCase();
+
+    // 동의어 목록을 기반으로 검색 키워드 확장
+    // const searchKeywords = synonyms[search.toLowerCase()] || [search];
+    // const searchKeywordsUpper = searchKeywords.map((keyword) => keyword.toUpperCase());
+    const take = 3;
     const posts = await this.prisma.posts.findMany({
       where: {
         AND: [
           {
             OR: [{ postTitle: { contains: searchUpper } }, { content: { contains: searchUpper } }],
           },
-          ...(pageCursor ? [{ postId: { lt: pageCursor } }] : []),
+          { deletedAt: null },
+          ...(pageCursor ? [{ postId: { lt: pageCursor } }] : []), //lastPostId
         ],
       },
-      take: 3,
+      take: take + 1, //요청한 개수보다 하나 더 요청해서 그 이후 데이터가 더 있는지 확인한다 없으면 마지막 페이지
       orderBy: {
-        postId: 'desc',
+        createdAt: 'desc',
       },
       select: {
         postId: true,
@@ -165,7 +188,63 @@ export class PostService {
       },
     });
 
-    return posts;
+    let isLastPage = false;
+    if (posts.length <= take) {
+      isLastPage = true;
+    } else {
+      posts.pop(); // 마지막 페이지가 아니라면 마지막 항목을 제거
+    }
+
+    const postsWithBookmark = await Promise.all(
+      posts.map(async (post) => {
+        let bookmark = false;
+        let isEnd = '모집완료'; // 기본값 설정
+
+        if (userId) {
+          const userBookmark = await this.prisma.bookmarks.findUnique({
+            where: {
+              userId_postId: {
+                userId: userId,
+                postId: post.postId,
+              },
+            },
+          });
+          bookmark = !!userBookmark;
+        }
+
+        // post.deadLine이 현재 날짜보다 미래라면 '모집중'으로 설정
+        if (post.deadLine >= new Date()) {
+          isEnd = '모집중';
+        }
+
+        return {
+          ...post,
+          bookmark,
+          isEnd,
+          position: post.position ? post.position.split(',') : [],
+          skillList: post.skillList ? post.skillList.split(',') : [],
+        };
+      })
+    );
+
+    return { posts: postsWithBookmark, isLastPage };
+
+    // let isLastPage = false;
+    // if (posts.length <= take) {
+    //   // 가져온 데이터의 개수가 요청한 개수(take) 이하면 마지막 페이지
+    //   isLastPage = true;
+    // } else {
+    //   // 마지막 페이지가 아니면, 마지막 항목을 제거하여 요청한 개수만큼만 반환 ( +1 해준걸 빼는 작업)
+    //   posts.pop();
+    // }
+
+    // // const post =  {
+    // //   ...posts,
+    // //   position: posts.position ? posts.position.split(',') : [],
+    // //   skillList: posts.skillList ? posts.skillList.split(',') : [],
+    // // }
+
+    // return { posts, isLastPage };
   }
 
   /**
@@ -347,7 +426,7 @@ export class PostService {
 
     // elasticsearch 사용시 주석 풀어야함
     // Elasticsearch에 인덱싱
-    // const es = await this.searchService.addDocument([post]);
+    const es = await this.searchService.addDocument([post]);
     // console.log('es🤗🤗🤗🤗🤗🤗🤗🤗', es);
 
     // 새로운 객체를 만들고 필요한 데이터를 복사

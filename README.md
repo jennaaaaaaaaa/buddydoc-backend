@@ -32,7 +32,7 @@
 
 ### 구현 내용
 1. 게시글 목록 조회, 상세조회, 작성, 수정, 삭제
-  - 최신순 정렬, 스터디/프로젝트 카테고리 분류, 모집완료 글 추가 조회, 조회수, 북마크
+   - 최신순 정렬, 스터디/프로젝트 카테고리 분류, 모집완료 글 추가 조회, 조회수, 북마크
      ![게시글 목록](https://github.com/jennaaaaaaaaa/buddydoc-backend/assets/111362623/e78ea809-7240-4870-80ea-4f420fe09c6b)
      ![게시글 상세조회](https://github.com/jennaaaaaaaaa/buddydoc-backend/assets/111362623/28a1f9d5-5679-401a-bb21-24272571090f)
 

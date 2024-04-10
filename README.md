@@ -1,187 +1,38 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# BuddyDoc
+- 항해99에서 진행한 최종프로젝트
+- 프로젝트 기간: 2024.01 ~ 2024.03 / 6주
+- 프로젝트 사이트: [버디독](https://buddydoc.vercel.app/)
+- 백엔드: 2명
+- 프론트엔드 : 2명
+- 팀노션: [버디독 팀노션](https://maddening-shelf-99c.notion.site/BuddyDoc-dbaa1a9eb8c346c0b7c24f3ffab27faa)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+### 프로젝트 개요
+- 개발자들의 스터디/사이드 프로젝트 매칭 서비스
+- 회원가입 시
+  - 스터디나 사이드 프로젝트에 참여 또는 등록 기능
+  - 북마크 기능
+  - 스터디 참여시 채팅 기능
+ 
+### 역할
+- 게시글 검색(elasticsearch), 목록 조회, 게시글 작성, 수정, 삭제, 상세 조회
+- 게시물에 참여한 프로필조회
+- 북마크 추가/제거
+- 실시간 채팅
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+### 기술 스택
+- NestJS, Prisma, Socket.IO, Elasticsearch, Elastic Cloud, AWS EC2
 
-## Description
+### 프로젝트 진행 단계
+1. 게시글 목록 조회, 게시글 작성, 수정, 삭제, 상세 조회, 내 정보 관련 api 구축
+2. 게시글 검색(elasticsearch) 구현
+3. 소셜 로그인 기능 구현
+4. 북마크 추가/제거 기능 구현
+5. 채팅 기능, 스터디/사이트프로젝트 신청 기능 구현
+6. 배포
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 구현 내용
+1. 게시글 목록 조회
+- 최신순 정렬, 스터디/프로젝트 카테고리 분류, 모집완료 글 추가 조회, 조회수, 북마크
+     ![게시글 목록](https://github.com/jennaaaaaaaaa/buddydoc-backend/assets/111362623/e78ea809-7240-4870-80ea-4f420fe09c6b)
 
-## Installation
-
-```bash
-$ npm install
-```
-
-## Running the app
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
-
-```
-buddydoc-backend
-├─ .github
-│  └─ workflows
-│     └─ main.yml
-├─ .gitignore
-├─ .prettierrc
-├─ nest-cli.json
-├─ package-lock.json
-├─ package.json
-├─ README.md
-├─ src
-│  ├─ main.ts
-│  ├─ app.controller.spec.ts
-│  ├─ app.controller.ts
-│  ├─ app.module.ts
-│  ├─ app.service.ts
-│  ├─ auth
-│  │  ├─ auth.controller.ts
-│  │  ├─ auth.module.ts
-│  │  ├─ auth.service.ts
-│  │  ├─ jwt
-│  │  │  └─ jwt-strategy.ts
-│  │  └─ oauth
-│  │     ├─ auth.guard.ts
-│  │     ├─ google
-│  │     │  └─ google-strategy.ts
-│  │     ├─ kakao
-│  │     │  └─ kakao-strategy.ts
-│  │     └─ naver
-│  │        └─ naver-strategy.ts
-│  ├─ common
-│  │  └─ http-exception.filter.ts
-│  ├─ config
-│  ├─ database
-│  │  └─ prisma
-│  │     ├─ migrations
-│  │     │  ├─ 20240228034559_migration
-│  │     │  └─ migration_lock.toml
-│  │     ├─ prisma.module.ts
-│  │     ├─ prisma.service.spec.ts
-│  │     ├─ prisma.service.ts
-│  │     └─ schema.prisma
-│  ├─ middlewares
-│  │  └─ logger.middleware.ts
-│  ├─ modules
-│  │  ├─ alarm
-│  │  │  ├─ alarm.controller.ts
-│  │  │  ├─ alarm.gateway.ts
-│  │  │  ├─ alarm.module.ts
-│  │  │  ├─ alarm.service.ts
-│  │  │  └─ dto
-│  │  ├─ chat
-│  │  │  ├─ chat.controller.ts
-│  │  │  ├─ chat.gateway.ts
-│  │  │  ├─ chat.module.ts
-│  │  │  ├─ chat.service.ts
-│  │  │  └─ dto
-│  │  │     └─ message.dto.ts
-│  │  ├─ myinfo
-│  │  │  ├─ dto
-│  │  │  │  └─ info.dto.ts
-│  │  │  ├─ entities
-│  │  │  ├─ info.controller.ts
-│  │  │  ├─ info.module.ts
-│  │  │  └─ info.service.ts
-│  │  ├─ notifications
-│  │  │  ├─ dto
-│  │  │  │  └─ noti.dto.ts
-│  │  │  ├─ entities
-│  │  │  ├─ noti.controller.ts
-│  │  │  ├─ noti.module.ts
-│  │  │  └─ noti.service.ts
-│  │  ├─ posts
-│  │  │  ├─ dto
-│  │  │  │  ├─ create-post.dto.ts
-│  │  │  │  ├─ paging-post.dto.ts
-│  │  │  │  └─ update-post.dto.ts
-│  │  │  ├─ entities
-│  │  │  │  └─ post.entity.ts
-│  │  │  ├─ posts.controller.ts
-│  │  │  ├─ posts.module.ts
-│  │  │  ├─ posts.service.spec.ts
-│  │  │  ├─ posts.service.ts
-│  │  │  └─ search
-│  │  │     ├─ search.module.ts
-│  │  │     └─ search.service.ts
-│  │  └─ user
-│  │     ├─ dto
-│  │     │  └─ user.dto.ts
-│  │     ├─ entities
-│  │     │  └─ user.entity.ts
-│  │     ├─ user.controller.ts
-│  │     ├─ user.module.ts
-│  │     └─ user.service.ts
-│  ├─ providers
-│  │  └─ aws
-│  │     └─ s3
-│  │        ├─ s3.module.ts
-│  │        └─ s3.service.ts
-│  ├─ test
-│  │  └─ test
-│  └─ utils
-│     ├─ bcrypt
-│     │  └─ bcrypt.service.ts
-│     ├─ joi
-│     ├─ swagger
-│     │  └─ swagger.ts
-│     └─ utils.module.ts
-├─ tsconfig.build.json
-└─ tsconfig.json
-
-```
+2. 

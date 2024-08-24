@@ -1,7 +1,7 @@
 # BuddyDoc
 - 항해99에서 진행한 최종프로젝트
 - 프로젝트 기간: 2024.01 ~ 2024.03 / 6주
-- 프로젝트 사이트: [버디독](https://buddydoc.vercel.app/)
+- 프로젝트 사이트: [버디독](https://buddydoc.vercel.app/) (현재 x)
 - 백엔드: 2명
 - 프론트엔드 : 2명
 - 팀노션: [버디독 팀노션](https://maddening-shelf-99c.notion.site/BuddyDoc-dbaa1a9eb8c346c0b7c24f3ffab27faa)

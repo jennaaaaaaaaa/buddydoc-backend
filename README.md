@@ -108,7 +108,7 @@ elasticsearch 매핑, 게시글 검색 기능, 인덱스 생성 및 삭제 기�
 
 ## 회고
 - 잘한점
-  - 마지막 프로젝트 때 거의 매일 개인적으로 회고록을 기록
+  - 마지막 프로젝트 때 거의 매일 개인적으로 [회고록을 기록](https://github.com/user-attachments/assets/69ff291a-87a6-4aaa-b590-f9e47a0fd9e7)
   - 파이널 이전 프로젝트 때 Redis, elasticsearch, nodemailer 새로운 기술을 조금이라도 더 사용해보기 위해 노력
 - 아쉬운 점(개선방향)
   - 테스트 코드를 구현해보지 못함
